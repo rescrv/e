@@ -241,6 +241,12 @@ class buffer
         {
         }
 
+        buffer(size_t sz)
+            : m_buf()
+        {
+            m_buf.reserve(sz);
+        }
+
         buffer(const char* buf, size_t sz)
             : m_buf(sz)
         {

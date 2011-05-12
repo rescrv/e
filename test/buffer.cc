@@ -42,8 +42,9 @@ namespace
 TEST(BufferTest, CtorAndDtor)
 {
     e::buffer a; // Create a buffer without any size.
-    e::buffer b("xyz", 3); // Create a buffer with the three bytes "XYZ".
-    e::buffer c(reinterpret_cast<const void*>("xyz"), 3);
+    e::buffer b(3); // Create a buffer which can pack 3 bytes without resizing.
+    e::buffer c("xyz", 3); // Create a buffer with the three bytes "XYZ".
+    e::buffer d(reinterpret_cast<const void*>("xyz"), 3);
 }
 
 TEST(BufferTest, PackBuffer)
