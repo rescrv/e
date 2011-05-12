@@ -1,0 +1,61 @@
+cmake_minimum_required(VERSION 2.6)
+
+project(e)
+
+# Extend the CMake module search path.
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+
+# Flags are credit to Abhishek "G" Mukherjee
+set(e_wanal "")
+set(e_wanal "${e_wanal} -pedantic")
+set(e_wanal "${e_wanal} -std=c++98")
+set(e_wanal "${e_wanal} -Wabi")
+set(e_wanal "${e_wanal} -Wall")
+set(e_wanal "${e_wanal} -Wcast-align")
+set(e_wanal "${e_wanal} -Wcast-qual")
+set(e_wanal "${e_wanal} -Wctor-dtor-privacy")
+set(e_wanal "${e_wanal} -Weffc++")
+set(e_wanal "${e_wanal} -Wextra")
+set(e_wanal "${e_wanal} -Wfloat-equal")
+set(e_wanal "${e_wanal} -Wformat=2")
+set(e_wanal "${e_wanal} -Winit-self")
+set(e_wanal "${e_wanal} -Winline")
+set(e_wanal "${e_wanal} -Woverloaded-virtual")
+set(e_wanal "${e_wanal} -Wshadow")
+set(e_wanal "${e_wanal} -Wsign-promo")
+set(e_wanal "${e_wanal} -Wstrict-overflow=5")
+set(e_wanal "${e_wanal} -Wswitch-default")
+set(e_wanal "${e_wanal} -Wswitch-enum")
+set(e_wanal "${e_wanal} -Wunsafe-loop-optimizations")
+set(e_wanal "${e_wanal} -Wwrite-strings")
+
+set(CMAKE_CXX_FLAGS "${e_wanal} ${CMAKE_CXX_FLAGS}")
+
+# Set the test sources
+set(e_test_srcs
+    test/buffer.cc
+)
+
+# Installed headers
+set(e_headers
+    include/e/buffer.h
+)
+
+# Setup the include paths
+include_directories(include)
+
+# Tests
+ENABLE_TESTING()
+
+add_executable(testrunner test/runner.cc ${e_test_srcs})
+target_link_libraries(testrunner
+    pthread
+    gtest
+)
+
+# Installation targets.
+install(
+    FILES ${e_headers}
+    DESTINATION  include/e
+    COMPONENT development
+)
