@@ -53,6 +53,15 @@ target_link_libraries(testrunner
     gtest
 )
 
+add_test(BufferTest.CtorAndDtor testrunner
+    --gtest_filter=BufferTest.CtorAndDtor)
+add_test(BufferTest.PackBuffer testrunner
+    --gtest_filter=BufferTest.PackBuffer)
+add_test(BufferTest.UnpackBuffer testrunner
+    --gtest_filter=BufferTest.UnpackBuffer)
+add_test(BufferTest.UnpackErrors testrunner
+    --gtest_filter=BufferTest.UnpackErrors)
+
 # Installation targets.
 install(
     FILES ${e_headers}
