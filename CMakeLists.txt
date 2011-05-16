@@ -61,6 +61,8 @@ add_test(BufferTest.UnpackBuffer testrunner
     --gtest_filter=BufferTest.UnpackBuffer)
 add_test(BufferTest.UnpackErrors testrunner
     --gtest_filter=BufferTest.UnpackErrors)
+add_test(BufferTest.TrimPrefix testrunner
+    --gtest_filter=BufferTest.TrimPrefix)
 
 # Installation targets.
 install(

@@ -276,6 +276,15 @@ class buffer
             m_buf.clear();
         }
 
+        size_t trim_prefix(size_t sz)
+        {
+            sz = std::min(sz, m_buf.size());
+            size_t remain = m_buf.size() - sz;
+            memmove(this->mget(), this->mget() + sz, remain);
+            m_buf.resize(remain);
+            return sz;
+        }
+
     public:
         bool operator == (const buffer& rhs) const
         {

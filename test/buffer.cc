@@ -119,4 +119,13 @@ TEST(BufferTest, UnpackErrors)
     EXPECT_EQ(0xface, b);
 }
 
+TEST(BufferTest, TrimPrefix)
+{
+    e::buffer buf("\xde\xad\xbe\xef", 4);
+    buf.trim_prefix(2);
+    EXPECT_TRUE(e::buffer("\xbe\xef", 2) == buf);
+    buf.trim_prefix(4);
+    EXPECT_TRUE(e::buffer() == buf);
+}
+
 } // namespace
