@@ -126,10 +126,7 @@ class buffer
 
                 packer& operator << (const buffer& rhs)
                 {
-                    buffer& lhs(*m_buf);
-                    size_t size = lhs.m_buf.size();
-                    lhs.m_buf.resize(size + rhs.m_buf.size());
-                    std::copy(rhs.m_buf.begin(), rhs.m_buf.end(), lhs.m_buf.begin() + size);
+                    *m_buf += rhs;
                     return *this;
                 }
 
@@ -301,6 +298,15 @@ class buffer
             }
 
             return false;
+        }
+
+        buffer& operator += (const buffer& rhs)
+        {
+            buffer& lhs(*this);
+            size_t sz = lhs.m_buf.size();
+            lhs.m_buf.resize(sz + rhs.m_buf.size());
+            std::copy(rhs.m_buf.begin(), rhs.m_buf.end(), lhs.m_buf.begin() + sz);
+            return lhs;
         }
 
     private:
