@@ -270,6 +270,11 @@ class buffer
             return m_buf.size();
         }
 
+        bool empty() const
+        {
+            return m_buf.size() == 0;
+        }
+
     public:
         void clear()
         {
