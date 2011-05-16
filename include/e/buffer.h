@@ -30,6 +30,7 @@
 
 // C
 #include <stdint.h>
+#include <string.h>
 
 // POSIX
 #include <arpa/inet.h>
