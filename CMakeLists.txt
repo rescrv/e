@@ -34,11 +34,13 @@ set(CMAKE_CXX_FLAGS "${e_wanal} ${CMAKE_CXX_FLAGS}")
 # Set the test sources
 set(e_test_srcs
     test/buffer.cc
+    test/convert.cc
 )
 
 # Installed headers
 set(e_headers
     include/e/buffer.h
+    include/e/convert.h
 )
 
 # Setup the include paths
