@@ -73,6 +73,31 @@ to_uint32_t(const std::string& s, int base = 0)
     return static_cast<uint32_t>(ret);
 }
 
+inline uint16_t
+to_uint16_t(const std::string& s, int base = 0)
+{
+    int olderrno = errno;
+    int newerrno;
+    char* endptr;
+    unsigned long int ret;
+
+    errno = 0;
+    ret = strtoul(s.c_str(), &endptr, base);
+    newerrno = errno;
+    errno = olderrno;
+
+    if (*endptr != '\0' || newerrno == EINVAL)
+    {
+        throw std::domain_error("The number is not valid for the given base.");
+    }
+    if (newerrno == ERANGE || (ret & 0xffff) != ret)
+    {
+        throw std::out_of_range("The number does not fit in a uint16_t");
+    }
+
+    return static_cast<uint16_t>(ret);
+}
+
 } // namespace convert
 } // namespace e
 

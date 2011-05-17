@@ -60,4 +60,28 @@ TEST(ConvertTest, Uint32NormalCases)
     }
 }
 
+TEST(ConvertTest, Uint16NormalCases)
+{
+    EXPECT_GE(sizeof(unsigned long int), sizeof(uint16_t));
+
+    try
+    {
+        EXPECT_EQ(0, e::convert::to_uint16_t("0"));
+        EXPECT_EQ(0, e::convert::to_uint16_t("0x0"));
+        EXPECT_EQ(0, e::convert::to_uint16_t("0x0", 16));
+        EXPECT_EQ(0, e::convert::to_uint16_t("00"));
+        EXPECT_EQ(0, e::convert::to_uint16_t("00", 8));
+
+        EXPECT_EQ(65535, e::convert::to_uint16_t("65535"));
+        EXPECT_EQ(65535, e::convert::to_uint16_t("0xffff"));
+        EXPECT_EQ(65535, e::convert::to_uint16_t("0xffff", 16));
+        EXPECT_EQ(65535, e::convert::to_uint16_t("0177777"));
+        EXPECT_EQ(65535, e::convert::to_uint16_t("0177777", 8));
+    }
+    catch (...)
+    {
+        FAIL();
+    }
+}
+
 } // namespace
