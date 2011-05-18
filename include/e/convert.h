@@ -48,6 +48,31 @@ namespace convert
 // to safely convert integers, but until then they just ease usage of strto*
 // without fixing the problem.
 
+inline uint64_t
+to_uint64_t(const std::string& s, int base = 0)
+{
+    int olderrno = errno;
+    int newerrno;
+    char* endptr;
+    unsigned long long int ret;
+
+    errno = 0;
+    ret = strtoull(s.c_str(), &endptr, base);
+    newerrno = errno;
+    errno = olderrno;
+
+    if (*endptr != '\0' || newerrno == EINVAL)
+    {
+        throw std::domain_error("The number is not valid for the given base.");
+    }
+    if (newerrno == ERANGE || (ret & 0xffffffffffffffff) != ret)
+    {
+        throw std::out_of_range("The number does not fit in a uint64_t");
+    }
+
+    return static_cast<uint64_t>(ret);
+}
+
 inline uint32_t
 to_uint32_t(const std::string& s, int base = 0)
 {

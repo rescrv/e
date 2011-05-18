@@ -36,6 +36,30 @@
 namespace
 {
 
+TEST(ConvertTest, Uint64NormalCases)
+{
+    EXPECT_GE(sizeof(unsigned long int), sizeof(uint32_t));
+
+    try
+    {
+        EXPECT_EQ(0, e::convert::to_uint64_t("0"));
+        EXPECT_EQ(0, e::convert::to_uint64_t("0x0"));
+        EXPECT_EQ(0, e::convert::to_uint64_t("0x0", 16));
+        EXPECT_EQ(0, e::convert::to_uint64_t("00"));
+        EXPECT_EQ(0, e::convert::to_uint64_t("00", 8));
+
+        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("18446744073709551615"));
+        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("0xffffffffffffffff"));
+        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("0xffffffffffffffff", 16));
+        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("01777777777777777777777"));
+        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("01777777777777777777777", 8));
+    }
+    catch (...)
+    {
+        FAIL();
+    }
+}
+
 TEST(ConvertTest, Uint32NormalCases)
 {
     EXPECT_GE(sizeof(unsigned long int), sizeof(uint32_t));
