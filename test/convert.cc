@@ -52,7 +52,7 @@ TEST(ConvertTest, Uint32NormalCases)
         EXPECT_EQ(4294967295, e::convert::to_uint32_t("0xffffffff"));
         EXPECT_EQ(4294967295, e::convert::to_uint32_t("0xffffffff", 16));
         EXPECT_EQ(4294967295, e::convert::to_uint32_t("037777777777"));
-        EXPECT_EQ(4294967295, e::convert::to_uint32_t("0037777777777", 8));
+        EXPECT_EQ(4294967295, e::convert::to_uint32_t("037777777777", 8));
     }
     catch (...)
     {
