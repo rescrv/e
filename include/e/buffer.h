@@ -273,6 +273,30 @@ class buffer
             return m_buf.size() == 0;
         }
 
+        size_t index(uint8_t byte) const
+        {
+            const uint8_t* ptr = static_cast<const uint8_t*>(memchr(cget(), byte, size()));
+
+            if (ptr == NULL)
+            {
+                return size();
+            }
+            else
+            {
+                return ptr - cget();
+            }
+        }
+
+        bool contains(uint8_t byte) const
+        {
+            return memchr(cget(), byte, size()) != NULL;
+        }
+
+        buffer slice(size_t start, size_t end) const
+        {
+            return buffer(cget() + start, end - start);
+        }
+
     public:
         void clear()
         {

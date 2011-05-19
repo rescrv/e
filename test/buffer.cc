@@ -134,4 +134,38 @@ TEST(BufferTest, TrimPrefix)
     EXPECT_TRUE(buf.empty());
 }
 
+TEST(BufferTest, Index)
+{
+    e::buffer buf("0123456789", 10);
+    EXPECT_EQ(0, buf.index('0'));
+    EXPECT_EQ(1, buf.index('1'));
+    EXPECT_EQ(2, buf.index('2'));
+    EXPECT_EQ(3, buf.index('3'));
+    EXPECT_EQ(4, buf.index('4'));
+    EXPECT_EQ(5, buf.index('5'));
+    EXPECT_EQ(6, buf.index('6'));
+    EXPECT_EQ(7, buf.index('7'));
+    EXPECT_EQ(8, buf.index('8'));
+    EXPECT_EQ(9, buf.index('9'));
+    EXPECT_EQ(10, buf.index('A')); // It's not there.
+    EXPECT_EQ(10, buf.index('B')); // It's not there.
+}
+
+TEST(BufferTest, Contains)
+{
+    e::buffer buf("0123456789", 10);
+    EXPECT_TRUE(buf.contains('0'));
+    EXPECT_TRUE(buf.contains('1'));
+    EXPECT_TRUE(buf.contains('2'));
+    EXPECT_TRUE(buf.contains('3'));
+    EXPECT_TRUE(buf.contains('4'));
+    EXPECT_TRUE(buf.contains('5'));
+    EXPECT_TRUE(buf.contains('6'));
+    EXPECT_TRUE(buf.contains('7'));
+    EXPECT_TRUE(buf.contains('8'));
+    EXPECT_TRUE(buf.contains('9'));
+    EXPECT_FALSE(buf.contains('A')); // It's not there.
+    EXPECT_FALSE(buf.contains('B')); // It's not there.
+}
+
 } // namespace
