@@ -43,6 +43,9 @@
 #include <algorithm>
 #include <vector>
 
+// po6
+#include <po6/io/fd.h>
+
 namespace e
 {
 
@@ -366,6 +369,15 @@ class buffer
     private:
         std::vector<uint8_t> m_buf;
 };
+
+inline size_t
+read(po6::io::fd* fd, buffer* buf, size_t size)
+{
+    std::vector<uint8_t> tmp(size, '\0');
+    size_t ret = fd->read(&tmp.front(), size);
+    buffer::packer(buf) << buffer(&tmp.front(), ret);
+    return ret;
+}
 
 } // namespace e
 
