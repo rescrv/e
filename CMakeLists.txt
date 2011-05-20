@@ -56,6 +56,15 @@ target_link_libraries(testrunner
     gtest
 )
 
+add_test(ConvertTest.Uint64NormalCases testrunner
+    --gtest_filter=ConvertTest.Uint64NormalCases)
+add_test(ConvertTest.Uint32NormalCases testrunner
+    --gtest_filter=ConvertTest.Uint32NormalCases)
+add_test(ConvertTest.Uint16NormalCases testrunner
+    --gtest_filter=ConvertTest.Uint16NormalCases)
+add_test(ConvertTest.Uint8NormalCases testrunner
+    --gtest_filter=ConvertTest.Uint8NormalCases)
+
 add_test(BufferTest.CtorAndDtor testrunner
     --gtest_filter=BufferTest.CtorAndDtor)
 add_test(BufferTest.PackBuffer testrunner
@@ -66,6 +75,10 @@ add_test(BufferTest.UnpackErrors testrunner
     --gtest_filter=BufferTest.UnpackErrors)
 add_test(BufferTest.TrimPrefix testrunner
     --gtest_filter=BufferTest.TrimPrefix)
+add_test(BufferTest.Index testrunner
+    --gtest_filter=BufferTest.Index)
+add_test(BufferTest.Contains testrunner
+    --gtest_filter=BufferTest.Contains)
 
 # Installation targets.
 install(
