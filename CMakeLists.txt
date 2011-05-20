@@ -41,6 +41,7 @@ set(e_test_srcs
 set(e_headers
     include/e/buffer.h
     include/e/convert.h
+    include/e/iterators.h
 )
 
 # Setup the include paths
