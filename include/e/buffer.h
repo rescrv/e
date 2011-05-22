@@ -80,6 +80,42 @@ class buffer
                 size_t m_sz;
         };
 
+        class sized
+        {
+            public:
+                sized(size_t _sz, buffer* _buf)
+                    : m_sz(_sz)
+                    , m_buf(_buf)
+                {
+                }
+
+                sized(const sized& s)
+                    : m_sz(s.m_sz)
+                    , m_buf(s.m_buf)
+                {
+                }
+
+            public:
+                size_t sz() const { return m_sz; }
+                buffer* buf() const { return m_buf; }
+
+            public:
+                sized& operator = (const sized& s)
+                {
+                    if (this != &s)
+                    {
+                        m_sz = s.m_sz;
+                        m_buf = s.m_buf;
+                    }
+
+                    return *this;
+                }
+
+            private:
+                size_t m_sz;
+                buffer* m_buf;
+        };
+
         class packer
         {
             public:
@@ -213,6 +249,20 @@ class buffer
                     }
 
                     m_off += p.size();
+                    return *this;
+                }
+
+                unpacker& operator >> (sized s)
+                {
+                    if (m_off + s.sz() > m_buf.m_buf.size())
+                    {
+                        throw exception();
+                    }
+
+                    s.buf()->clear();
+                    s.buf()->m_buf.resize(s.sz());
+                    memmove(s.buf()->mget(), m_buf.cget() + m_off, s.sz());
+                    m_off += s.sz();
                     return *this;
                 }
 

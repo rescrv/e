@@ -168,4 +168,17 @@ TEST(BufferTest, Contains)
     EXPECT_FALSE(buf.contains('B')); // It's not there.
 }
 
+TEST(BufferTest, UnpackSize)
+{
+    e::buffer hello;
+    e::buffer world;
+    e::buffer pack("hello world", 11);
+    e::buffer::unpacker unpacker(pack);
+    unpacker >> e::buffer::sized(static_cast<size_t>(5), &hello)
+             >> e::buffer::padding(1)
+             >> e::buffer::sized(static_cast<size_t>(5), &world);
+    EXPECT_TRUE(e::buffer("hello", 5) == hello);
+    EXPECT_TRUE(e::buffer("world", 5) == world);
+}
+
 } // namespace
