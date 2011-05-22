@@ -54,18 +54,16 @@ TEST(BufferTest, PackBuffer)
     uint16_t c = 0xface;
     uint8_t d = '!';
     e::buffer buf("the buffer", 10);
+    e::buffer packed;
 
-    e::buffer pack;
-    e::buffer::packer packer(&pack);
-
-    packer << a << b << c << d << e::buffer::padding(5) << buf;
+    packed.pack() << a << b << c << d << e::buffer::padding(5) << buf;
     EXPECT_EQ(0,
-        memcmp(pack.get(), "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
-                           "\x8b\xad\xf0\x0d"
-                           "\xfa\xce"
-                           "!"
-                           "\x00\x00\x00\x00\x00"
-                           "the buffer", 30));
+        memcmp(packed.get(), "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
+                             "\x8b\xad\xf0\x0d"
+                             "\xfa\xce"
+                             "!"
+                             "\x00\x00\x00\x00\x00"
+                             "the buffer", 30));
 }
 
 TEST(BufferTest, UnpackBuffer)
@@ -75,14 +73,13 @@ TEST(BufferTest, UnpackBuffer)
     uint16_t c;
     uint8_t d;
     e::buffer buf;
-    e::buffer pack("\xde\xad\xbe\xef\xca\xfe\xba\xbe"
-                   "\x8b\xad\xf0\x0d"
-                   "\xfa\xce"
-                   "!"
-                   "\x00\x00\x00\x00\x00"
-                   "the buffer", 30);
-    e::buffer::unpacker unpacker(pack);
-    unpacker >> a >> b >> c >> d >> e::buffer::padding(5) >> buf;
+    e::buffer packed("\xde\xad\xbe\xef\xca\xfe\xba\xbe"
+                     "\x8b\xad\xf0\x0d"
+                     "\xfa\xce"
+                     "!"
+                     "\x00\x00\x00\x00\x00"
+                     "the buffer", 30);
+    packed.unpack() >> a >> b >> c >> d >> e::buffer::padding(5) >> buf;
     EXPECT_EQ(0xdeadbeefcafebabe, a);
     EXPECT_EQ(0x8badf00d, b);
     EXPECT_EQ(0xface, c);
@@ -97,7 +94,7 @@ TEST(BufferTest, UnpackErrors)
 
     e::buffer buf("\x8b\xad\xf0\x0d" "\xfa\xce", 6);
     uint32_t a;
-    e::buffer::unpacker u(buf);
+    e::unpacker u(buf);
     u >> a;
     EXPECT_EQ(0x8badf00d, a);
 
@@ -172,11 +169,10 @@ TEST(BufferTest, UnpackSize)
 {
     e::buffer hello;
     e::buffer world;
-    e::buffer pack("hello world", 11);
-    e::buffer::unpacker unpacker(pack);
-    unpacker >> e::buffer::sized(static_cast<size_t>(5), &hello)
-             >> e::buffer::padding(1)
-             >> e::buffer::sized(static_cast<size_t>(5), &world);
+    e::buffer packed("hello world", 11);
+    packed.unpack() >> e::buffer::sized(static_cast<size_t>(5), &hello)
+                    >> e::buffer::padding(1)
+                    >> e::buffer::sized(static_cast<size_t>(5), &world);
     EXPECT_TRUE(e::buffer("hello", 5) == hello);
     EXPECT_TRUE(e::buffer("world", 5) == world);
 }

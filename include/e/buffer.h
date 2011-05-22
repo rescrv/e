@@ -51,6 +51,8 @@ namespace e
 //
 // Many unpackers can work concurrently on the same buffer.
 // Only a single packer may operate on a buffer at time.
+class packer;
+class unpacker;
 
 class buffer
 {
@@ -107,176 +109,6 @@ class buffer
             private:
                 size_t m_sz;
                 buffer* m_buf;
-        };
-
-        class packer
-        {
-            public:
-                packer(buffer* buf)
-                    : m_buf(buf)
-                {
-                }
-
-            public:
-                packer& operator << (const uint64_t& rhs)
-                {
-                    size_t size = m_buf->m_buf.size();
-                    m_buf->m_buf.resize(size + sizeof(uint64_t));
-                    uint64_t a = htobe64(rhs);
-                    memmove(m_buf->mget() + size, &a, sizeof(uint64_t));
-                    return *this;
-                }
-
-                packer& operator << (const uint32_t& rhs)
-                {
-                    size_t size = m_buf->m_buf.size();
-                    m_buf->m_buf.resize(size + sizeof(uint32_t));
-                    uint32_t a = htonl(rhs);
-                    memmove(m_buf->mget() + size, &a, sizeof(uint32_t));
-                    return *this;
-                }
-
-                packer& operator << (const uint16_t& rhs)
-                {
-                    size_t size = m_buf->m_buf.size();
-                    m_buf->m_buf.resize(size + sizeof(uint16_t));
-                    uint16_t a = htons(rhs);
-                    memmove(m_buf->mget() + size, &a, sizeof(uint16_t));
-                    return *this;
-                }
-
-                packer& operator << (const uint8_t& rhs)
-                {
-                    m_buf->m_buf.push_back(rhs);
-                    return *this;
-                }
-
-                packer& operator << (const padding& p)
-                {
-                    m_buf->m_buf.resize(m_buf->m_buf.size() + p.size());
-                    return *this;
-                }
-
-                packer& operator << (const buffer& rhs)
-                {
-                    *m_buf += rhs;
-                    return *this;
-                }
-
-            private:
-                packer(const packer&);
-
-            private:
-                packer& operator = (const packer&);
-
-            private:
-                buffer* m_buf;
-        };
-
-        class unpacker
-        {
-            public:
-                unpacker(const buffer& buf)
-                    : m_buf(buf)
-                    , m_off(0)
-                {
-                }
-
-            public:
-                unpacker& operator >> (uint64_t& rhs)
-                {
-                    if (m_off + sizeof(uint64_t) > m_buf.m_buf.size())
-                    {
-                        throw std::out_of_range("Nothing left to unpack.");
-                    }
-
-                    memmove(&rhs, m_buf.cget() + m_off, sizeof(uint64_t));
-                    m_off += sizeof(uint64_t);
-                    rhs = be64toh(rhs);
-                    return *this;
-                }
-
-                unpacker& operator >> (uint32_t& rhs)
-                {
-                    if (m_off + sizeof(uint32_t) > m_buf.m_buf.size())
-                    {
-                        throw std::out_of_range("Nothing left to unpack.");
-                    }
-
-                    memmove(&rhs, m_buf.cget() + m_off, sizeof(uint32_t));
-                    m_off += sizeof(uint32_t);
-                    rhs = ntohl(rhs);
-                    return *this;
-                }
-
-                unpacker& operator >> (uint16_t& rhs)
-                {
-                    if (m_off + sizeof(uint16_t) > m_buf.m_buf.size())
-                    {
-                        throw std::out_of_range("Nothing left to unpack.");
-                    }
-
-                    memmove(&rhs, m_buf.cget() + m_off, sizeof(uint16_t));
-                    m_off += sizeof(uint16_t);
-                    rhs = ntohs(rhs);
-                    return *this;
-                }
-
-                unpacker& operator >> (uint8_t& rhs)
-                {
-                    if (m_off + sizeof(uint8_t) > m_buf.m_buf.size())
-                    {
-                        throw std::out_of_range("Nothing left to unpack.");
-                    }
-
-                    memmove(&rhs, m_buf.cget() + m_off, sizeof(uint8_t));
-                    m_off += sizeof(uint8_t);
-                    return *this;
-                }
-
-                unpacker& operator >> (padding p)
-                {
-                    if (m_off + p.size() > m_buf.m_buf.size())
-                    {
-                        throw std::out_of_range("Nothing left to unpack.");
-                    }
-
-                    m_off += p.size();
-                    return *this;
-                }
-
-                unpacker& operator >> (sized s)
-                {
-                    if (m_off + s.size() > m_buf.m_buf.size())
-                    {
-                        throw std::out_of_range("Nothing left to unpack.");
-                    }
-
-                    s.buf()->clear();
-                    s.buf()->m_buf.resize(s.size());
-                    memmove(s.buf()->mget(), m_buf.cget() + m_off, s.size());
-                    m_off += s.size();
-                    return *this;
-                }
-
-                unpacker& operator >> (buffer& b)
-                {
-                    b.clear();
-                    b.m_buf.resize(m_buf.size() - m_off);
-                    memmove(b.mget(), m_buf.cget() + m_off, m_buf.size() - m_off);
-                    m_off = m_buf.size();
-                    return *this;
-                }
-
-            private:
-                unpacker(const unpacker&);
-
-            private:
-                unpacker& operator = (const unpacker&);
-
-            private:
-                const buffer& m_buf;
-                size_t m_off;
         };
 
     public:
@@ -358,6 +190,9 @@ class buffer
             return sz;
         }
 
+        packer pack();
+        unpacker unpack();
+
     public:
         bool operator < (const buffer& rhs) const
         {
@@ -397,6 +232,10 @@ class buffer
         }
 
     private:
+        friend class packer;
+        friend class unpacker;
+
+    private:
         // Get a mutable reference to the buffer.
         uint8_t* mget()
         {
@@ -413,12 +252,188 @@ class buffer
         std::vector<uint8_t> m_buf;
 };
 
+class packer
+{
+    public:
+        packer(buffer* buf)
+            : m_buf(buf)
+        {
+        }
+
+    public:
+        packer& operator << (const uint64_t& rhs)
+        {
+            size_t size = m_buf->m_buf.size();
+            m_buf->m_buf.resize(size + sizeof(uint64_t));
+            uint64_t a = htobe64(rhs);
+            memmove(m_buf->mget() + size, &a, sizeof(uint64_t));
+            return *this;
+        }
+
+        packer& operator << (const uint32_t& rhs)
+        {
+            size_t size = m_buf->m_buf.size();
+            m_buf->m_buf.resize(size + sizeof(uint32_t));
+            uint32_t a = htonl(rhs);
+            memmove(m_buf->mget() + size, &a, sizeof(uint32_t));
+            return *this;
+        }
+
+        packer& operator << (const uint16_t& rhs)
+        {
+            size_t size = m_buf->m_buf.size();
+            m_buf->m_buf.resize(size + sizeof(uint16_t));
+            uint16_t a = htons(rhs);
+            memmove(m_buf->mget() + size, &a, sizeof(uint16_t));
+            return *this;
+        }
+
+        packer& operator << (const uint8_t& rhs)
+        {
+            m_buf->m_buf.push_back(rhs);
+            return *this;
+        }
+
+        packer& operator << (const buffer::padding& p)
+        {
+            m_buf->m_buf.resize(m_buf->m_buf.size() + p.size());
+            return *this;
+        }
+
+        packer& operator << (const buffer& rhs)
+        {
+            *m_buf += rhs;
+            return *this;
+        }
+
+    private:
+        packer& operator = (const packer&);
+
+    private:
+        buffer* m_buf;
+};
+
+class unpacker
+{
+    public:
+        unpacker(const buffer& buf)
+            : m_buf(buf)
+            , m_off(0)
+        {
+        }
+
+    public:
+        unpacker& operator >> (uint64_t& rhs)
+        {
+            if (m_off + sizeof(uint64_t) > m_buf.m_buf.size())
+            {
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint64_t));
+            m_off += sizeof(uint64_t);
+            rhs = be64toh(rhs);
+            return *this;
+        }
+
+        unpacker& operator >> (uint32_t& rhs)
+        {
+            if (m_off + sizeof(uint32_t) > m_buf.m_buf.size())
+            {
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint32_t));
+            m_off += sizeof(uint32_t);
+            rhs = ntohl(rhs);
+            return *this;
+        }
+
+        unpacker& operator >> (uint16_t& rhs)
+        {
+            if (m_off + sizeof(uint16_t) > m_buf.m_buf.size())
+            {
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint16_t));
+            m_off += sizeof(uint16_t);
+            rhs = ntohs(rhs);
+            return *this;
+        }
+
+        unpacker& operator >> (uint8_t& rhs)
+        {
+            if (m_off + sizeof(uint8_t) > m_buf.m_buf.size())
+            {
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint8_t));
+            m_off += sizeof(uint8_t);
+            return *this;
+        }
+
+        unpacker& operator >> (buffer::padding p)
+        {
+            if (m_off + p.size() > m_buf.m_buf.size())
+            {
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            m_off += p.size();
+            return *this;
+        }
+
+        unpacker& operator >> (buffer::sized s)
+        {
+            if (m_off + s.size() > m_buf.m_buf.size())
+            {
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            s.buf()->clear();
+            s.buf()->m_buf.resize(s.size());
+            memmove(s.buf()->mget(), m_buf.cget() + m_off, s.size());
+            m_off += s.size();
+            return *this;
+        }
+
+        unpacker& operator >> (buffer& b)
+        {
+            b.clear();
+            b.m_buf.resize(m_buf.size() - m_off);
+            memmove(b.mget(), m_buf.cget() + m_off, m_buf.size() - m_off);
+            m_off = m_buf.size();
+            return *this;
+        }
+
+    private:
+        unpacker& operator = (const unpacker&);
+
+    private:
+        const buffer& m_buf;
+        size_t m_off;
+};
+
+packer
+buffer :: pack()
+{
+    return packer(this);
+}
+
+unpacker
+buffer :: unpack()
+{
+    return unpacker(*this);
+}
+
 inline size_t
 read(po6::io::fd* fd, buffer* buf, size_t size)
 {
     std::vector<uint8_t> tmp(size, '\0');
     size_t ret = fd->read(&tmp.front(), size);
-    buffer::packer(buf) << buffer(&tmp.front(), ret);
+    packer(buf) << buffer(&tmp.front(), ret);
     return ret;
 }
 
