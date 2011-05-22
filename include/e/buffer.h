@@ -89,7 +89,7 @@ class buffer
                 }
 
             public:
-                size_t sz() const { return m_sz; }
+                size_t size() const { return m_sz; }
                 buffer* buf() const { return m_buf; }
 
             public:
@@ -247,15 +247,15 @@ class buffer
 
                 unpacker& operator >> (sized s)
                 {
-                    if (m_off + s.sz() > m_buf.m_buf.size())
+                    if (m_off + s.size() > m_buf.m_buf.size())
                     {
                         throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     s.buf()->clear();
-                    s.buf()->m_buf.resize(s.sz());
-                    memmove(s.buf()->mget(), m_buf.cget() + m_off, s.sz());
-                    m_off += s.sz();
+                    s.buf()->m_buf.resize(s.size());
+                    memmove(s.buf()->mget(), m_buf.cget() + m_off, s.size());
+                    m_off += s.size();
                     return *this;
                 }
 
