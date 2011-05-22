@@ -105,7 +105,7 @@ TEST(BufferTest, UnpackErrors)
     {
         u >> a;
     }
-    catch (e::buffer::exception& e)
+    catch (std::out_of_range& e)
     {
         caught = true;
     }

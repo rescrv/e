@@ -36,9 +36,6 @@
 #include <arpa/inet.h>
 #include <endian.h>
 
-// C++
-#include <exception>
-
 // STL
 #include <algorithm>
 #include <vector>
@@ -58,10 +55,6 @@ namespace e
 class buffer
 {
     public:
-        class exception : public std::exception
-        {
-        };
-
         class padding
         {
             public:
@@ -194,7 +187,7 @@ class buffer
                 {
                     if (m_off + sizeof(uint64_t) > m_buf.m_buf.size())
                     {
-                        throw exception();
+                        throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     memmove(&rhs, m_buf.cget() + m_off, sizeof(uint64_t));
@@ -207,7 +200,7 @@ class buffer
                 {
                     if (m_off + sizeof(uint32_t) > m_buf.m_buf.size())
                     {
-                        throw exception();
+                        throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     memmove(&rhs, m_buf.cget() + m_off, sizeof(uint32_t));
@@ -220,7 +213,7 @@ class buffer
                 {
                     if (m_off + sizeof(uint16_t) > m_buf.m_buf.size())
                     {
-                        throw exception();
+                        throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     memmove(&rhs, m_buf.cget() + m_off, sizeof(uint16_t));
@@ -233,7 +226,7 @@ class buffer
                 {
                     if (m_off + sizeof(uint8_t) > m_buf.m_buf.size())
                     {
-                        throw exception();
+                        throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     memmove(&rhs, m_buf.cget() + m_off, sizeof(uint8_t));
@@ -245,7 +238,7 @@ class buffer
                 {
                     if (m_off + p.size() > m_buf.m_buf.size())
                     {
-                        throw exception();
+                        throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     m_off += p.size();
@@ -256,7 +249,7 @@ class buffer
                 {
                     if (m_off + s.sz() > m_buf.m_buf.size())
                     {
-                        throw exception();
+                        throw std::out_of_range("Nothing left to unpack.");
                     }
 
                     s.buf()->clear();
