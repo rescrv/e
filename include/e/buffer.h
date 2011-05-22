@@ -190,8 +190,8 @@ class buffer
             return sz;
         }
 
-        packer pack();
-        unpacker unpack();
+        inline packer pack();
+        inline unpacker unpack();
 
     public:
         bool operator < (const buffer& rhs) const
@@ -416,13 +416,13 @@ class unpacker
         size_t m_off;
 };
 
-packer
+inline packer
 buffer :: pack()
 {
     return packer(this);
 }
 
-unpacker
+inline unpacker
 buffer :: unpack()
 {
     return unpacker(*this);
