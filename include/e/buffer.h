@@ -36,8 +36,14 @@
 #include <arpa/inet.h>
 #include <endian.h>
 
+// C++
+#include <iomanip>
+#include <iostream>
+
 // STL
 #include <algorithm>
+#include <sstream>
+#include <string>
 #include <vector>
 
 // po6
@@ -136,6 +142,21 @@ class buffer
         }
 
     public:
+        std::string hex() const
+        {
+            std::ostringstream ostr;
+            ostr << std::hex << std::setw(2);
+            const uint8_t* buf = cget();
+
+            for (size_t i = 0; i < size(); ++i)
+            {
+                int num = buf[i];
+                ostr << num;
+            }
+
+            return ostr.str();
+        }
+
         const void* get() const
         {
             return &m_buf.front();

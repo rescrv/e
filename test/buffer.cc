@@ -177,4 +177,13 @@ TEST(BufferTest, UnpackSize)
     EXPECT_TRUE(e::buffer("world", 5) == world);
 }
 
+TEST(BufferTest, Hex)
+{
+    e::buffer buf1("\xde\xad\xbe\xef", 4);
+    e::buffer buf2("\x00\xff\x0f\xf0", 4);
+
+    EXPECT_EQ("deadbeef", buf1.hex());
+    EXPECT_EQ("00ff0ff0", buf2.hex());
+}
+
 } // namespace
