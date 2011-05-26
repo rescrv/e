@@ -222,6 +222,8 @@ class buffer
             return false;
         }
 
+        bool operator != (const buffer& rhs) const { return !(*this == rhs); }
+
         buffer& operator += (const buffer& rhs)
         {
             buffer& lhs(*this);
