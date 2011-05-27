@@ -124,4 +124,27 @@ TEST(IntrusivePtr, Nesting)
     EXPECT_TRUE(dtor);
 }
 
+class accessing
+{
+    public:
+        accessing(int _a, double _b, char _c) : m_ref(0), a(_a), b(_b), c(_c) {}
+
+    public:
+        size_t m_ref;
+        int a;
+        double b;
+        char c;
+};
+
+TEST(IntrusivePtr, Accessing)
+{
+    e::intrusive_ptr<accessing> ptr(new accessing(42, 3.1415, 'A'));
+    EXPECT_EQ(42, (*ptr).a);
+    EXPECT_EQ(42, ptr->a);
+    EXPECT_EQ(3.1415, (*ptr).b);
+    EXPECT_EQ(3.1415, ptr->b);
+    EXPECT_EQ('A', (*ptr).c);
+    EXPECT_EQ('A', ptr->c);
+}
+
 } // namespace

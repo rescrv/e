@@ -97,6 +97,18 @@ class intrusive_ptr
             }
         }
 
+        T&
+        operator * () throw()
+        {
+            return *m_ptr;
+        }
+
+        T*
+        operator -> () throw()
+        {
+            return m_ptr;
+        }
+
     private:
         void inc() throw ()
         {
