@@ -145,13 +145,13 @@ class buffer
         std::string hex() const
         {
             std::ostringstream ostr;
-            ostr << std::hex << std::setw(2);
+            ostr << std::hex;
             const uint8_t* buf = cget();
 
             for (size_t i = 0; i < size(); ++i)
             {
-                int num = buf[i];
-                ostr << num;
+                unsigned int num = buf[i];
+                ostr << std::setw(2) << std::setfill('0') << num;
             }
 
             return ostr.str();
