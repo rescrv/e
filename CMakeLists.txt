@@ -35,12 +35,14 @@ set(CMAKE_CXX_FLAGS "${e_wanal} ${CMAKE_CXX_FLAGS}")
 set(e_test_srcs
     test/buffer.cc
     test/convert.cc
+    test/intrusive_ptr.cc
 )
 
 # Installed headers
 set(e_headers
     include/e/buffer.h
     include/e/convert.h
+    include/e/intrusive_ptr.h
 )
 
 # Setup the include paths
