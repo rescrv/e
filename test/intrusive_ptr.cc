@@ -147,4 +147,27 @@ TEST(IntrusivePtr, Accessing)
     EXPECT_EQ('A', ptr->c);
 }
 
+class assignment
+{
+    public:
+        assignment() : m_ref(0) {}
+
+    public:
+        size_t m_ref;
+};
+
+TEST(IntrusivePtr, Assignment)
+{
+    e::intrusive_ptr<assignment> p(new assignment());
+    e::intrusive_ptr<assignment> q;
+    e::intrusive_ptr<assignment> r;
+    EXPECT_EQ(1, p->m_ref);
+    q = p;
+    EXPECT_EQ(2, p->m_ref);
+    r = p;
+    EXPECT_EQ(3, p->m_ref);
+    r = q;
+    EXPECT_EQ(3, p->m_ref);
+}
+
 } // namespace
