@@ -97,6 +97,7 @@ TEST(BufferTest, UnpackErrors)
     e::unpacker u(buf);
     u >> a;
     EXPECT_EQ(0x8badf00d, a);
+    EXPECT_EQ(2, u.remain());
 
     try
     {
@@ -110,10 +111,12 @@ TEST(BufferTest, UnpackErrors)
     EXPECT_TRUE(caught);
     // "a" should not change
     EXPECT_EQ(0x8badf00d, a);
+    EXPECT_EQ(2, u.remain());
     // Getting the next value should succeed
     uint16_t b;
     u >> b;
     EXPECT_EQ(0xface, b);
+    EXPECT_EQ(0, u.remain());
 }
 
 TEST(BufferTest, TrimPrefix)

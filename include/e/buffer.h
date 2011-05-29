@@ -348,6 +348,19 @@ class unpacker
         }
 
     public:
+        size_t remain() const
+        {
+            if (m_buf.m_buf.size() < m_off)
+            {
+                return 0;
+            }
+            else
+            {
+                return m_buf.m_buf.size() - m_off;
+            }
+        }
+
+    public:
         unpacker& operator >> (uint64_t& rhs)
         {
             if (m_off + sizeof(uint64_t) > m_buf.m_buf.size())
