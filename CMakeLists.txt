@@ -35,6 +35,7 @@ set(CMAKE_CXX_FLAGS "${e_wanal} ${CMAKE_CXX_FLAGS}")
 set(e_test_srcs
     test/buffer.cc
     test/convert.cc
+    test/guard.cc
     test/intrusive_ptr.cc
 )
 
@@ -42,6 +43,7 @@ set(e_test_srcs
 set(e_headers
     include/e/buffer.h
     include/e/convert.h
+    include/e/guard.h
     include/e/intrusive_ptr.h
 )
 
