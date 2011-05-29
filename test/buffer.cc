@@ -63,7 +63,7 @@ TEST(BufferTest, PackBuffer)
                              "\xfa\xce"
                              "!"
                              "\x00\x00\x00\x00\x00"
-                             "the buffer", 30));
+                             "\x00\x00\x00\x0athe buffer", 34));
 }
 
 TEST(BufferTest, UnpackBuffer)
@@ -78,7 +78,7 @@ TEST(BufferTest, UnpackBuffer)
                      "\xfa\xce"
                      "!"
                      "\x00\x00\x00\x00\x00"
-                     "the buffer", 30);
+                     "\x00\x00\x00\x0athe buffer", 34);
     packed.unpack() >> a >> b >> c >> d >> e::buffer::padding(5) >> buf;
     EXPECT_EQ(0xdeadbeefcafebabe, a);
     EXPECT_EQ(0x8badf00d, b);
@@ -184,6 +184,31 @@ TEST(BufferTest, Hex)
 
     EXPECT_EQ("deadbeef", buf1.hex());
     EXPECT_EQ("00ff0ff0", buf2.hex());
+}
+
+// If unpacking a buffer fails, do we consume input?
+TEST(BufferTest, FailedBufferUnpack)
+{
+    bool caught = false;
+    e::buffer packed("\x00\x00\x00\x04", 4);
+    e::buffer buf;
+    e::unpacker up(packed);
+
+    try
+    {
+        up >> buf;
+    }
+    catch (std::out_of_range& e)
+    {
+        caught = true;
+    }
+
+    EXPECT_TRUE(caught);
+
+    // We should still be able to read the integer.
+    uint32_t four;
+    up >> four;
+    EXPECT_EQ(4, four);
 }
 
 } // namespace

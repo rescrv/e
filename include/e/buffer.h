@@ -325,6 +325,8 @@ class packer
 
         packer& operator << (const buffer& rhs)
         {
+            uint32_t sz = rhs.size();
+            *this << sz;
             *m_buf += rhs;
             return *this;
         }
@@ -425,9 +427,19 @@ class unpacker
         unpacker& operator >> (buffer& b)
         {
             b.clear();
-            b.m_buf.resize(m_buf.size() - m_off);
-            memmove(b.mget(), m_buf.cget() + m_off, m_buf.size() - m_off);
-            m_off = m_buf.size();
+            uint32_t sz;
+            *this >> sz;
+
+            if (m_off + sz > m_buf.m_buf.size())
+            {
+                m_off -= sizeof(uint32_t);
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            b.clear();
+            b.m_buf.resize(sz);
+            memmove(b.mget(), m_buf.cget() + m_off, sz);
+            m_off += sz;
             return *this;
         }
 
