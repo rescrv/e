@@ -111,6 +111,11 @@ class intrusive_ptr
             return m_ptr;
         }
 
+        operator bool () const
+        {
+            return m_ptr;
+        }
+
     private:
         void inc() throw ()
         {

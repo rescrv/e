@@ -170,4 +170,20 @@ TEST(IntrusivePtr, Assignment)
     EXPECT_EQ(3, p->m_ref);
 }
 
+TEST(IntrusivePtr, Booleans)
+{
+    e::intrusive_ptr<assignment> p(new assignment());
+    e::intrusive_ptr<assignment> q;
+
+    if (!p)
+    {
+        FAIL();
+    }
+
+    if (q)
+    {
+        FAIL();
+    }
+}
+
 } // namespace
