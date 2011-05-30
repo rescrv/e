@@ -481,7 +481,7 @@ read(po6::io::fd* fd, buffer* buf, size_t size)
 {
     std::vector<uint8_t> tmp(size, '\0');
     size_t ret = fd->read(&tmp.front(), size);
-    packer(buf) << buffer(&tmp.front(), ret);
+    *buf += buffer(&tmp.front(), ret);
     return ret;
 }
 
