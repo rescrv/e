@@ -197,6 +197,11 @@ class buffer
         }
 
     public:
+        void swap(buffer& other) throw ()
+        {
+            m_buf.swap(other.m_buf);
+        }
+
         void clear()
         {
             m_buf.clear();
