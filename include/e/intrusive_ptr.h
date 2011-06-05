@@ -91,9 +91,9 @@ class intrusive_ptr
 
             if (this->m_ptr != rhs.m_ptr)
             {
-                dec();
+                rhs.inc();
+                lhs.dec();
                 lhs.m_ptr = rhs.m_ptr;
-                inc();
             }
 
             return *this;
@@ -117,7 +117,7 @@ class intrusive_ptr
         }
 
     private:
-        void inc() throw ()
+        void inc() const throw ()
         {
             if (m_ptr)
             {
@@ -132,6 +132,7 @@ class intrusive_ptr
                 if (__sync_add_and_fetch(&(m_ptr->m_ref), -1) == 0)
                 {
                     delete m_ptr;
+                    m_ptr = NULL;
                 }
             }
         }
