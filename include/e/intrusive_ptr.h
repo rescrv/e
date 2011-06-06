@@ -100,13 +100,13 @@ class intrusive_ptr
         }
 
         T&
-        operator * () throw()
+        operator * () const throw()
         {
             return *m_ptr;
         }
 
         T*
-        operator -> () throw()
+        operator -> () const throw()
         {
             return m_ptr;
         }
