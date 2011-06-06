@@ -201,4 +201,28 @@ TEST(IntrusivePtr, Compare)
     EXPECT_EQ(p, q);
 }
 
+struct node
+{
+    node() : m_ref(0), next() {}
+    size_t m_ref;
+    e::intrusive_ptr<node> next;
+};
+
+TEST(IntrusivePtr, HandOverHand)
+{
+    e::intrusive_ptr<node> head(new node());
+
+    for (size_t i = 0; i < 10000000; ++i)
+    {
+        e::intrusive_ptr<node> tmp(new node());
+        tmp->next = head;
+        head = tmp;
+    }
+
+    while (head)
+    {
+        head = head->next;
+    }
+}
+
 } // namespace

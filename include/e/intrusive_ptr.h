@@ -87,13 +87,13 @@ class intrusive_ptr
         intrusive_ptr<T>&
         operator = (const intrusive_ptr<T>& rhs) throw ()
         {
-            intrusive_ptr<T>& lhs(*this);
+            intrusive_ptr<T> tmp(*this);
 
             if (this->m_ptr != rhs.m_ptr)
             {
+                this->dec();
                 rhs.inc();
-                lhs.dec();
-                lhs.m_ptr = rhs.m_ptr;
+                this->m_ptr = rhs.m_ptr;
             }
 
             return *this;
