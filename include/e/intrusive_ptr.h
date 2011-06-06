@@ -111,9 +111,50 @@ class intrusive_ptr
             return m_ptr;
         }
 
-        operator bool () const
+    // Trick from the tr1 shared_ptr impl.
+    private:
+        typedef T* intrusive_ptr<T>::*bool_type;
+
+    public:
+        operator bool_type () const
         {
-            return m_ptr;
+            return m_ptr == 0 ? 0 : &intrusive_ptr<T>::m_ptr;
+        }
+
+        bool
+        operator < (const intrusive_ptr<T>& rhs) const
+        {
+            return m_ptr < rhs.m_ptr;
+        }
+
+        bool
+        operator <= (const intrusive_ptr<T>& rhs) const
+        {
+            return m_ptr <= rhs.m_ptr;
+        }
+
+        bool
+        operator == (const intrusive_ptr<T>& rhs) const
+        {
+            return m_ptr == rhs.m_ptr;
+        }
+
+        bool
+        operator != (const intrusive_ptr<T>& rhs) const
+        {
+            return m_ptr != rhs.m_ptr;
+        }
+
+        bool
+        operator >= (const intrusive_ptr<T>& rhs) const
+        {
+            return m_ptr >= rhs.m_ptr;
+        }
+
+        bool
+        operator > (const intrusive_ptr<T>& rhs) const
+        {
+            return m_ptr > rhs.m_ptr;
         }
 
     private:

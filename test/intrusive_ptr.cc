@@ -186,4 +186,19 @@ TEST(IntrusivePtr, Booleans)
     }
 }
 
+TEST(IntrusivePtr, Compare)
+{
+    e::intrusive_ptr<assignment> p(new assignment());
+    e::intrusive_ptr<assignment> q;
+
+    EXPECT_GT(p, q);
+    EXPECT_GE(p, q);
+    EXPECT_NE(p, q);
+    EXPECT_LE(q, p);
+    EXPECT_LT(q, p);
+
+    p = q;
+    EXPECT_EQ(p, q);
+}
+
 } // namespace
