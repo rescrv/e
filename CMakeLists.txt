@@ -46,6 +46,7 @@ set(e_headers
     include/e/guard.h
     include/e/intrusive_ptr.h
     include/e/timer.h
+    include/e/tuple_compare.h
 )
 
 # Setup the include paths
