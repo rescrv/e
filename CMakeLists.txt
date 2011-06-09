@@ -45,6 +45,7 @@ set(e_headers
     include/e/convert.h
     include/e/guard.h
     include/e/intrusive_ptr.h
+    include/e/timer.h
 )
 
 # Setup the include paths
