@@ -47,6 +47,7 @@ set(e_headers
     include/e/guard.h
     include/e/hazard_ptrs.h
     include/e/intrusive_ptr.h
+    include/e/lockfree_fifo.h
     include/e/set.h
     include/e/striped_lock.h
     include/e/timer.h
@@ -58,6 +59,12 @@ include_directories(include)
 
 # Tests
 ENABLE_TESTING()
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/benchmarks)
+add_executable(benchmarks/lockfree_fifo benchmarks/lockfree_fifo.cc)
+target_link_libraries(benchmarks/lockfree_fifo
+    pthread
+)
 
 add_executable(testrunner test/runner.cc ${e_test_srcs})
 target_link_libraries(testrunner
