@@ -28,6 +28,7 @@ set(e_wanal "${e_wanal} -Wswitch-default")
 set(e_wanal "${e_wanal} -Wswitch-enum")
 set(e_wanal "${e_wanal} -Wunsafe-loop-optimizations")
 set(e_wanal "${e_wanal} -Wwrite-strings")
+set(e_wanal "${e_wanal} -Wno-long-long")
 
 set(CMAKE_CXX_FLAGS "${e_wanal} ${CMAKE_CXX_FLAGS}")
 
