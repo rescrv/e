@@ -45,6 +45,7 @@ set(e_headers
     include/e/buffer.h
     include/e/convert.h
     include/e/guard.h
+    include/e/hazard_ptrs.h
     include/e/intrusive_ptr.h
     include/e/set.h
     include/e/striped_lock.h
