@@ -30,6 +30,7 @@
 
 // e
 #include <e/bitfield.h>
+#include <e/buffer.h>
 
 #pragma GCC diagnostic ignored "-Wswitch-default"
 
@@ -95,6 +96,95 @@ TEST(BitfieldTest, RollingBitfield)
     rolling_bitfield(8);
     rolling_bitfield(16);
     rolling_bitfield(75);
+}
+
+TEST(BitfieldTest, BufferPack)
+{
+    e::bitfield bf(32);
+    // 0xde
+    bf.set(1);
+    bf.set(2);
+    bf.set(3);
+    bf.set(4);
+    bf.set(6);
+    bf.set(7);
+
+    // 0xad
+    bf.set(8);
+    bf.set(10);
+    bf.set(11);
+    bf.set(13);
+    bf.set(15);
+
+    // 0xbe
+    bf.set(17);
+    bf.set(18);
+    bf.set(19);
+    bf.set(20);
+    bf.set(21);
+    bf.set(23);
+
+    // 0xef
+    bf.set(24);
+    bf.set(25);
+    bf.set(26);
+    bf.set(27);
+    bf.set(29);
+    bf.set(30);
+    bf.set(31);
+
+    e::buffer buf;
+    e::packer pack(&buf);
+    pack << bf;
+    EXPECT_EQ("000000200004deadbeef", buf.hex());
+}
+
+TEST(BitfieldTest, BufferUnpack)
+{
+    e::bitfield bf(64);
+    e::buffer buf("\x00\x00\x00\x20\x00\x04\xde\xad\xbe\xef", 10);
+    e::unpacker up(buf);
+    up >> bf;
+
+    // 0xde
+    EXPECT_FALSE(bf.get(0));
+    EXPECT_TRUE(bf.get(1));
+    EXPECT_TRUE(bf.get(2));
+    EXPECT_TRUE(bf.get(3));
+    EXPECT_TRUE(bf.get(4));
+    EXPECT_FALSE(bf.get(5));
+    EXPECT_TRUE(bf.get(6));
+    EXPECT_TRUE(bf.get(7));
+
+    // 0xad
+    EXPECT_TRUE(bf.get(8));
+    EXPECT_FALSE(bf.get(9));
+    EXPECT_TRUE(bf.get(10));
+    EXPECT_TRUE(bf.get(11));
+    EXPECT_FALSE(bf.get(12));
+    EXPECT_TRUE(bf.get(13));
+    EXPECT_FALSE(bf.get(14));
+    EXPECT_TRUE(bf.get(15));
+
+    // 0xbe
+    EXPECT_FALSE(bf.get(16));
+    EXPECT_TRUE(bf.get(17));
+    EXPECT_TRUE(bf.get(18));
+    EXPECT_TRUE(bf.get(19));
+    EXPECT_TRUE(bf.get(20));
+    EXPECT_TRUE(bf.get(21));
+    EXPECT_FALSE(bf.get(22));
+    EXPECT_TRUE(bf.get(23));
+
+    // 0xef
+    EXPECT_TRUE(bf.get(24));
+    EXPECT_TRUE(bf.get(25));
+    EXPECT_TRUE(bf.get(26));
+    EXPECT_TRUE(bf.get(27));
+    EXPECT_FALSE(bf.get(28));
+    EXPECT_TRUE(bf.get(29));
+    EXPECT_TRUE(bf.get(30));
+    EXPECT_TRUE(bf.get(31));
 }
 
 }

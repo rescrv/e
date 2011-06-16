@@ -34,33 +34,40 @@
 // STL
 #include <vector>
 
+// e
+#include <e/buffer.h>
+
 namespace e
 {
 
 class bitfield
 {
     public:
-        bitfield(size_t n);
+        bitfield(uint32_t n);
         bitfield(const bitfield& other);
         ~bitfield() throw ();
 
     public:
-        size_t bits() const throw () { return m_num_bits; }
-        size_t bytes() const throw () { return (m_num_bits / 8) + (m_num_bits % 8 ? 1 : 0); }
-        void set(size_t n);
-        void unset(size_t n);
-        bool get(size_t n) const;
+        uint32_t bits() const throw () { return m_num_bits; }
+        uint32_t bytes() const throw () { return (m_num_bits / 8) + (m_num_bits % 8 ? 1 : 0); }
+        void set(uint32_t n);
+        void unset(uint32_t n);
+        bool get(uint32_t n) const;
 
     public:
         bitfield& operator = (const bitfield& other);
 
     private:
-        size_t m_num_bits;
+        friend packer& operator << (packer& lhs, const e::bitfield& rhs);
+        friend unpacker& operator >> (unpacker& lhs, e::bitfield& rhs);
+
+    private:
+        uint32_t m_num_bits;
         std::vector<uint8_t> m_bits;
 };
 
 inline
-bitfield :: bitfield(size_t n)
+bitfield :: bitfield(uint32_t n)
     : m_num_bits(n)
     , m_bits(bytes())
 {
@@ -79,24 +86,69 @@ bitfield :: ~bitfield() throw ()
 }
 
 inline void
-bitfield :: set(size_t n)
+bitfield :: set(uint32_t n)
 {
     assert(n < m_num_bits);
     m_bits[n / 8] |= (1 << (n % 8));
 }
 
 inline void
-bitfield :: unset(size_t n)
+bitfield :: unset(uint32_t n)
 {
     assert(n < m_num_bits);
     m_bits[n / 8] &= ~(1 << (n % 8));
 }
 
 inline bool
-bitfield :: get(size_t n) const
+bitfield :: get(uint32_t n) const
 {
     assert(n < m_num_bits);
     return m_bits[n / 8] & (1 << (n % 8));
+}
+
+inline bitfield&
+bitfield :: operator = (const bitfield& other)
+{
+    if (this != &other)
+    {
+        m_num_bits = other.m_num_bits;
+        m_bits = other.m_bits;
+    }
+
+    return *this;
+}
+
+inline packer&
+operator << (packer& lhs, const e::bitfield& rhs)
+{
+    lhs << rhs.m_num_bits << rhs.m_bits;
+    return lhs;
+}
+
+inline unpacker&
+operator >> (unpacker& lhs, e::bitfield& rhs)
+{
+    e::bitfield tmp(0);
+    size_t off = lhs.offset();
+
+    try
+    {
+        lhs >> tmp.m_num_bits >> tmp.m_bits;
+    }
+    catch (std::out_of_range& e)
+    {
+        lhs.rewind(off);
+        throw e;
+    }
+
+    if (tmp.bytes() != tmp.m_bits.size())
+    {
+        lhs.rewind(off);
+        throw std::runtime_error("The unpacked bitfield is not valid.");
+    }
+
+    rhs = tmp;
+    return lhs;
 }
 
 } // namespace e
