@@ -214,4 +214,53 @@ TEST(BufferTest, FailedBufferUnpack)
     EXPECT_EQ(4, four);
 }
 
+TEST(BufferTest, VectorPack)
+{
+    e::buffer buf;
+    e::packer packer(&buf);
+    std::vector<uint16_t> vector;
+    vector.push_back(0xdead);
+    vector.push_back(0xbeef);
+    vector.push_back(0xcafe);
+    vector.push_back(0xbabe);
+    packer << vector;
+    EXPECT_EQ("0004deadbeefcafebabe", buf.hex());
+}
+
+TEST(BufferTest, VectorUnpack)
+{
+    e::buffer buf("\x00\x04\xde\xad\xbe\xef\xca\xfe\xba\xbe", 10);
+    std::vector<uint16_t> vector;
+    buf.unpack() >> vector;
+    EXPECT_EQ(0xdead, vector[0]);
+    EXPECT_EQ(0xbeef, vector[1]);
+    EXPECT_EQ(0xcafe, vector[2]);
+    EXPECT_EQ(0xbabe, vector[3]);
+}
+
+TEST(BufferTest, VectorUnpackFail)
+{
+    bool caught = false;
+    e::buffer buf("\x00\x04\xde\xad\xbe\xef\xca\xfe\xba\xbe", 10);
+    e::unpacker up(buf);
+    std::vector<uint32_t> vector_bad;
+    std::vector<uint16_t> vector_good;
+
+    try
+    {
+        up >> vector_bad;
+    }
+    catch (std::out_of_range& e)
+    {
+        caught = true;
+    }
+
+    EXPECT_TRUE(caught);
+    up >> vector_good;
+    EXPECT_EQ(0xdead, vector_good[0]);
+    EXPECT_EQ(0xbeef, vector_good[1]);
+    EXPECT_EQ(0xcafe, vector_good[2]);
+    EXPECT_EQ(0xbabe, vector_good[3]);
+}
+
 } // namespace

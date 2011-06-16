@@ -336,6 +336,20 @@ class packer
             return *this;
         }
 
+        template <typename T>
+        packer& operator << (const std::vector<T>& rhs)
+        {
+            uint16_t elem = rhs.size();
+            *this << elem;
+
+            for (size_t i = 0; i < rhs.size(); ++i)
+            {
+                *this << rhs[i];
+            }
+
+            return *this;
+        }
+
     private:
         packer& operator = (const packer&);
 
@@ -363,6 +377,18 @@ class unpacker
             {
                 return m_buf.m_buf.size() - m_off;
             }
+        }
+
+        size_t offset() const
+        {
+            return m_off;
+        }
+
+    public:
+        void rewind(size_t off)
+        {
+            assert(m_off >= off);
+            m_off = off;
         }
 
     public:
@@ -458,6 +484,32 @@ class unpacker
             b.m_buf.resize(sz);
             memmove(b.mget(), m_buf.cget() + m_off, sz);
             m_off += sz;
+            return *this;
+        }
+
+        template <typename T>
+        unpacker& operator >> (std::vector<T>& rhs)
+        {
+            size_t off = this->offset();
+
+            try
+            {
+                uint16_t cols;
+                *this >> cols;
+
+                for (uint16_t i = 0; i < cols; ++i)
+                {
+                    T tmp;
+                    *this >> tmp;
+                    rhs.push_back(tmp);
+                }
+            }
+            catch (std::out_of_range& e)
+            {
+                rewind(off);
+                throw e;
+            }
+
             return *this;
         }
 
