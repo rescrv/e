@@ -29,6 +29,7 @@
 #define e_buffer_h_
 
 // C
+#include <cassert>
 #include <stdint.h>
 #include <string.h>
 
