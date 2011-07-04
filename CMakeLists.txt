@@ -50,6 +50,7 @@ set(e_headers
     include/e/hazard_ptrs.h
     include/e/intrusive_ptr.h
     include/e/lockfree_fifo.h
+    include/e/map.h
     include/e/set.h
     include/e/striped_lock.h
     include/e/timer.h
