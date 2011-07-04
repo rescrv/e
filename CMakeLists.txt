@@ -34,6 +34,7 @@ set(CMAKE_CXX_FLAGS "${e_wanal} ${CMAKE_CXX_FLAGS}")
 
 # Set the test sources
 set(e_test_srcs
+    test/bit_stealing.cc
     test/bitfield.cc
     test/buffer.cc
     test/convert.cc
@@ -43,6 +44,7 @@ set(e_test_srcs
 
 # Installed headers
 set(e_headers
+    include/e/bit_stealing.h
     include/e/bitfield.h
     include/e/buffer.h
     include/e/convert.h
