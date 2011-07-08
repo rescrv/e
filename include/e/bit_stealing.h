@@ -85,6 +85,15 @@ unset(T*& t, size_t i)
     get(t) &= ~(1 << i);
 }
 
+template <typename T>
+bool
+get(T*& t, size_t i)
+{
+    assert(sizeof(T*) == sizeof(uint64_t));
+    assert(i < 16);
+    return (get(t) & (1 << i)) > 0;
+}
+
 } // namespace bit_stealing
 } // namespace e
 
