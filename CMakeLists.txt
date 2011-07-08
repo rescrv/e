@@ -52,6 +52,8 @@ set(e_headers
     include/e/hazard_ptrs.h
     include/e/intrusive_ptr.h
     include/e/lockfree_fifo.h
+    include/e/lockfree_hash_map.h
+    include/e/lockfree_hash_set.h
     include/e/map.h
     include/e/set.h
     include/e/striped_lock.h
@@ -68,6 +70,16 @@ ENABLE_TESTING()
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/benchmarks)
 add_executable(benchmarks/lockfree_fifo benchmarks/lockfree_fifo.cc)
 target_link_libraries(benchmarks/lockfree_fifo
+    pthread
+)
+
+add_executable(benchmarks/lockfree_hash_map benchmarks/lockfree_hash_map.cc)
+target_link_libraries(benchmarks/lockfree_hash_map
+    pthread
+)
+
+add_executable(benchmarks/lockfree_hash_set benchmarks/lockfree_hash_set.cc)
+target_link_libraries(benchmarks/lockfree_hash_set
     pthread
 )
 
