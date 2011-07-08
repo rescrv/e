@@ -33,6 +33,7 @@
 #endif
 
 // C
+#include <cassert>
 #include <stdint.h>
 
 // On current 64-bit x86 chips, only the 48 lower-order bits are used for
