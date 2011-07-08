@@ -42,7 +42,7 @@ template <typename K, typename V, uint64_t (*H)(const K&)>
 class lockfree_hash_map
 {
     public:
-        lockfree_hash_map();
+        lockfree_hash_map(uint16_t magnitude = 5);
         ~lockfree_hash_map() throw ();
 
     public:
@@ -107,7 +107,7 @@ class lockfree_hash_map
 };
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
-lockfree_hash_map<K, V, H> :: lockfree_hash_map()
+lockfree_hash_map<K, V, H> :: lockfree_hash_map(uint16_t magnitude)
     : m_table_hazards()
     , m_node_hazards()
     , m_cur_table()
@@ -116,10 +116,10 @@ lockfree_hash_map<K, V, H> :: lockfree_hash_map()
 {
     node* valid_empty = NULL;
     e::bit_stealing::set(valid_empty, VALID);
-    e::bit_stealing::get(valid_empty) |= 5;
-    m_cur_table = new std::vector<node*>(32, valid_empty);
-    e::bit_stealing::get(m_cur_table) |= 5;
-    e::bit_stealing::get(m_new_table) |= 6;
+    e::bit_stealing::get(valid_empty) |= magnitude;
+    m_cur_table = new std::vector<node*>((1 << magnitude), valid_empty);
+    e::bit_stealing::get(m_cur_table) |= magnitude;
+    e::bit_stealing::get(m_new_table) |= magnitude + 1;
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
