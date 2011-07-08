@@ -116,6 +116,7 @@ lockfree_hash_map<K, V, H> :: lockfree_hash_map()
 {
     node* valid_empty = NULL;
     e::bit_stealing::set(valid_empty, VALID);
+    e::bit_stealing::get(valid_empty) |= 5;
     m_cur_table = new std::vector<node*>(32, valid_empty);
     e::bit_stealing::get(m_cur_table) |= 5;
     e::bit_stealing::get(m_new_table) |= 6;
@@ -375,10 +376,11 @@ lockfree_hash_map<K, V, H> :: find(const node_hazard_ptr& nhptr,
                                    std::vector<node*>* table, uint64_t hash,
                                    const K& key, node*** prev, node** cur)
 {
+    const uint16_t tag = e::bit_stealing::get(table) & 0xff;
     table = e::bit_stealing::strip(table);
     const uint64_t mask = table->size() - 1;
     const uint64_t offset = hash & mask;
-    // XXX NOCOMMIT CHECK TAG
+    assert(table->size() == static_cast<size_t>(1 << tag));
 
     while (true)
     {
@@ -407,9 +409,19 @@ lockfree_hash_map<K, V, H> :: find(const node_hazard_ptr& nhptr,
 
             if (cur_stripped == NULL)
             {
-                return NOTEXIST;
+                uint16_t cur_tag = e::bit_stealing::get(*cur) & 0xff;
+
+                if (cur_tag >= tag)
+                {
+                    return NOTEXIST;
+                }
+                else
+                {
+                    return RESIZE;
+                }
             }
 
+            assert((e::bit_stealing::get(*cur) & 0xff) == 0);
             node* next = cur_stripped->next;
             bool cmark = e::bit_stealing::get(next, DELETED);
             nhptr->set(0, e::bit_stealing::strip(next));
