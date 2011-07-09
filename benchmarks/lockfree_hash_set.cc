@@ -55,18 +55,18 @@ static uint64_t ops;
 static uint64_t workunit;
 static uint64_t done;
 static uint64_t modulus;
-static e::lockfree_hash_set<uint64_t, id> hash_set;
+static uint16_t table_size;
 
 void
 usage();
 
 void
-worker_thread();
+worker_thread(e::lockfree_hash_set<uint64_t, id>* hash_set);
 
 int
 main(int argc, char* argv[])
 {
-    if (argc != 5)
+    if (argc != 6)
     {
         usage();
         return EXIT_FAILURE;
@@ -80,6 +80,7 @@ main(int argc, char* argv[])
         ops = e::convert::to_uint64_t(argv[2]);
         workunit = e::convert::to_uint64_t(argv[3]);
         modulus = e::convert::to_uint64_t(argv[4]);
+        table_size = e::convert::to_uint16_t(argv[5]);
         done = 0;
     }
     catch (std::domain_error& e)
@@ -95,6 +96,8 @@ main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    e::lockfree_hash_set<uint64_t, id> hash_set(table_size);
+
     std::cout << "benchmark: " << threads << " threads will perform "
               << ops << " insert/remove operations on the hash set."
               << std::endl;
@@ -103,7 +106,8 @@ main(int argc, char* argv[])
 
     for (uint16_t i = 0; i < threads; ++i)
     {
-        std::tr1::shared_ptr<po6::threads::thread> t(new po6::threads::thread(worker_thread));
+        std::tr1::shared_ptr<po6::threads::thread> t;
+        t.reset(new po6::threads::thread(std::tr1::bind(worker_thread, &hash_set)));
         workers.push_back(t);
         t->start();
     }
@@ -123,13 +127,14 @@ usage()
               << "<threads> "
               << "<ops> "
               << "<workunit> "
-              << "<modulus>"
+              << "<modulus> "
+              << "<table_size>"
               << std::endl;
     exit(EXIT_FAILURE);
 }
 
 void
-worker_thread()
+worker_thread(e::lockfree_hash_set<uint64_t, id>* hash_set)
 {
     uint64_t work = __sync_fetch_and_add(&done, workunit);
     unsigned short int seeds[3];
@@ -148,13 +153,13 @@ worker_thread()
 
         while (true)
         {
-            if (hash_set.contains(key))
+            if (hash_set->contains(key))
             {
-                hash_set.remove(key);
+                hash_set->remove(key);
             }
             else
             {
-                if (hash_set.insert(key))
+                if (hash_set->insert(key))
                 {
                     break;
                 }

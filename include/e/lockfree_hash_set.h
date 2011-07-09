@@ -38,7 +38,7 @@ template <typename K, uint64_t (*H)(const K&)>
 class lockfree_hash_set
 {
     public:
-        lockfree_hash_set();
+        lockfree_hash_set(uint16_t magnitude = 5);
         ~lockfree_hash_set() throw ();
 
     public:
@@ -60,8 +60,8 @@ class lockfree_hash_set
 };
 
 template <typename K, uint64_t (*H)(const K&)>
-lockfree_hash_set<K, H> :: lockfree_hash_set()
-    : m_map()
+lockfree_hash_set<K, H> :: lockfree_hash_set(uint16_t magnitude)
+    : m_map(magnitude)
 {
 }
 
