@@ -54,8 +54,6 @@ set(e_headers
     include/e/lockfree_fifo.h
     include/e/lockfree_hash_map.h
     include/e/lockfree_hash_set.h
-    include/e/map.h
-    include/e/set.h
     include/e/striped_lock.h
     include/e/timer.h
     include/e/tuple_compare.h
