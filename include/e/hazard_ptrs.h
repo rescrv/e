@@ -32,6 +32,7 @@
 #include <cassert>
 
 // STL
+#include <memory>
 #include <set>
 
 // e
