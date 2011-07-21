@@ -50,6 +50,9 @@
 // po6
 #include <po6/io/fd.h>
 
+// e
+#include <e/guard.h>
+
 namespace e
 {
 
@@ -263,6 +266,7 @@ class buffer
     private:
         friend class packer;
         friend class unpacker;
+        friend size_t read(po6::io::fd*, buffer*, size_t);
 
     private:
         // Get a mutable reference to the buffer.
@@ -535,11 +539,14 @@ buffer :: unpack()
 }
 
 inline size_t
-read(po6::io::fd* fd, buffer* buf, size_t size)
+read(po6::io::fd* fd, buffer* buf, size_t amt)
 {
-    std::vector<uint8_t> tmp(size, '\0');
-    size_t ret = fd->read(&tmp.front(), size);
-    *buf += buffer(&tmp.front(), ret);
+    size_t oldsize = buf->m_buf.size();
+    buf->m_buf.resize(oldsize + amt);
+    e::guard g = makeobjguard(buf->m_buf, &std::vector<uint8_t>::resize, oldsize, 0);
+    size_t ret = fd->read(&buf->m_buf.front() + oldsize, amt);
+    buf->m_buf.resize(oldsize + ret);
+    g.dismiss();
     return ret;
 }
 
