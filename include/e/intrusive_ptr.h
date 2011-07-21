@@ -58,6 +58,13 @@ namespace e
 //    assume that this convention is adhered to.
 
 template <typename T>
+class intrusive_ptr;
+
+template <typename T>
+std::ostream&
+operator << (std::ostream& lhs, const intrusive_ptr<T>& rhs);
+
+template <typename T>
 class intrusive_ptr
 {
     public:
@@ -158,6 +165,9 @@ class intrusive_ptr
         }
 
     private:
+        friend std::ostream& operator << <>(std::ostream& lhs, const intrusive_ptr<T>& rhs);
+
+    private:
         void inc() const throw ()
         {
             if (m_ptr)
@@ -181,6 +191,14 @@ class intrusive_ptr
     private:
         T* m_ptr;
 };
+
+template <typename T>
+inline std::ostream&
+operator << (std::ostream& lhs, const intrusive_ptr<T>& rhs)
+{
+    lhs << rhs.m_ptr;
+    return lhs;
+}
 
 } // namespace e
 
