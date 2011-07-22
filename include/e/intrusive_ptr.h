@@ -31,6 +31,9 @@
 // C
 #include <cstddef>
 
+// C++
+#include <iostream>
+
 namespace e
 {
 
