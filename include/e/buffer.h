@@ -252,6 +252,22 @@ class buffer
             return false;
         }
 
+        bool operator > (const buffer& rhs) const
+        {
+            const buffer& lhs(*this);
+
+            if (lhs.m_buf.size() > rhs.m_buf.size())
+            {
+                return true;
+            }
+            else if (lhs.m_buf.size() == rhs.m_buf.size())
+            {
+                return memcmp(lhs.get(), rhs.get(), lhs.size()) > 0;
+            }
+
+            return false;
+        }
+
         bool operator != (const buffer& rhs) const { return !(*this == rhs); }
 
         buffer& operator += (const buffer& rhs)
