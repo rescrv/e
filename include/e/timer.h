@@ -99,6 +99,51 @@ sleep_ms(long ms)
     sleep_ms(0, ms);
 }
 
+class stopwatch
+{
+    public:
+        stopwatch() {}
+        ~stopwatch() throw () {}
+
+    public:
+        void start() { reset(); }
+        void reset()
+        {
+            if (clock_gettime(CLOCK_REALTIME, &m_start) < 0)
+            {
+                throw po6::error(errno);
+            }
+        }
+
+        uint64_t peek()
+        {
+            timespec end;
+
+            if (clock_gettime(CLOCK_REALTIME, &end) < 0)
+            {
+                throw po6::error(errno);
+            }
+
+            timespec diff;
+
+            if ((end.tv_nsec < m_start.tv_nsec) < 0)
+            {
+                diff.tv_sec = end.tv_sec - m_start.tv_sec - 1;
+                diff.tv_nsec = 1000000000 + end.tv_nsec - m_start.tv_nsec;
+            }
+            else
+            {
+                diff.tv_sec = end.tv_sec - m_start.tv_sec;
+                diff.tv_nsec = end.tv_nsec - m_start.tv_nsec;
+            }
+
+            return diff.tv_sec * 1000000000 + diff.tv_nsec;
+        }
+
+    private:
+        timespec m_start;
+};
+
 } // namespace e
 
 #endif // e_buffer_h_
