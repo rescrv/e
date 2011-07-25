@@ -418,6 +418,11 @@ lockfree_hash_map<K, V, H> :: find(const node_hazard_ptr& nhptr,
             assert(e::bit_stealing::get(*cur, VALID));
             node* cur_stripped = e::bit_stealing::strip(*cur);
 
+            if (e::bit_stealing::get(*cur, DELETED))
+            {
+                break;
+            }
+
             if (cur_stripped == NULL)
             {
                 uint16_t cur_tag = e::bit_stealing::get(*cur) & 0xff;
