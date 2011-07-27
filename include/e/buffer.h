@@ -400,6 +400,13 @@ class unpacker
             }
         }
 
+        void leftovers(e::buffer* buf) const
+        {
+            size_t rem = remain();
+            buf->m_buf.resize(rem);
+            memmove(buf->mget(), m_buf.cget() + m_off, rem);
+        }
+
         size_t offset() const
         {
             return m_off;
