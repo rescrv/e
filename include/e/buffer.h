@@ -283,6 +283,7 @@ class buffer
         friend class packer;
         friend class unpacker;
         friend size_t read(po6::io::fd*, buffer*, size_t);
+        friend size_t xread(po6::io::fd*, buffer*, size_t);
 
     private:
         // Get a mutable reference to the buffer.
@@ -571,6 +572,14 @@ read(po6::io::fd* fd, buffer* buf, size_t amt)
     buf->m_buf.resize(oldsize + ret);
     g.dismiss();
     return ret;
+}
+
+inline size_t
+xread(po6::io::fd* fd, buffer* buf, size_t amt)
+{
+    size_t oldsize = buf->m_buf.size();
+    buf->m_buf.resize(oldsize + amt);
+    return fd->xread(&buf->m_buf.front() + oldsize, amt);
 }
 
 } // namespace e
