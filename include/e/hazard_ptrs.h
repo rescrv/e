@@ -41,7 +41,7 @@
 namespace e
 {
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S = char>
 class hazard_ptrs
 {
     public:
@@ -68,8 +68,8 @@ class hazard_ptrs
         size_t m_num_recs;
 };
 
-template <typename T, size_t P>
-class hazard_ptrs<T, P> :: hazard_ptr
+template <typename T, size_t P, typename S>
+class hazard_ptrs<T, P, S> :: hazard_ptr
 {
     public:
         ~hazard_ptr() throw ();
@@ -77,9 +77,10 @@ class hazard_ptrs<T, P> :: hazard_ptr
     public:
         void set(size_t ptr_num, T* ptr);
         void retire(T* ptr);
+        S& state() { return m_rec->state; }
 
     private:
-        friend class hazard_ptrs<T, P>;
+        friend class hazard_ptrs<T, P, S>;
 
     private:
         hazard_ptr(hazard_rec* rec);
@@ -92,8 +93,8 @@ class hazard_ptrs<T, P> :: hazard_ptr
         hazard_rec* m_rec;
 };
 
-template <typename T, size_t P>
-class hazard_ptrs<T, P> :: hazard_rec
+template <typename T, size_t P, typename S>
+class hazard_ptrs<T, P, S> :: hazard_rec
 {
     public:
         ~hazard_rec() throw ();
@@ -107,9 +108,10 @@ class hazard_ptrs<T, P> :: hazard_rec
         const T* ptrs[P];
         size_t rcount;
         std::vector<const T*> rlist;
+        S state;
 
     private:
-        friend class hazard_ptrs<T, P>;
+        friend class hazard_ptrs<T, P, S>;
 
     private:
         hazard_rec(hazard_ptrs& parent);
@@ -122,17 +124,17 @@ class hazard_ptrs<T, P> :: hazard_rec
         hazard_ptrs& m_parent;
 };
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S>
 inline
-hazard_ptrs<T, P> :: hazard_ptrs()
+hazard_ptrs<T, P, S> :: hazard_ptrs()
     : m_recs(NULL)
     , m_num_recs(0)
 {
 }
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S>
 inline
-hazard_ptrs<T, P> :: ~hazard_ptrs() throw ()
+hazard_ptrs<T, P, S> :: ~hazard_ptrs() throw ()
 {
     m_num_recs = 0;
 
@@ -148,9 +150,9 @@ hazard_ptrs<T, P> :: ~hazard_ptrs() throw ()
     }
 }
 
-template <typename T, size_t P>
-inline std::auto_ptr<typename e::hazard_ptrs<T, P>::hazard_ptr>
-hazard_ptrs<T, P> :: get()
+template <typename T, size_t P, typename S>
+inline std::auto_ptr<typename e::hazard_ptrs<T, P, S>::hazard_ptr>
+hazard_ptrs<T, P, S> :: get()
 {
     // XXX if we fail to allocate the new hazard_ptr, we will have a permanently
     // locked hazard_rec.  __sync_lock_release doesn't play well with e::guard
@@ -185,9 +187,9 @@ hazard_ptrs<T, P> :: get()
     return ret;
 }
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S>
 inline
-hazard_ptrs<T, P> :: hazard_ptr :: ~hazard_ptr() throw ()
+hazard_ptrs<T, P, S> :: hazard_ptr :: ~hazard_ptr() throw ()
 {
     for (size_t i = 0; i < P; ++i)
     {
@@ -197,17 +199,17 @@ hazard_ptrs<T, P> :: hazard_ptr :: ~hazard_ptr() throw ()
     __sync_lock_release(&m_rec->taslock);
 }
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S>
 inline void
-hazard_ptrs<T, P> :: hazard_ptr :: set(size_t ptr_num, T* ptr)
+hazard_ptrs<T, P, S> :: hazard_ptr :: set(size_t ptr_num, T* ptr)
 {
     m_rec->ptrs[ptr_num] = ptr;
     __sync_synchronize();
 }
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S>
 inline void
-hazard_ptrs<T, P> :: hazard_ptr :: retire(T* ptr)
+hazard_ptrs<T, P, S> :: hazard_ptr :: retire(T* ptr)
 {
     size_t i;
 
@@ -233,19 +235,20 @@ hazard_ptrs<T, P> :: hazard_ptr :: retire(T* ptr)
     }
 }
 
-template <typename T, size_t P>
-hazard_ptrs<T, P> :: hazard_ptr :: hazard_ptr(hazard_rec* rec)
+template <typename T, size_t P, typename S>
+hazard_ptrs<T, P, S> :: hazard_ptr :: hazard_ptr(hazard_rec* rec)
     : m_rec(rec)
 {
 }
 
-template <typename T, size_t P>
-hazard_ptrs<T, P> :: hazard_rec :: hazard_rec(hazard_ptrs& parent)
+template <typename T, size_t P, typename S>
+hazard_ptrs<T, P, S> :: hazard_rec :: hazard_rec(hazard_ptrs& parent)
     : taslock(0)
     , next(NULL)
     , ptrs()
     , rcount(0)
     , rlist()
+    , state()
     , m_parent(parent)
 {
     for (size_t i = 0; i < P; ++i)
@@ -254,14 +257,14 @@ hazard_ptrs<T, P> :: hazard_rec :: hazard_rec(hazard_ptrs& parent)
     }
 }
 
-template <typename T, size_t P>
-hazard_ptrs<T, P> :: hazard_rec :: ~hazard_rec() throw ()
+template <typename T, size_t P, typename S>
+hazard_ptrs<T, P, S> :: hazard_rec :: ~hazard_rec() throw ()
 {
 }
 
-template <typename T, size_t P>
+template <typename T, size_t P, typename S>
 void
-hazard_ptrs<T, P> :: hazard_rec :: scan()
+hazard_ptrs<T, P, S> :: hazard_rec :: scan()
 {
     hazard_rec* rec = m_parent.m_recs;
     std::set<const T*> hazardous;
