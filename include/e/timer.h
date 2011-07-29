@@ -115,6 +115,18 @@ class stopwatch
             }
         }
 
+        uint64_t resolution()
+        {
+            timespec res;
+
+            if (clock_getres(CLOCK_REALTIME, &res) < 0)
+            {
+                throw po6::error(errno);
+            }
+
+            return res.tv_sec * 1000000000 + res.tv_nsec;
+        }
+
         uint64_t peek()
         {
             timespec end;
