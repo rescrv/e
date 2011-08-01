@@ -48,6 +48,10 @@ class foo
         friend class e::intrusive_ptr<foo>;
 
     private:
+        void inc() { __sync_add_and_fetch(&m_ref, 1); }
+        void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
+
+    private:
         size_t m_ref;
 };
 
@@ -73,6 +77,10 @@ class ctordtor
         {
             m_dtor = true;
         }
+
+    public:
+        void inc() { __sync_add_and_fetch(&m_ref, 1); }
+        void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
 
     public:
         size_t m_ref;
@@ -130,6 +138,10 @@ class accessing
         accessing(int _a, double _b, char _c) : m_ref(0), a(_a), b(_b), c(_c) {}
 
     public:
+        void inc() { __sync_add_and_fetch(&m_ref, 1); }
+        void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
+
+    public:
         size_t m_ref;
         int a;
         double b;
@@ -151,6 +163,10 @@ class assignment
 {
     public:
         assignment() : m_ref(0) {}
+
+    public:
+        void inc() { __sync_add_and_fetch(&m_ref, 1); }
+        void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
 
     public:
         size_t m_ref;
@@ -203,8 +219,10 @@ TEST(IntrusivePtr, Compare)
 
 struct node
 {
-    node() : m_ref(0), next() {}
-    size_t m_ref;
+    node() : ref(0), next() {}
+    void inc() { __sync_add_and_fetch(&ref, 1); }
+    void dec() { if (__sync_sub_and_fetch(&ref, 1) == 0) delete this; }
+    size_t ref;
     e::intrusive_ptr<node> next;
 };
 

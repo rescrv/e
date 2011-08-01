@@ -38,8 +38,9 @@ namespace e
 {
 
 // A reference-counted pointer which stores the reference count inside the
-// pointer.  This requires you to have a variable "size_t m_ref" which is a
-// member of type T.  This variable should be initialized to 0
+// pointer.  This requires you to have "void inc()" and "void dec()" functions
+// which increment and decrement the reference count.  If the reference count
+// is decremented to 0, the object should delete itself.
 //
 // It is the explicit goal of this implementation to enable copies of the
 // intrusive pointer to be created and destroyed without requiring any
@@ -49,8 +50,9 @@ namespace e
 // synchronization.
 //
 // Usage tips for maximum safety:
-//  - m_ref must be initialized to 0.
-//  - intrusive_ptr<T> must be a friend of T if m_ref is not public.
+//  - The reference count should start at 0 as it will be incremented.
+//  - intrusive_ptr<T> must be a friend of T, or at least be able to call
+//    inc/dec.
 //  - Only use the intrusive_ptr<T>(T*) constructor for the initial
 //    intrusive_ptr.  All copies thereafter should come from the copy
 //    constructor and assignment operators.
@@ -79,30 +81,48 @@ class intrusive_ptr
         intrusive_ptr(T* ptr) throw ()
             : m_ptr(ptr)
         {
-            inc();
+            if (m_ptr)
+            {
+                m_ptr->inc();
+            }
         }
 
         intrusive_ptr(const intrusive_ptr<T>& rhs) throw ()
             : m_ptr(rhs.m_ptr)
         {
-            inc();
+            if (m_ptr)
+            {
+                m_ptr->inc();
+            }
         }
 
         ~intrusive_ptr() throw ()
         {
-            dec();
+            if (m_ptr)
+            {
+                m_ptr->dec();
+            }
         }
 
     public:
         intrusive_ptr<T>&
         operator = (const intrusive_ptr<T>& rhs) throw ()
         {
-            intrusive_ptr<T> tmp(*this);
-
-            if (this->m_ptr != rhs.m_ptr)
+            if (m_ptr != rhs.m_ptr)
             {
-                this->dec();
-                rhs.inc();
+                if (rhs.m_ptr)
+                {
+                    rhs->inc();
+                }
+
+                T* tmp = m_ptr;
+                m_ptr = rhs.m_ptr;
+
+                if (tmp)
+                {
+                    tmp->dec();
+                }
+
                 this->m_ptr = rhs.m_ptr;
             }
 
@@ -169,27 +189,6 @@ class intrusive_ptr
 
     private:
         friend std::ostream& operator << <>(std::ostream& lhs, const intrusive_ptr<T>& rhs);
-
-    private:
-        void inc() const throw ()
-        {
-            if (m_ptr)
-            {
-                __sync_add_and_fetch(&(m_ptr->m_ref), 1);
-            }
-        }
-
-        void dec() throw ()
-        {
-            if (m_ptr)
-            {
-                if (__sync_add_and_fetch(&(m_ptr->m_ref), -1) == 0)
-                {
-                    delete m_ptr;
-                    m_ptr = NULL;
-                }
-            }
-        }
 
     private:
         T* m_ptr;
