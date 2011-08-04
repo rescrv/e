@@ -466,7 +466,7 @@ lockfree_hash_map<K, V, H> :: find(const node_hazard_ptr& nhptr,
 
             if (!cmark)
             {
-                if (hash >= chash)
+                if ((hash == chash && key >= ckey) || hash > chash)
                 {
                     return ckey == key ? EXIST : NOTEXIST;
                 }
