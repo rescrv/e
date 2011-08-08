@@ -40,6 +40,7 @@ set(e_test_srcs
     test/convert.cc
     test/guard.cc
     test/intrusive_ptr.cc
+    test/profiler.cc
 )
 
 # Installed headers
@@ -55,6 +56,7 @@ set(e_headers
     include/e/lockfree_hash_map.h
     include/e/lockfree_hash_set.h
     include/e/locking_fifo.h
+    include/e/profiler.h
     include/e/striped_lock.h
     include/e/timer.h
     include/e/tuple_compare.h
@@ -86,6 +88,7 @@ add_executable(testrunner test/runner.cc ${e_test_srcs})
 target_link_libraries(testrunner
     pthread
     gtest
+    rt
 )
 
 add_test(ConvertTest.Uint64NormalCases testrunner
