@@ -103,7 +103,7 @@ sleep_ms(long ms)
 class stopwatch
 {
     public:
-        stopwatch() {}
+        stopwatch() : m_start() {}
         ~stopwatch() throw () {}
 
     public:
