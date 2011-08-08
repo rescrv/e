@@ -29,6 +29,7 @@
 #define e_timer_h_
 
 // POSIX
+#include <errno.h>
 #include <time.h>
 
 // STL
