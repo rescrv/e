@@ -44,6 +44,7 @@ class bitfield
 {
     public:
         bitfield(uint32_t n);
+        bitfield(uint32_t n, bool set);
         bitfield(const bitfield& other);
         ~bitfield() throw ();
 
@@ -70,6 +71,13 @@ inline
 bitfield :: bitfield(uint32_t n)
     : m_num_bits(n)
     , m_bits(bytes())
+{
+}
+
+inline
+bitfield :: bitfield(uint32_t n, bool def)
+    : m_num_bits(n)
+    , m_bits(bytes(), def ? -1: 0)
 {
 }
 
