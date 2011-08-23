@@ -1,5 +1,4 @@
-noinst_bin_PROGRAMS = lockfree_fifo lockfree_hash_map lockfree_hash_set
-noinst_bindir = $(top_builddir)/benchmarks
+noinst_PROGRAMS = lockfree_fifo lockfree_hash_map lockfree_hash_set
 
 lockfree_fifo_SOURCES = lockfree_fifo.cc
 lockfree_fifo_LDFLAGS = -lpthread
