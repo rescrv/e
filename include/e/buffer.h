@@ -139,6 +139,12 @@ class buffer
             memmove(this->mget(), buf, sz);
         }
 
+        buffer(const std::string& str)
+            : m_buf(str.size())
+        {
+            memmove(this->mget(), str.c_str(), str.size());
+        }
+
         buffer(const void* buf, size_t sz)
             : m_buf(sz)
         {
