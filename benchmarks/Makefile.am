@@ -1,3 +1,4 @@
+CPPFLAGS = -I../include
 noinst_PROGRAMS = lockfree_fifo lockfree_hash_map lockfree_hash_set
 
 lockfree_fifo_SOURCES = lockfree_fifo.cc
