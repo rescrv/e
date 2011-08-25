@@ -100,7 +100,8 @@ main(int argc, char* argv[])
     e::lockfree_hash_map<uint64_t, uint64_t, id> hash_map(table_size);
 
     std::cout << "benchmark: " << threads << " threads will perform "
-              << ops << " insert/remove operations on the hash map."
+              << ops << " insert/remove operations on a hash map of size "
+              << table_size << " with keys taken modulo " << modulus << "."
               << std::endl;
 
     std::vector<std::tr1::shared_ptr<po6::threads::thread> > workers;

@@ -99,7 +99,8 @@ main(int argc, char* argv[])
     e::lockfree_hash_set<uint64_t, id> hash_set(table_size);
 
     std::cout << "benchmark: " << threads << " threads will perform "
-              << ops << " insert/remove operations on the hash set."
+              << ops << " insert/remove operations on a hash set of size "
+              << table_size << " with keys taken modulo " << modulus << "."
               << std::endl;
 
     std::vector<std::tr1::shared_ptr<po6::threads::thread> > workers;

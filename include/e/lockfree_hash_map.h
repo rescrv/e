@@ -214,6 +214,7 @@ lockfree_hash_map<K, V, H> :: remove(const K& k)
 
         // Mark it as deleted.
         e::bit_stealing::set(next_new, DELETED);
+        e::bit_stealing::set(next_new, VALID);
 
         if (!cas(&e::bit_stealing::strip(cur)->next, next_old, next_new))
         {
@@ -279,6 +280,12 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
         while (true)
         {
             assert(e::bit_stealing::get(*cur, VALID));
+
+            if (e::bit_stealing::get(*cur, DELETED))
+            {
+                break;
+            }
+
             node* cur_stripped = e::bit_stealing::strip(*cur);
 
             if (cur_stripped == NULL)
