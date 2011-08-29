@@ -390,6 +390,11 @@ template <typename N, size_t NS>
 typename locking_iterable_fifo<N, NS>::iterator&
 locking_iterable_fifo<N, NS> :: iterator :: operator = (const iterator& other)
 {
+    if (this == &other)
+    {
+        return;
+    }
+
     m_lif->release(m_node);
     m_valid = other.m_valid;
     m_pos = other.m_pos;
