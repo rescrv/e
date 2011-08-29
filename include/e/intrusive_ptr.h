@@ -105,6 +105,13 @@ class intrusive_ptr
         }
 
     public:
+        T*
+        get() throw ()
+        {
+            return m_ptr;
+        }
+
+    public:
         intrusive_ptr<T>&
         operator = (const intrusive_ptr<T>& rhs) throw ()
         {
