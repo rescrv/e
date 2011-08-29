@@ -383,7 +383,7 @@ template <typename N, size_t NS>
 N*
 locking_iterable_fifo<N, NS> :: iterator :: operator -> () const throw()
 {
-    return m_node->m_vals[m_pos];
+    return &m_node->m_vals[m_pos];
 }
 
 template <typename N, size_t NS>
