@@ -392,7 +392,7 @@ locking_iterable_fifo<N, NS> :: iterator :: operator = (const iterator& other)
 {
     if (this == &other)
     {
-        return;
+        return *this;
     }
 
     m_lif->release(m_node);
