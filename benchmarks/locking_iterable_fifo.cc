@@ -48,7 +48,7 @@
 
 static bool done = false;
 static uint64_t ops = 0;
-static e::locking_iterable_fifo<uint64_t, 10000> fifo;
+static e::locking_iterable_fifo<uint64_t> fifo;
 
 void
 usage();
@@ -132,7 +132,7 @@ usage()
 void
 worker_thread(po6::threads::barrier* bar)
 {
-    e::locking_iterable_fifo<uint64_t, 10000>::iterator it = fifo.iterate();
+    e::locking_iterable_fifo<uint64_t>::iterator it = fifo.iterate();
     bar->wait();
 
     for (uint64_t i = 0; i < ops; ++i)

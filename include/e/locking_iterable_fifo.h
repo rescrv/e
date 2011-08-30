@@ -55,7 +55,7 @@ namespace e
 // - It is up to the caller to provide synchronization across different calls
 //   dealing with the oldest item.
 
-template <typename N, size_t NS = 64>
+template <typename N>
 class locking_iterable_fifo
 {
     public:
@@ -82,8 +82,7 @@ class locking_iterable_fifo
         locking_iterable_fifo& operator = (const locking_iterable_fifo&);
 
     private:
-        void add_new_node();
-        void step_node(node** pos);
+        void step_list(node** pos);
         void release(node* pos);
 
     private:
@@ -94,8 +93,8 @@ class locking_iterable_fifo
         node* m_tail;
 };
 
-template <typename N, size_t NS>
-class locking_iterable_fifo<N, NS> :: iterator
+template <typename N>
+class locking_iterable_fifo<N> :: iterator
 {
     public:
         iterator(const iterator&);
@@ -111,23 +110,23 @@ class locking_iterable_fifo<N, NS> :: iterator
         iterator& operator = (const iterator&);
 
     private:
-        friend class locking_iterable_fifo<N, NS>;
+        friend class locking_iterable_fifo<N>;
 
     private:
-        iterator(size_t pos, locking_iterable_fifo<N, NS>* lif, locking_iterable_fifo<N, NS>::node* node);
+        iterator(locking_iterable_fifo<N>* lif, locking_iterable_fifo<N>::node* node);
 
     private:
+        locking_iterable_fifo* m_l;
+        locking_iterable_fifo::node* m_n;
         bool m_valid;
-        size_t m_pos;
-        locking_iterable_fifo<N, NS>* m_lif;
-        locking_iterable_fifo<N, NS>::node* m_node;
 };
 
-template <typename N, size_t NS>
-class locking_iterable_fifo<N, NS> :: node
+template <typename N>
+class locking_iterable_fifo<N> :: node
 {
     public:
         node();
+        node(const N& val);
         ~node() throw ();
 
     public:
@@ -135,7 +134,7 @@ class locking_iterable_fifo<N, NS> :: node
         int dec() { return __sync_sub_and_fetch(&m_ref, 1); }
 
     private:
-        friend class locking_iterable_fifo<N, NS>;
+        friend class locking_iterable_fifo<N>;
 
     private:
         node(const node&);
@@ -144,81 +143,123 @@ class locking_iterable_fifo<N, NS> :: node
         node& operator = (const node&);
 
     private:
-        size_t m_ref; // Atomically modified
-        node* m_next; // Protected by m_tail_lock
-        N m_vals[NS]; // Protected by m_tail_lock
-        size_t m_stored; // Protected by m_tail_lock
-        size_t m_removed; // Protected by m_head_lock
+        int m_ref;
+        node* m_next;
+        bool m_real;
+        bool m_gone;
+        N m_val;
 };
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: locking_iterable_fifo()
+template <typename N>
+locking_iterable_fifo<N> :: locking_iterable_fifo()
     : m_head_lock()
     , m_tail_lock()
     , m_head(NULL)
     , m_tail(NULL)
 {
-    std::auto_ptr<node> newnode(new node());
-    int ref = newnode->inc();
+    m_head = m_tail = new node();
+    int ref = m_head->inc();
     assert(ref == 1);
-    m_tail = m_head = newnode.get();
-    newnode.release();
 }
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: ~locking_iterable_fifo() throw()
+template <typename N>
+locking_iterable_fifo<N> :: ~locking_iterable_fifo() throw()
 {
     release(m_head);
 }
 
-template <typename N, size_t NS>
-typename locking_iterable_fifo<N, NS>::iterator
-locking_iterable_fifo<N, NS> :: iterate()
+template <typename N>
+typename locking_iterable_fifo<N>::iterator
+locking_iterable_fifo<N> :: iterate()
 {
     po6::threads::spinlock::hold hold_hd(&m_head_lock);
-    iterator i(m_head->m_removed, this, m_head);
+    m_head->inc();
+    iterator i(this, m_head);
     return i;
 }
 
-template <typename N, size_t NS>
+template <typename N>
 bool
-locking_iterable_fifo<N, NS> :: empty()
-{
-    po6::threads::spinlock::hold hold_hd(&m_head_lock);
-    po6::threads::spinlock::hold hold_tl(&m_tail_lock);
-    return m_head->m_removed == m_head->m_stored;
-}
-
-template <typename N, size_t NS>
-N&
-locking_iterable_fifo<N, NS> :: oldest()
+locking_iterable_fifo<N> :: empty()
 {
     po6::threads::spinlock::hold hold(&m_head_lock);
-    return m_head->m_vals[m_head->m_removed];
+    return !m_head->m_gone && m_head->m_real;
 }
 
-template <typename N, size_t NS>
-void
-locking_iterable_fifo<N, NS> :: append(const N& n)
+template <typename N>
+N&
+locking_iterable_fifo<N> :: oldest()
 {
-    po6::threads::spinlock::hold hold(&m_tail_lock);
+    po6::threads::spinlock::hold hold(&m_head_lock);
 
-    if (m_tail->m_stored >= NS)
+    if (!m_head->m_real && m_head->m_next)
     {
-        add_new_node();
+        return m_head->m_next->m_val;
     }
-
-    m_tail->m_vals[m_tail->m_stored] = n;
-    // We need the stored value to be visible before m_stored is.
-    __sync_synchronize;
-    ++m_tail->m_stored;
+    else
+    {
+        return m_head->m_val;
+    }
 }
 
-template <typename N, size_t NS>
+template <typename N>
 void
-locking_iterable_fifo<N, NS> :: remove_oldest()
+locking_iterable_fifo<N> :: append(const N& n)
+{
+    std::auto_ptr<node> newnode(new node(n));
+    int ref = newnode->inc();
+    assert(ref == 1);
+    po6::threads::spinlock::hold hold(&m_tail_lock);
+    m_tail->m_next = newnode.get();
+    m_tail = m_tail->m_next;
+    newnode.release();
+}
+
+template <typename N>
+void
+locking_iterable_fifo<N> :: remove_oldest()
 {
     po6::threads::spinlock::hold hold_hd(&m_head_lock);
+
+    while (m_head->m_gone || !m_head->m_real)
+    {
+        // We grab this lock as an acquire barrier.  We need to know that our
+        // value of m_next is current.  The easiest way to do so is to prevent
+        // it from changing 0->PTR after our load.
+        po6::threads::spinlock::hold hold_hd(&m_tail_lock);
+
+        if (m_head->m_next)
+        {
+            step_list(&m_head);
+        }
+        else
+        {
+            // We know for sure there is nothing to remove.
+            return;
+        }
+    }
+
+    if (m_head->m_next)
+    {
+        step_list(&m_head);
+    }
+    else
+    {
+        m_head->m_gone = true;
+    }
+}
+
+#if 0
+template <typename N>
+void
+locking_iterable_fifo<N> :: remove_oldest()
+{
+
+    if (m_head->m_next)
+    {
+        step_list(&m_head);
+    }
+
 
     assert(m_head->m_removed < NS);
     ++m_head->m_removed;
@@ -238,22 +279,11 @@ locking_iterable_fifo<N, NS> :: remove_oldest()
         step_node(&m_head);
     }
 }
+#endif
 
-template <typename N, size_t NS>
+template <typename N>
 void
-locking_iterable_fifo<N, NS> :: add_new_node()
-{
-    std::auto_ptr<node> newnode(new node());
-    int ref = newnode->inc();
-    assert(ref == 1);
-    m_tail->m_next = newnode.get();
-    m_tail = newnode.get();
-    newnode.release();
-}
-
-template <typename N, size_t NS>
-void
-locking_iterable_fifo<N, NS> :: step_node(node** pos)
+locking_iterable_fifo<N> :: step_list(node** pos)
 {
     node* cur = *pos;
     node* next = cur->m_next;
@@ -270,6 +300,7 @@ locking_iterable_fifo<N, NS> :: step_node(node** pos)
     *pos = next;
 
     ref = cur->dec();
+    assert(ref >= 0);
 
     if (ref == 0)
     {
@@ -286,158 +317,135 @@ locking_iterable_fifo<N, NS> :: step_node(node** pos)
     }
 }
 
-template <typename N, size_t NS>
+template <typename N>
 void
-locking_iterable_fifo<N, NS> :: release(node* pos)
+locking_iterable_fifo<N> :: release(node* pos)
 {
-    // XXX This way is super slow compared to what we could do.  On the other
-    // hand, it's much easier to maintain.  This implementation requires
-    // iterating iterating the whole log, which we shouldn't have to do; on the
-    // other hand, the typical usage pattern of an iterator is to iterate until
-    // the end anyway, so this is not a big concern).
+// XXX This way is super slow compared to what we could do.  On the other hand,
+// it's much easier to maintain.  This implementation requires iterating
+// iterating the whole log, which we shouldn't have to do; on the other hand,
+// the typical usage pattern of an iterator is to iterate until the end anyway,
+// so this is not a big concern).
     while (pos && pos->m_next)
     {
-        step_node(&pos);
+        step_list(&pos);
     }
 
     po6::threads::spinlock::hold hold(&m_tail_lock);
 
     while (pos)
     {
-        step_node(&pos);
+        step_list(&pos);
     }
 }
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: iterator :: iterator(const iterator& other)
-    : m_valid(other.m_valid)
-    , m_pos(other.m_pos)
-    , m_lif(other.m_lif)
-    , m_node(other.m_node)
+template <typename N>
+locking_iterable_fifo<N> :: iterator :: iterator(const iterator& other)
+    : m_l(other.m_l)
+    , m_n(other.m_n)
+    , m_valid(other.m_valid)
 {
-    if (m_node)
+    if (m_n)
     {
-        int ref = m_node->inc();
+        int ref = m_n->inc();
         assert(ref >= 2);
     }
 }
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: iterator :: ~iterator() throw ()
+template <typename N>
+locking_iterable_fifo<N> :: iterator :: ~iterator() throw ()
 {
-    m_lif->release(m_node);
+    m_l->release(m_n);
 }
 
-template <typename N, size_t NS>
+template <typename N>
 bool
-locking_iterable_fifo<N, NS> :: iterator :: valid()
+locking_iterable_fifo<N> :: iterator :: valid()
 {
-    while (!m_valid)
+    while (m_n->m_next && (!m_valid || !m_n->m_real))
     {
-        __sync_synchronize();
-
-        if (m_pos == NS)
-        {
-            if (m_node->m_next)
-            {
-                m_lif->step_node(&m_node);
-                m_pos = 0;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (m_pos == m_node->m_stored)
-            {
-                return false;
-            }
-            else
-            {
-                m_valid = true;
-            }
-        }
+        m_valid = true;
+        m_l->step_list(&m_n);
     }
 
-    return true;
+    return m_valid && m_n->m_real;
 }
 
-template <typename N, size_t NS>
+template <typename N>
 void
-locking_iterable_fifo<N, NS> :: iterator :: next()
+locking_iterable_fifo<N> :: iterator :: next()
 {
-    ++m_pos;
     m_valid = false;
 }
 
-template <typename N, size_t NS>
+template <typename N>
 N&
-locking_iterable_fifo<N, NS> :: iterator :: operator * () const throw()
+locking_iterable_fifo<N> :: iterator :: operator * () const throw()
 {
-    return m_node->m_vals[m_pos];
+    return m_n->m_val;
 }
 
-template <typename N, size_t NS>
+template <typename N>
 N*
-locking_iterable_fifo<N, NS> :: iterator :: operator -> () const throw()
+locking_iterable_fifo<N> :: iterator :: operator -> () const throw()
 {
-    return &m_node->m_vals[m_pos];
+    return &m_n->m_val;
 }
 
-template <typename N, size_t NS>
-typename locking_iterable_fifo<N, NS>::iterator&
-locking_iterable_fifo<N, NS> :: iterator :: operator = (const iterator& other)
+template <typename N>
+typename locking_iterable_fifo<N>::iterator&
+locking_iterable_fifo<N> :: iterator :: operator = (const iterator& other)
 {
     if (this == &other)
     {
         return *this;
     }
 
-    m_lif->release(m_node);
-    m_valid = other.m_valid;
-    m_pos = other.m_pos;
-    m_lif = other.m_lif;
-    m_node = other.m_node;
+    m_l->release(m_n);
+    m_l = other.m_m_l;
+    m_n = other.m_m_n;
+    m_valid = other.m_m_valid;
 
-    if (m_node)
+    if (m_n)
     {
-        int ref = m_node->inc();
+        int ref = m_n->inc();
         assert(ref >= 2);
     }
 
     return *this;
 }
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: iterator :: iterator(size_t pos,
-                                                     locking_iterable_fifo<N, NS>* lif,
-                                                     locking_iterable_fifo<N, NS>::node* node)
-    : m_valid(false)
-    , m_pos(pos)
-    , m_lif(lif)
-    , m_node(node)
+template <typename N>
+locking_iterable_fifo<N> :: iterator :: iterator(locking_iterable_fifo<N>* lif,
+                                                 locking_iterable_fifo<N>::node* node)
+    : m_l(lif)
+    , m_n(node)
+    , m_valid(true)
 {
-    if (m_node)
-    {
-        int ref = m_node->inc();
-        assert(ref >= 2);
-    }
 }
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: node :: node()
+template <typename N>
+locking_iterable_fifo<N> :: node :: node()
     : m_ref(0)
     , m_next(NULL)
-    , m_vals()
-    , m_stored(0)
-    , m_removed(0)
+    , m_real(false)
+    , m_gone(false)
+    , m_val()
 {
 }
 
-template <typename N, size_t NS>
-locking_iterable_fifo<N, NS> :: node :: ~node() throw ()
+template <typename N>
+locking_iterable_fifo<N> :: node :: node(const N& n)
+    : m_ref(0)
+    , m_next(NULL)
+    , m_real(true)
+    , m_gone(false)
+    , m_val(n)
+{
+}
+
+template <typename N>
+locking_iterable_fifo<N> :: node :: ~node() throw ()
 {
 }
 
