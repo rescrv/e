@@ -116,8 +116,8 @@ class locking_iterable_fifo<N> :: iterator
         iterator(locking_iterable_fifo<N>* lif, locking_iterable_fifo<N>::node* node);
 
     private:
-        locking_iterable_fifo* m_l;
-        locking_iterable_fifo::node* m_n;
+        locking_iterable_fifo<N>* m_l;
+        typename locking_iterable_fifo<N>::node* m_n;
         bool m_valid;
 };
 
@@ -183,7 +183,22 @@ bool
 locking_iterable_fifo<N> :: empty()
 {
     po6::threads::spinlock::hold hold(&m_head_lock);
-    return !m_head->m_gone && m_head->m_real;
+
+    if (!m_head->m_real)
+    {
+        node* next = m_head->m_next;
+
+        if (next)
+        {
+            return next->m_gone && !next->m_next;
+        }
+
+        return true;
+    }
+    else
+    {
+        return m_head->m_gone && !m_head->m_next;
+    }
 }
 
 template <typename N>
