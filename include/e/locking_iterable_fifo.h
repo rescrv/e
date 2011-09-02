@@ -417,9 +417,9 @@ locking_iterable_fifo<N> :: iterator :: operator = (const iterator& other)
     }
 
     m_l->release(m_n);
-    m_l = other.m_m_l;
-    m_n = other.m_m_n;
-    m_valid = other.m_m_valid;
+    m_l = other.m_l;
+    m_n = other.m_n;
+    m_valid = other.m_valid;
 
     if (m_n)
     {
