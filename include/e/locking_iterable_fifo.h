@@ -169,15 +169,6 @@ locking_iterable_fifo<N> :: ~locking_iterable_fifo() throw()
 }
 
 template <typename N>
-typename locking_iterable_fifo<N>::iterator
-locking_iterable_fifo<N> :: iterate()
-{
-    po6::threads::spinlock::hold hold_hd(&m_head_lock);
-    iterator i(this, m_head);
-    return i;
-}
-
-template <typename N>
 bool
 locking_iterable_fifo<N> :: empty()
 {
@@ -214,6 +205,15 @@ locking_iterable_fifo<N> :: oldest()
     {
         return m_head->m_val;
     }
+}
+
+template <typename N>
+typename locking_iterable_fifo<N>::iterator
+locking_iterable_fifo<N> :: iterate()
+{
+    po6::threads::spinlock::hold hold_hd(&m_head_lock);
+    iterator i(this, m_head);
+    return i;
 }
 
 template <typename N>
