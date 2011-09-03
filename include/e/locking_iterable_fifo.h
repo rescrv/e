@@ -82,6 +82,13 @@ class locking_iterable_fifo
         locking_iterable_fifo& operator = (const locking_iterable_fifo&);
 
     private:
+        // This will remove all nodes from m_head that are dead and point to
+        // another node.  It will leave at least one node.  If this node is a
+        // dummy node, or is gone and does not point to a next node the fifo is
+        // empty.  It is the caller's responsibility to hold m_head_lock.  When
+        // checking after returning from this function, the caller should check
+        // m_head->m_next in such a way that guarantees that it is current.
+        void remove_dead_nodes();
         void step_list(node** pos);
         void release(node* pos);
 
@@ -173,22 +180,15 @@ bool
 locking_iterable_fifo<N> :: empty()
 {
     po6::threads::spinlock::hold hold(&m_head_lock);
+    remove_dead_nodes();
 
-    if (m_head->m_dummy)
+    if (m_head->m_dummy || m_head->m_gone)
     {
-        node* next = m_head->m_next;
-
-        if (next)
-        {
-            return next->m_gone && !next->m_next;
-        }
-
-        return true;
+        po6::threads::spinlock::hold hold(&m_tail_lock);
+        return !m_head->m_next;
     }
-    else
-    {
-        return m_head->m_gone && !m_head->m_next;
-    }
+
+    return false;
 }
 
 template <typename N>
@@ -196,15 +196,11 @@ N&
 locking_iterable_fifo<N> :: oldest()
 {
     po6::threads::spinlock::hold hold(&m_head_lock);
-
-    if (m_head->m_dummy && m_head->m_next)
-    {
-        return m_head->m_next->m_val;
-    }
-    else
-    {
-        return m_head->m_val;
-    }
+    remove_dead_nodes();
+    // After removing dead nodes, we should have a valid node at the head of the
+    // list.  If this is not true, then the list is empty.
+    assert(!m_head->m_dummy && !m_head->m_gone);
+    return m_head->m_val;
 }
 
 template <typename N>
@@ -233,33 +229,32 @@ template <typename N>
 void
 locking_iterable_fifo<N> :: remove_oldest()
 {
-    po6::threads::spinlock::hold hold_hd(&m_head_lock);
+    po6::threads::spinlock::hold hold(&m_head_lock);
+    remove_dead_nodes();
+    // After removing dead nodes, we should have a valid node at the head of the
+    // list.  If this is not true, then the list is empty.
+    m_head->m_gone = true;
+    remove_dead_nodes();
+}
 
-    while (m_head->m_gone || m_head->m_dummy)
+template <typename N>
+void
+locking_iterable_fifo<N> :: remove_dead_nodes()
+{
+    while (m_head->m_dummy || m_head->m_gone)
     {
-        // We grab this lock as an acquire barrier.  We need to know that our
-        // value of m_next is current.  The easiest way to do so is to prevent
-        // it from changing 0->PTR after our load.
-        po6::threads::spinlock::hold hold_hd(&m_tail_lock);
-
-        if (m_head->m_next)
+        if (!m_head->m_next)
         {
-            step_list(&m_head);
-        }
-        else
-        {
-            // We know for sure there is nothing to remove.
-            return;
-        }
-    }
+            po6::threads::spinlock::hold hold(&m_tail_lock);
 
-    if (m_head->m_next)
-    {
+            if (!m_head->m_next)
+            {
+                assert(m_head == m_tail);
+                return;
+            }
+        }
+
         step_list(&m_head);
-    }
-    else
-    {
-        m_head->m_gone = true;
     }
 }
 
