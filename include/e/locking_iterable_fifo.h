@@ -145,7 +145,7 @@ class locking_iterable_fifo<N> :: node
     private:
         int m_ref;
         node* m_next;
-        bool m_real;
+        bool m_dummy;
         bool m_gone;
         N m_val;
 };
@@ -183,7 +183,7 @@ locking_iterable_fifo<N> :: empty()
 {
     po6::threads::spinlock::hold hold(&m_head_lock);
 
-    if (!m_head->m_real)
+    if (m_head->m_dummy)
     {
         node* next = m_head->m_next;
 
@@ -206,7 +206,7 @@ locking_iterable_fifo<N> :: oldest()
 {
     po6::threads::spinlock::hold hold(&m_head_lock);
 
-    if (!m_head->m_real && m_head->m_next)
+    if (m_head->m_dummy && m_head->m_next)
     {
         return m_head->m_next->m_val;
     }
@@ -235,7 +235,7 @@ locking_iterable_fifo<N> :: remove_oldest()
 {
     po6::threads::spinlock::hold hold_hd(&m_head_lock);
 
-    while (m_head->m_gone || !m_head->m_real)
+    while (m_head->m_gone || m_head->m_dummy)
     {
         // We grab this lock as an acquire barrier.  We need to know that our
         // value of m_next is current.  The easiest way to do so is to prevent
@@ -373,13 +373,13 @@ template <typename N>
 bool
 locking_iterable_fifo<N> :: iterator :: valid()
 {
-    while (m_n->m_next && (!m_valid || !m_n->m_real))
+    while (m_n->m_next && (!m_valid || m_n->m_dummy))
     {
         m_valid = true;
         m_l->step_list(&m_n);
     }
 
-    return m_valid && m_n->m_real;
+    return m_valid && !m_n->m_dummy;
 }
 
 template <typename N>
@@ -441,7 +441,7 @@ template <typename N>
 locking_iterable_fifo<N> :: node :: node()
     : m_ref(0)
     , m_next(NULL)
-    , m_real(false)
+    , m_dummy(true)
     , m_gone(false)
     , m_val()
 {
@@ -451,7 +451,7 @@ template <typename N>
 locking_iterable_fifo<N> :: node :: node(const N& n)
     : m_ref(0)
     , m_next(NULL)
-    , m_real(true)
+    , m_dummy(false)
     , m_gone(false)
     , m_val(n)
 {
