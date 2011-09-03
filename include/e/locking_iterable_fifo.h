@@ -173,7 +173,6 @@ typename locking_iterable_fifo<N>::iterator
 locking_iterable_fifo<N> :: iterate()
 {
     po6::threads::spinlock::hold hold_hd(&m_head_lock);
-    m_head->inc();
     iterator i(this, m_head);
     return i;
 }
@@ -360,11 +359,8 @@ locking_iterable_fifo<N> :: iterator :: iterator(const iterator& other)
     , m_n(other.m_n)
     , m_valid(other.m_valid)
 {
-    if (m_n)
-    {
-        int ref = m_n->inc();
-        assert(ref >= 2);
-    }
+    int ref = m_n->inc();
+    assert(ref >= 2);
 }
 
 template <typename N>
@@ -437,6 +433,8 @@ locking_iterable_fifo<N> :: iterator :: iterator(locking_iterable_fifo<N>* lif,
     , m_n(node)
     , m_valid(true)
 {
+    int ref = m_n->inc();
+    assert(ref >= 2);
 }
 
 template <typename N>
