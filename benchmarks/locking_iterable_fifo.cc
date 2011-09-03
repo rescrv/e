@@ -44,6 +44,7 @@
 
 // e includes
 #include <e/convert.h>
+#include <e/timer.h>
 #include <e/locking_iterable_fifo.h>
 
 static bool done = false;
@@ -102,14 +103,36 @@ main(int argc, char* argv[])
     }
 
     bar.wait();
-    fifo.append(0);
+    fifo.append(1);
 
-    for (uint64_t i = 1; i < ops; ++i)
+    for (uint64_t i = 2; i <= ops; ++i)
     {
+        if (i % 2 == 1)
+        {
+            assert(fifo.empty());
+        }
+        else
+        {
+            assert(!fifo.empty());
+        }
+
         fifo.append(i);
-        assert(!fifo.empty());
-        assert(fifo.oldest() == i - 1);
-        fifo.remove_oldest();
+
+        if (i % 2 == 1)
+        {
+            assert(!fifo.empty());
+            assert(fifo.oldest() == i);
+        }
+        else
+        {
+            assert(!fifo.empty());
+            assert(fifo.oldest() == i - 1);
+            fifo.remove_oldest();
+            assert(!fifo.empty());
+            assert(fifo.oldest() == i);
+            fifo.remove_oldest();
+            assert(fifo.empty());
+        }
     }
 
     for (uint16_t i = 0; i < threads; ++i)
@@ -135,10 +158,10 @@ worker_thread(po6::threads::barrier* bar)
     e::locking_iterable_fifo<uint64_t>::iterator it = fifo.iterate();
     bar->wait();
 
-    for (uint64_t i = 0; i < ops; ++i)
+    for (uint64_t i = 1; i < ops; ++i)
     {
         while (!it.valid())
-            ;
+            e::sleep_ms(0, 10);
 
         assert(*it == i);
         it.next();
