@@ -263,38 +263,6 @@ locking_iterable_fifo<N> :: remove_oldest()
     }
 }
 
-#if 0
-template <typename N>
-void
-locking_iterable_fifo<N> :: remove_oldest()
-{
-
-    if (m_head->m_next)
-    {
-        step_list(&m_head);
-    }
-
-
-    assert(m_head->m_removed < NS);
-    ++m_head->m_removed;
-    assert(m_head->m_removed <= NS);
-
-    if (m_head->m_removed == NS)
-    {
-        // We have a dead segment to cleanup.
-        po6::threads::spinlock::hold hold_tl(&m_tail_lock);
-
-        if (!m_head->m_next)
-        {
-            assert(m_head == m_tail);
-            add_new_node();
-        }
-
-        step_node(&m_head);
-    }
-}
-#endif
-
 template <typename N>
 void
 locking_iterable_fifo<N> :: step_list(node** pos)
