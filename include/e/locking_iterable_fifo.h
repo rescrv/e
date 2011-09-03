@@ -286,6 +286,17 @@ locking_iterable_fifo<N> :: step_list(node** pos)
 
     if (ref == 0)
     {
+        // This is sufficient synchronization.  If we have a refcount of zero,
+        // then it is the case that someone else already moved the head pointer
+        // forward off of this node.  The only way a pointer can change from
+        // !NULL to NULL is because of an append.  The log always has reference
+        // to the node to which it appends (via a refcount associated with
+        // m_head).  It follows that since no one else has a reference to this
+        // object, no one can change the next ptr on the object after our dec.
+        //
+        // I'm not feeling adventurous enough to claim that the cache coherency
+        // provided by the atomic dec above is sufficient, although I feel it
+        // should be.
         __sync_synchronize();
 
         if (cur->m_next && incr)
@@ -303,18 +314,6 @@ template <typename N>
 void
 locking_iterable_fifo<N> :: release(node* pos)
 {
-// XXX This way is super slow compared to what we could do.  On the other hand,
-// it's much easier to maintain.  This implementation requires iterating
-// iterating the whole log, which we shouldn't have to do; on the other hand,
-// the typical usage pattern of an iterator is to iterate until the end anyway,
-// so this is not a big concern).
-    while (pos && pos->m_next)
-    {
-        step_list(&pos);
-    }
-
-    po6::threads::spinlock::hold hold(&m_tail_lock);
-
     while (pos)
     {
         step_list(&pos);
