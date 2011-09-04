@@ -6,11 +6,11 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Defined when Google Test is available. */
+#undef HAVE_GTEST
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define to 1 if you have the `gtest' library (-lgtest). */
-#undef HAVE_LIBGTEST
 
 /* Define to 1 if you have the `memchr' function. */
 #undef HAVE_MEMCHR
