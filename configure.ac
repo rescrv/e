@@ -30,5 +30,8 @@ AC_TYPE_UINT8_T
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull])
 
-AC_CONFIG_FILES([Makefile benchmarks/Makefile include/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile
+                 benchmarks/Makefile
+                 include/Makefile
+                 test/Makefile])
 AC_OUTPUT
