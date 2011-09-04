@@ -114,6 +114,7 @@ main(int argc, char* argv[])
         else
         {
             assert(!fifo.empty());
+            assert(&fifo.oldest() == &*fifo.iterate());
         }
 
         fifo.append(i);
