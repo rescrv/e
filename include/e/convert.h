@@ -65,7 +65,7 @@ to_uint64_t(const std::string& s, int base = 0)
     {
         throw std::domain_error("The number is not valid for the given base.");
     }
-    if (newerrno == ERANGE || (ret & 0xffffffffffffffff) != ret)
+    if (newerrno == ERANGE || static_cast<uint64_t>(ret) != ret)
     {
         throw std::out_of_range("The number does not fit in a uint64_t");
     }
@@ -90,7 +90,7 @@ to_uint32_t(const std::string& s, int base = 0)
     {
         throw std::domain_error("The number is not valid for the given base.");
     }
-    if (newerrno == ERANGE || (ret & 0xffffffff) != ret)
+    if (newerrno == ERANGE || static_cast<uint32_t>(ret) != ret)
     {
         throw std::out_of_range("The number does not fit in a uint32_t");
     }
@@ -115,7 +115,7 @@ to_uint16_t(const std::string& s, int base = 0)
     {
         throw std::domain_error("The number is not valid for the given base.");
     }
-    if (newerrno == ERANGE || (ret & 0xffff) != ret)
+    if (newerrno == ERANGE || static_cast<uint16_t>(ret) != ret)
     {
         throw std::out_of_range("The number does not fit in a uint16_t");
     }
