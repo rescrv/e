@@ -6,6 +6,7 @@ AC_INIT([e], [0.1.dev], [escriva@cs.cornell.edu])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([include/e/buffer.h])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CXX
