@@ -221,7 +221,8 @@ locking_iterable_fifo<N> :: append(const N& n)
     assert(ref == 1);
     po6::threads::spinlock::hold hold(&m_tail_lock);
     m_tail->m_next = newnode.get();
-    m_tail = m_tail->m_next;
+    m_tail = newnode.get();
+    assert(m_tail == newnode.get());
     newnode.release();
 }
 
