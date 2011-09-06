@@ -89,15 +89,18 @@ class locking_iterable_fifo
         // checking after returning from this function, the caller should check
         // m_head->m_next in such a way that guarantees that it is current.
         void remove_dead_nodes();
-        void step_list(node** pos);
+        // This will step the list by one unit.  It is the caller's
+        // responsibility to ensure that there does exist a "next" pointer.
+        void step_list(node* volatile * pos);
+        // Release a reference counted pointer.
         void release(node* pos);
 
     private:
         // Lock acquire order is order of declaration.
         po6::threads::spinlock m_head_lock;
         po6::threads::spinlock m_tail_lock;
-        node* m_head;
-        node* m_tail;
+        node* volatile m_head;
+        node* volatile m_tail;
 };
 
 template <typename N>
@@ -137,8 +140,8 @@ class locking_iterable_fifo<N> :: node
         ~node() throw ();
 
     public:
-        int inc() { return __sync_add_and_fetch(&m_ref, 1); }
-        int dec() { return __sync_sub_and_fetch(&m_ref, 1); }
+        int inc() volatile { return __sync_add_and_fetch(&m_ref, 1); }
+        int dec() volatile { return __sync_sub_and_fetch(&m_ref, 1); }
 
     private:
         friend class locking_iterable_fifo<N>;
@@ -150,10 +153,10 @@ class locking_iterable_fifo<N> :: node
         node& operator = (const node&);
 
     private:
-        int m_ref;
-        node* m_next;
-        bool m_dummy;
-        bool m_gone;
+        volatile int m_ref;
+        node* volatile m_next;
+        volatile bool m_dummy;
+        volatile bool m_gone;
         N m_val;
 };
 
@@ -179,12 +182,12 @@ template <typename N>
 bool
 locking_iterable_fifo<N> :: empty()
 {
-    po6::threads::spinlock::hold hold(&m_head_lock);
+    po6::threads::spinlock::hold hold_hd(&m_head_lock);
     remove_dead_nodes();
 
     if (m_head->m_dummy || m_head->m_gone)
     {
-        po6::threads::spinlock::hold hold(&m_tail_lock);
+        po6::threads::spinlock::hold hold_tl(&m_tail_lock);
         return !m_head->m_next;
     }
 
@@ -261,48 +264,22 @@ locking_iterable_fifo<N> :: remove_dead_nodes()
 
 template <typename N>
 void
-locking_iterable_fifo<N> :: step_list(node** pos)
+locking_iterable_fifo<N> :: step_list(node* volatile * pos)
 {
-    node* cur = *pos;
-    node* next = cur->m_next;
-    bool incr = false;
-    int ref;
-
-    if (next)
-    {
-        ref = next->inc();
-        assert(ref >= 2);
-        incr = true;
-    }
-
-    *pos = next;
-
-    ref = cur->dec();
+    assert((*pos)->m_next);
+    int ref = (*pos)->m_next->inc();
+    assert(ref >= 2);
+    node* oldhead = *pos;
+    *pos = (*pos)->m_next;
+    assert(oldhead->m_next == *pos);
+    ref = oldhead->dec();
     assert(ref >= 0);
 
     if (ref == 0)
     {
-        // This is sufficient synchronization.  If we have a refcount of zero,
-        // then it is the case that someone else already moved the head pointer
-        // forward off of this node.  The only way a pointer can change from
-        // !NULL to NULL is because of an append.  The log always has reference
-        // to the node to which it appends (via a refcount associated with
-        // m_head).  It follows that since no one else has a reference to this
-        // object, no one can change the next ptr on the object after our dec.
-        //
-        // I'm not feeling adventurous enough to claim that the cache coherency
-        // provided by the atomic dec above is sufficient, although I feel it
-        // should be.
-        __sync_synchronize();
-
-        if (cur->m_next && incr)
-        {
-            ref = cur->m_next->dec();
-            assert(ref >= 1);
-        }
-
-        cur->m_next = NULL;
-        delete cur;
+        ref = (*pos)->dec();
+        assert(ref >= 1);
+        delete oldhead;
     }
 }
 
@@ -312,7 +289,29 @@ locking_iterable_fifo<N> :: release(node* pos)
 {
     while (pos)
     {
-        step_list(&pos);
+        int ref = pos->dec();
+        assert(ref >= 0);
+
+        if (ref == 0)
+        {
+            node* old = pos;
+
+            if (!pos->m_next)
+            {
+                po6::threads::spinlock::hold hold(&m_tail_lock);
+                pos = pos->m_next;
+            }
+            else
+            {
+                pos = pos->m_next;
+            }
+
+            delete old;
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
