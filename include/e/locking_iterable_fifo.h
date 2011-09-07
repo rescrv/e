@@ -393,7 +393,7 @@ locking_iterable_fifo<N> :: iterator :: iterator(locking_iterable_fifo<N>* lif,
                                                  locking_iterable_fifo<N>::node* node)
     : m_l(lif)
     , m_n(node)
-    , m_valid(true)
+    , m_valid(!m_n->m_gone)
 {
     int ref = m_n->inc();
     assert(ref >= 2);
