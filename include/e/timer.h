@@ -153,6 +153,11 @@ class stopwatch
             return diff.tv_sec * 1000000000 + diff.tv_nsec;
         }
 
+        uint64_t peek_ms()
+        {
+            return peek() / 1000000.;
+        }
+
     private:
         timespec m_start;
 };
