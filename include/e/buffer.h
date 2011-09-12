@@ -227,7 +227,7 @@ class buffer
         }
 
         inline packer pack();
-        inline unpacker unpack();
+        inline unpacker unpack() const;
 
     public:
         bool operator < (const buffer& rhs) const
@@ -563,7 +563,7 @@ buffer :: pack()
 }
 
 inline unpacker
-buffer :: unpack()
+buffer :: unpack() const
 {
     return unpacker(*this);
 }
