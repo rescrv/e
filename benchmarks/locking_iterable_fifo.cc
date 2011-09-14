@@ -126,13 +126,19 @@ main(int argc, char* argv[])
         }
         else
         {
+            e::locking_iterable_fifo<uint64_t>::iterator it = fifo.iterate();
             assert(!fifo.empty());
             assert(fifo.oldest() == i - 1);
-            fifo.remove_oldest();
+            assert(*it == i - 1);
+            it.next();
+            fifo.advance_to(it);
             assert(!fifo.empty());
             assert(fifo.oldest() == i);
-            fifo.remove_oldest();
+            assert(*it == i);
+            it.next();
+            fifo.advance_to(it);
             assert(fifo.empty());
+            assert(!it.valid());
         }
     }
 

@@ -71,6 +71,7 @@ class locking_iterable_fifo
         iterator iterate();
         void append(const N&);
         void remove_oldest();
+        void advance_to(iterator newhead);
 
     private:
         class node;
@@ -243,6 +244,20 @@ locking_iterable_fifo<N> :: remove_oldest()
 
 template <typename N>
 void
+locking_iterable_fifo<N> :: advance_to(iterator newhead)
+{
+    node* oldhead = m_head;
+    po6::threads::spinlock::hold hold(&m_head_lock);
+    m_head = newhead.m_n;
+    int ref = m_head->inc();
+    assert(ref >= 3);
+    m_head->m_gone = !newhead.m_valid;
+    release(oldhead);
+    remove_dead_nodes();
+}
+
+template <typename N>
+void
 locking_iterable_fifo<N> :: remove_dead_nodes()
 {
     while (m_head->m_dummy || m_head->m_gone)
@@ -349,6 +364,7 @@ void
 locking_iterable_fifo<N> :: iterator :: next()
 {
     m_valid = false;
+    valid();
 }
 
 template <typename N>
