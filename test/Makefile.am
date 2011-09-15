@@ -19,5 +19,5 @@ intrusive_ptr_LDADD = $(GTEST_LIBS)
 locking_iterable_fifo_SOURCES = runner.cc locking_iterable_fifo.cc
 locking_iterable_fifo_LDADD = $(GTEST_LIBS)
 profiler_SOURCES = runner.cc profiler.cc
-profiler_LDADD = $(GTEST_LIBS)
+profiler_LDADD = -lrt $(GTEST_LIBS)
 endif
