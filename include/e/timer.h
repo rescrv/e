@@ -41,6 +41,20 @@
 namespace e
 {
 
+// Return a time in nanoseconds.  This uses CLOCK_REALTIME.
+inline uint64_t
+time()
+{
+    timespec ts;
+
+    if (clock_gettime(CLOCK_REALTIME, &ts) < 0)
+    {
+        throw po6::error(errno);
+    }
+
+    return ts.tv_sec * 1000000000 + ts.tv_nsec;
+}
+
 // These sleep functions do not return early when interrupted by signals.
 // If you give a value more than 1 second for ms, us, or ns, the resulting time
 // slept will not necessarily be what you think.
