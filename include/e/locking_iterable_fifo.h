@@ -141,8 +141,8 @@ class locking_iterable_fifo<N> :: node
         ~node() throw ();
 
     public:
-        int inc() volatile { return __sync_add_and_fetch(&m_ref, 1); }
-        int dec() volatile { return __sync_sub_and_fetch(&m_ref, 1); }
+        int inc() volatile throw () { return __sync_add_and_fetch(&m_ref, 1); }
+        int dec() volatile throw () { return __sync_sub_and_fetch(&m_ref, 1); }
 
     private:
         friend class locking_iterable_fifo<N>;
