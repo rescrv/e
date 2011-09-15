@@ -8,4 +8,4 @@ lockfree_hash_map_LDADD = -lpthread
 lockfree_hash_set_SOURCES = lockfree_hash_set.cc
 lockfree_hash_set_LDADD = -lpthread
 locking_iterable_fifo_SOURCES = locking_iterable_fifo.cc
-locking_iterable_fifo_LDADD = -lpthread
+locking_iterable_fifo_LDADD = -lpthread -lrt
