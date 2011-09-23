@@ -178,4 +178,31 @@ TEST(LockingIterableFifoTest, CopyIterator)
     EXPECT_FALSE(copy2.valid());
 }
 
+TEST(LockingIterableFifoTest, BatchAppend)
+{
+    e::locking_iterable_fifo<int> l;
+
+    // Add batches of various sizes, iterating to verify presence.
+    e::locking_iterable_fifo<int>::iterator it = l.iterate();
+
+    for (size_t i = 0; i < 1000; ++i)
+    {
+        std::vector<int> values(i);
+
+        for (size_t j = 0; j < i; ++j)
+        {
+            values[j] = j;
+        }
+
+        l.batch_append(values);
+
+        for (size_t j = 0; j < i; ++j)
+        {
+            ASSERT_TRUE(it.valid());
+            ASSERT_EQ(j, *it);
+            it.next();
+        }
+    }
+}
+
 } // namespace

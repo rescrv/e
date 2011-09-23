@@ -34,9 +34,13 @@
 
 // STL
 #include <memory>
+#include <vector>
 
 // po6
 #include <po6/threads/spinlock.h>
+
+// e
+#include <e/guard.h>
 
 namespace e
 {
@@ -69,7 +73,8 @@ class locking_iterable_fifo
         bool empty();
         N& oldest();
         iterator iterate();
-        void append(const N&);
+        void append(const N& value);
+        void batch_append(const std::vector<N>& values);
         void remove_oldest();
         void advance_to(iterator newhead);
 
@@ -228,6 +233,39 @@ locking_iterable_fifo<N> :: append(const N& n)
     m_tail = newnode.get();
     assert(m_tail == newnode.get());
     newnode.release();
+}
+
+template <typename N>
+void
+locking_iterable_fifo<N> :: batch_append(const std::vector<N>& values)
+{
+    if (values.empty())
+    {
+        return;
+    }
+
+    node* head;
+    node* tail;
+    head = tail = new node(values[0]);
+    int ref = head->inc();
+    assert(ref == 1);
+    e::guard g = makeobjguard(*this, &locking_iterable_fifo<N>::release, head);
+
+    for (size_t i = 1; i < values.size(); ++i)
+    {
+        std::auto_ptr<node> newnode(new node(values[i]));
+        ref = newnode->inc();
+        assert(ref == 1);
+        tail->m_next = newnode.get();
+        tail = newnode.get();
+        newnode.release();
+    }
+
+    po6::threads::spinlock::hold hold(&m_tail_lock);
+    m_tail->m_next = head;
+    m_tail = tail;
+    assert(m_tail == tail);
+    g.dismiss();
 }
 
 template <typename N>
