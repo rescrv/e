@@ -172,6 +172,11 @@ class buffer
             return &m_buf.front();
         }
 
+        std::string str() const
+        {
+            return std::string(reinterpret_cast<const char*>(&m_buf.front()), m_buf.size());
+        }
+
         size_t size() const
         {
             return m_buf.size();
