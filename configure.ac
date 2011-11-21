@@ -3,6 +3,7 @@
 
 AC_PREREQ([2.66])
 AC_INIT([e], [0.1.dev], [escriva@cs.cornell.edu])
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign dist-bzip2 dist-lzma])
 AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([include/e/buffer.h])
@@ -28,7 +29,7 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
-if test x"${build_cpu}" != "xx86_64" || test x"${host_cpu}" != "xx86_64"; then
+if test x"${target_cpu}" != "xx86_64"; then
     AC_MSG_ERROR(['this library requires a 64-bit x86 processor'])
 fi
 
