@@ -28,6 +28,10 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
+if test x"${build_cpu}" != "xx86_64" || test x"${host_cpu}" != "xx86_64"; then
+    AC_MSG_ERROR(['this library requires a 64-bit x86 processor'])
+fi
+
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull])
