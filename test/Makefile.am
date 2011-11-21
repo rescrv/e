@@ -1,9 +1,11 @@
 if HAVE_GTEST
-AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(GTEST_CPPFLAGS) -O0 -ggdb
+AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(GTEST_CPPFLAGS)
 AM_LDFLAGS = $(GTEST_LDFLAGS)
+
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = bitfield bit_stealing buffer convert guard intrusive_ptr \
 				 locking_iterable_fifo profiler
+
 bitfield_SOURCES = runner.cc bitfield.cc
 bitfield_LDADD = ${GTEST_LIBS}
 bit_stealing_SOURCES = runner.cc bit_stealing.cc
