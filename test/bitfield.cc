@@ -25,12 +25,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// STL
+#include <memory>
+
 // Google Test
 #include <gtest/gtest.h>
 
 // e
-#include <e/bitfield.h>
-#include <e/buffer.h>
+#include "../include/e/bitfield.h"
+#include "../include/e/buffer.h"
 
 #pragma GCC diagnostic ignored "-Wswitch-default"
 
@@ -133,18 +136,20 @@ TEST(BitfieldTest, BufferPack)
     bf.set(30);
     bf.set(31);
 
-    e::buffer buf;
-    e::packer pack(&buf);
-    pack << bf;
-    EXPECT_EQ("000000200004deadbeef", buf.hex());
+    std::auto_ptr<e::buffer> buf(e::buffer::create(12));
+    *buf << bf;
+    EXPECT_TRUE(buf->cmp("\x00\x00\x00\x20"
+                         "\x00\x00\x00\x04"
+                         "\xde\xad\xbe\xef", 12));
 }
 
 TEST(BitfieldTest, BufferUnpack)
 {
-    e::bitfield bf(64);
-    e::buffer buf("\x00\x00\x00\x20\x00\x04\xde\xad\xbe\xef", 10);
-    e::unpacker up(buf);
-    up >> bf;
+    e::bitfield bf(32);
+    std::auto_ptr<e::buffer> buf(e::buffer::create("\x00\x00\x00\x20"
+                                                   "\x00\x00\x00\x04"
+                                                   "\xde\xad\xbe\xef", 12));
+    *buf >> bf;
 
     // 0xde
     EXPECT_FALSE(bf.get(0));

@@ -5,13 +5,12 @@ AM_LDFLAGS = $(GTEST_LDFLAGS)
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = bitfield bit_stealing buffer convert guard intrusive_ptr \
 				 locking_iterable_fifo profiler
-
 bitfield_SOURCES = runner.cc bitfield.cc
-bitfield_LDADD = ${GTEST_LIBS}
+bitfield_LDADD = ../src/libe.la ${GTEST_LIBS}
 bit_stealing_SOURCES = runner.cc bit_stealing.cc
 bit_stealing_LDADD = $(GTEST_LIBS)
 buffer_SOURCES = runner.cc buffer.cc
-buffer_LDADD = $(GTEST_LIBS)
+buffer_LDADD = ../src/libe.la $(GTEST_LIBS)
 convert_SOURCES = runner.cc convert.cc
 convert_LDADD = $(GTEST_LIBS)
 guard_SOURCES = runner.cc guard.cc

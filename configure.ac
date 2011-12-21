@@ -6,6 +6,8 @@ AC_INIT([e], [0.2.dev], [escriva@cs.cornell.edu])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign dist-bzip2 dist-lzma])
 AM_SILENT_RULES([yes])
+LT_PREREQ([2.2])
+LT_INIT
 AC_CONFIG_SRCDIR([include/e/buffer.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -40,5 +42,6 @@ AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull])
 AC_CONFIG_FILES([Makefile
                  benchmarks/Makefile
                  include/Makefile
+                 src/Makefile
                  test/Makefile])
 AC_OUTPUT
