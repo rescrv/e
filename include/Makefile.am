@@ -4,5 +4,5 @@ nobase_include_HEADERS = e/bitfield.h e/bit_stealing.h e/buffer.h e/convert.h \
 						 e/lockfree_fifo.h e/lockfree_hash_map.h \
 						 e/lockfree_hash_set.h e/locking_fifo.h \
 						 e/locking_iterable_fifo.h e/profiler.h \
-						 e/striped_lock.h e/timer.h e/tuple_compare.h \
-						 e/worker_barrier.h
+						 e/slice.h e/striped_lock.h e/timer.h \
+						 e/tuple_compare.h e/worker_barrier.h
