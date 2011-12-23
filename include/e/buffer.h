@@ -212,6 +212,11 @@ class buffer
         }
 
     public:
+        void* get()
+        {
+            return &m_buf.front();
+        }
+
         void swap(buffer& other) throw ()
         {
             m_buf.swap(other.m_buf);
