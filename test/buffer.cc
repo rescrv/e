@@ -34,9 +34,8 @@
 // Google Test
 #include <gtest/gtest.h>
 
-// po6
+// e
 #include "../include/e/buffer.h"
-#include "../include/e/buffer/vector.h"
 
 #define EXPECT_MEMCMP(X, Y, S) EXPECT_EQ(0, memcmp(X, Y, S))
 #pragma GCC diagnostic ignored "-Wswitch-default"
@@ -200,52 +199,6 @@ TEST(BufferTest, Hex)
 
     EXPECT_EQ("deadbeef", buf1->hex());
     EXPECT_EQ("00ff0ff0", buf2->hex());
-}
-
-TEST(BufferTest, VectorPack)
-{
-    std::auto_ptr<e::buffer> buf(e::buffer::create(12));
-    std::vector<uint16_t> vector;
-    vector.push_back(0xdead);
-    vector.push_back(0xbeef);
-    vector.push_back(0xcafe);
-    vector.push_back(0xbabe);
-    e::buffer::packer p = *buf << vector;
-    EXPECT_TRUE(buf->cmp("\x00\x00\x00\x04"
-                         "\xde\xad\xbe\xef"
-                         "\xca\xfe\xba\xbe", 12));
-}
-
-TEST(BufferTest, VectorUnpack)
-{
-    std::auto_ptr<e::buffer> buf(e::buffer::create("\x00\x00\x00\x04"
-                                                   "\xde\xad\xbe\xef"
-                                                   "\xca\xfe\xba\xbe", 12));
-    std::vector<uint16_t> vector;
-    *buf >> vector;
-    EXPECT_EQ(4, vector.size());
-    EXPECT_EQ(0xdead, vector[0]);
-    EXPECT_EQ(0xbeef, vector[1]);
-    EXPECT_EQ(0xcafe, vector[2]);
-    EXPECT_EQ(0xbabe, vector[3]);
-}
-
-TEST(BufferTest, VectorUnpackFail)
-{
-    std::auto_ptr<e::buffer> buf(e::buffer::create("\x00\x00\x00\x04"
-                                                   "\xde\xad\xbe\xef"
-                                                   "\xca\xfe\xba\xbe", 12));
-    std::vector<uint32_t> vector_bad;
-    std::vector<uint16_t> vector_good;
-    e::buffer::unpacker bad = *buf >> vector_bad;
-    e::buffer::unpacker good = *buf >> vector_good;
-    EXPECT_TRUE(bad.overflow());
-    EXPECT_FALSE(good.overflow());
-    EXPECT_EQ(4, vector_good.size());
-    EXPECT_EQ(0xdead, vector_good[0]);
-    EXPECT_EQ(0xbeef, vector_good[1]);
-    EXPECT_EQ(0xcafe, vector_good[2]);
-    EXPECT_EQ(0xbabe, vector_good[3]);
 }
 
 } // namespace

@@ -29,6 +29,7 @@
 #define e_bitfield_h_
 
 // C
+#include <cassert>
 #include <stdint.h>
 
 // STL
@@ -36,7 +37,6 @@
 
 // e
 #include <e/buffer.h>
-#include <e/buffer/vector.h>
 
 namespace e
 {
@@ -130,7 +130,8 @@ bitfield :: operator = (const bitfield& other)
 inline e::buffer::packer
 operator << (e::buffer::packer lhs, const e::bitfield& rhs)
 {
-    return lhs << rhs.m_num_bits << rhs.m_bits;
+    return lhs << rhs.m_num_bits
+               << e::slice(&rhs.m_bits.front(), rhs.m_bits.size());
 }
 
 
@@ -138,13 +139,16 @@ inline e::buffer::unpacker
 operator >> (e::buffer::unpacker lhs, e::bitfield& rhs)
 {
     e::bitfield tmp(0);
-    e::buffer::unpacker up = lhs >> tmp.m_num_bits >> tmp.m_bits;
+    e::slice data;
+    e::buffer::unpacker up = lhs >> tmp.m_num_bits >> data;
 
-    if (tmp.bytes() != tmp.m_bits.size() || up.overflow())
+    if (tmp.bytes() != data.size() || up.overflow())
     {
         return e::buffer::unpacker(up, true);
     }
 
+    tmp.m_bits.resize(data.size());
+    memmove(&tmp.m_bits.front(), data.data(), data.size());
     rhs.m_num_bits = tmp.m_num_bits;
     rhs.m_bits.swap(tmp.m_bits);
     return up;
