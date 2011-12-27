@@ -88,7 +88,7 @@ TEST(BufferTest, PackBuffer)
                   "!"
                   "\xfa\xce"
                   "\x00\x00\x00\x0athe buffer"
-                  "\x00\x00\x00\x00r",
+                  "uffer",
                   34);
 }
 

@@ -245,8 +245,16 @@ e :: buffer :: packer :: operator << (const buffer::padding& rhs)
 
     if (!m_overflow && newsize <= m_buf->m_cap)
     {
-        memset(m_buf->m_data + m_off, 0, rhs.m_pad);
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+        // Zero the new bytes which the padding adds to the buffer's size.
+        // The padded region is not zeroed absolutely because the padding can be
+        // used to skip regions (e.g., headers) so that the packer can pack
+        // after the header.
+        if (m_buf->m_size < newsize)
+        {
+            memset(m_buf->m_data + m_buf->m_size, 0, newsize - m_buf->m_size);
+            m_buf->m_size = newsize;
+        }
+
         return packer(m_buf, newsize);
     }
     else
