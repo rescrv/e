@@ -162,6 +162,8 @@ e :: buffer :: operator >> (T& t)
     return unpacker(this, 0) >> t;
 }
 
+// This is needed because buffer::padding is passed by value, and the above
+// templates take objects by reference.
 e::buffer::unpacker
 e :: buffer :: operator >> (buffer::padding t)
 {
