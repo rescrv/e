@@ -28,6 +28,9 @@
 #ifndef e_slice_h_
 #define e_slice_h_
 
+// C
+#include <cstring>
+
 namespace e
 {
 
@@ -51,6 +54,15 @@ class slice
 
     public:
         slice& operator = (const slice& rhs);
+        bool operator < (const slice& rhs) const { return compare(rhs) < 0; }
+        bool operator <= (const slice& rhs) const { return compare(rhs) <= 0; }
+        bool operator == (const slice& rhs) const { return compare(rhs) == 0; }
+        bool operator != (const slice& rhs) const { return compare(rhs) != 0; }
+        bool operator >= (const slice& rhs) const { return compare(rhs) >= 0; }
+        bool operator > (const slice& rhs) const { return compare(rhs) > 0; }
+
+    private:
+        int compare(const slice& rhs) const;
 
     private:
         const char* m_data;
@@ -115,6 +127,23 @@ slice :: operator = (const slice& rhs)
     // We do not need to check for self-assignment.
     m_data = rhs.m_data;
     m_sz = rhs.m_sz;
+}
+
+inline int
+slice :: compare(const slice& rhs) const
+{
+    if (m_sz < rhs.m_sz)
+    {
+        return -1;
+    }
+    else if (m_sz > rhs.m_sz)
+    {
+        return 1;
+    }
+    else
+    {
+        return memcmp(m_data, rhs.m_data, m_sz);
+    }
 }
 
 } // namespace e
