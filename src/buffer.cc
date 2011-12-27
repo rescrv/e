@@ -143,7 +143,7 @@ e :: buffer :: packer :: packer(const packer& p, bool ovf)
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint8_t rhs)
 {
-    uint64_t newsize = m_off + 1;
+    uint64_t newsize = m_off + sizeof(uint8_t);
 
     if (!m_overflow && newsize <= m_buf->m_cap)
     {
@@ -160,7 +160,7 @@ e :: buffer :: packer :: operator << (uint8_t rhs)
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint16_t rhs)
 {
-    uint64_t newsize = m_off + 2;
+    uint64_t newsize = m_off + sizeof(uint16_t);
 
     if (!m_overflow && newsize <= m_buf->m_cap)
     {
@@ -178,7 +178,7 @@ e :: buffer :: packer :: operator << (uint16_t rhs)
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint32_t rhs)
 {
-    uint64_t newsize = m_off + 4;
+    uint64_t newsize = m_off + sizeof(uint32_t);
 
     if (!m_overflow && newsize <= m_buf->m_cap)
     {
@@ -198,7 +198,7 @@ e :: buffer :: packer :: operator << (uint32_t rhs)
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint64_t rhs)
 {
-    uint64_t newsize = m_off + 8;
+    uint64_t newsize = m_off + sizeof(uint64_t);
 
     if (!m_overflow && newsize <= m_buf->m_cap)
     {
@@ -279,7 +279,7 @@ e :: buffer :: unpacker :: unpacker(const unpacker& p, bool ovf)
 e::buffer::unpacker
 e :: buffer :: unpacker :: operator >> (uint8_t& rhs)
 {
-    uint64_t newsize = m_off + 1;
+    uint64_t newsize = m_off + sizeof(uint8_t);
 
     if (!m_overflow && newsize <= m_buf->m_size)
     {
@@ -295,7 +295,7 @@ e :: buffer :: unpacker :: operator >> (uint8_t& rhs)
 e::buffer::unpacker
 e :: buffer :: unpacker :: operator >> (uint16_t& rhs)
 {
-    uint64_t newsize = m_off + 2;
+    uint64_t newsize = m_off + sizeof(uint16_t);
 
     if (!m_overflow && newsize <= m_buf->m_size)
     {
@@ -312,7 +312,7 @@ e :: buffer :: unpacker :: operator >> (uint16_t& rhs)
 e::buffer::unpacker
 e :: buffer :: unpacker :: operator >> (uint32_t& rhs)
 {
-    uint64_t newsize = m_off + 4;
+    uint64_t newsize = m_off + sizeof(uint32_t);
 
     if (!m_overflow && newsize <= m_buf->m_size)
     {
@@ -331,7 +331,7 @@ e :: buffer :: unpacker :: operator >> (uint32_t& rhs)
 e::buffer::unpacker
 e :: buffer :: unpacker :: operator >> (uint64_t& rhs)
 {
-    uint64_t newsize = m_off + 8;
+    uint64_t newsize = m_off + sizeof(uint64_t);
 
     if (!m_overflow && newsize <= m_buf->m_size)
     {
