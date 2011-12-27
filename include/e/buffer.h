@@ -376,6 +376,16 @@ class packer
             return *this;
         }
 
+        packer& operator << (const slice& rhs)
+        {
+            uint32_t sz = rhs.size();
+            *this << sz;
+            size_t oldsz = m_buf->m_buf.size();
+            m_buf->m_buf.resize(oldsz + rhs.size());
+            memmove(m_buf->mget(), rhs.data(), sz);
+            return *this;
+        }
+
         template <typename T>
         packer& operator << (const std::vector<T>& rhs)
         {
@@ -531,6 +541,21 @@ class unpacker
             b.m_buf.resize(sz);
             memmove(b.mget(), m_buf.cget() + m_off, sz);
             m_off += sz;
+            return *this;
+        }
+
+        unpacker& operator >> (slice& rhs)
+        {
+            uint32_t sz;
+            *this >> sz;
+
+            if (m_off + sz > m_buf.m_buf.size())
+            {
+                m_off -= sizeof(uint32_t);
+                throw std::out_of_range("Nothing left to unpack.");
+            }
+
+            rhs.reset(reinterpret_cast<const char*>(m_buf.cget()) + m_off, sz);
             return *this;
         }
 
