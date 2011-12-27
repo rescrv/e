@@ -151,14 +151,14 @@ class buffer::unpacker
 };
 
 template <typename T>
-e::buffer::packer
+inline e::buffer::packer
 e :: buffer :: operator << (const T& t)
 {
     return packer(this, 0) << t;
 }
 
 template <typename T>
-e::buffer::unpacker
+inline e::buffer::unpacker
 e :: buffer :: operator >> (T& t)
 {
     return unpacker(this, 0) >> t;
@@ -166,7 +166,7 @@ e :: buffer :: operator >> (T& t)
 
 // This is needed because buffer::padding is passed by value, and the above
 // templates take objects by reference.
-e::buffer::unpacker
+inline e::buffer::unpacker
 e :: buffer :: operator >> (buffer::padding t)
 {
     return unpacker(this, 0) >> t;

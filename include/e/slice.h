@@ -41,6 +41,7 @@ class slice
     public:
         slice();
         slice(const uint8_t* data, size_t sz);
+        template <typename T> slice(const T* data, size_t sz);
         slice(const slice& other);
         ~slice() throw ();
 
@@ -79,6 +80,15 @@ slice :: slice()
 inline
 slice :: slice(const uint8_t* data, size_t sz)
     : m_data(data)
+    , m_sz(sz)
+{
+}
+
+// sz is the number of bytes, not the number of pointed-to elements.
+template <typename T>
+inline
+slice :: slice(const T* data, size_t sz)
+    : m_data(reinterpret_cast<const uint8_t*>(data))
     , m_sz(sz)
 {
 }
