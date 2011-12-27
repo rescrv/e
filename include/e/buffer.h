@@ -64,6 +64,7 @@ class buffer
     public:
         void clear() throw () { m_size = 0; }
         packer pack_at(uint32_t off);
+        void resize(uint32_t size) throw ();
         void shift(uint32_t off) throw ();
 
     public:

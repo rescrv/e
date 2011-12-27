@@ -28,6 +28,7 @@
 #define __STDC_LIMIT_MACROS
 
 // C
+#include <cassert>
 #include <cstring>
 
 // STL
@@ -78,6 +79,13 @@ e::buffer::packer
 e :: buffer :: pack_at(uint32_t off)
 {
     return packer(this, off);
+}
+
+void
+e :: buffer :: resize(uint32_t size) throw ()
+{
+    assert(size <= m_cap);
+    m_size = size;
 }
 
 void
