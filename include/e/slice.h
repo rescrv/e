@@ -42,7 +42,7 @@ class slice
         ~slice() throw ();
 
     public:
-        const char* get() const;
+        const char* data() const;
         size_t size() const;
 
     public:
@@ -84,7 +84,7 @@ slice :: ~slice() throw ()
 }
 
 inline const char*
-slice :: get() const
+slice :: data() const
 {
     return m_data;
 }
