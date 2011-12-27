@@ -25,6 +25,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#define __STDC_LIMIT_MACROS
+
 // C
 #include <cstring>
 
@@ -220,15 +222,15 @@ e :: buffer :: packer :: operator << (uint64_t rhs)
 }
 
 e::buffer::packer
-e :: buffer :: packer :: operator << (const buffer& rhs)
+e :: buffer :: packer :: operator << (const slice& rhs)
 {
-    uint64_t newsize = m_off + 4 + rhs.m_size;
+    uint64_t newsize = m_off + sizeof(uint32_t) + rhs.size();
 
-    if (!m_overflow && newsize <= m_buf->m_cap)
+    if (!m_overflow && newsize <= m_buf->m_cap && rhs.size() <= UINT32_MAX)
     {
-        uint32_t sz = rhs.m_size;
-        *this << sz;
-        memmove(m_buf->m_data + m_off + 4, rhs.m_data, sz);
+        uint32_t sz = rhs.size();
+        *this << sz; // XXX perf loss
+        memmove(m_buf->m_data + m_off + sizeof(uint32_t), rhs.data(), sz);
         m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
         return packer(m_buf, newsize);
     }
@@ -360,17 +362,15 @@ e :: buffer :: unpacker :: operator >> (uint64_t& rhs)
 }
 
 e::buffer::unpacker
-e :: buffer :: unpacker :: operator >> (buffer& rhs)
+e :: buffer :: unpacker :: operator >> (slice& rhs)
 {
     uint32_t sz;
     e::buffer::unpacker tmp = *this >> sz;
-    uint64_t newsize = tmp.m_off + sz;
 
-    if (!tmp.m_overflow && newsize <= m_buf->m_size && sz <= rhs.m_cap)
+    if (!tmp.m_overflow && tmp.m_off + sz <= m_buf->m_size)
     {
-        memmove(rhs.m_data, m_buf->m_data + tmp.m_off, sz);
-        rhs.m_size = sz;
-        return unpacker(m_buf, newsize);
+        rhs = slice(m_buf->m_data + tmp.m_off, sz);
+        return unpacker(m_buf, tmp.m_off + sz);
     }
     else
     {

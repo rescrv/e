@@ -101,7 +101,7 @@ class buffer::packer
         buffer::packer operator << (uint16_t rhs);
         buffer::packer operator << (uint32_t rhs);
         buffer::packer operator << (uint64_t rhs);
-        buffer::packer operator << (const buffer& rhs);
+        buffer::packer operator << (const slice& rhs);
         buffer::packer operator << (const buffer::padding& rhs);
 
     private:
@@ -139,7 +139,7 @@ class buffer::unpacker
         buffer::unpacker operator >> (uint16_t& rhs);
         buffer::unpacker operator >> (uint32_t& rhs);
         buffer::unpacker operator >> (uint64_t& rhs);
-        buffer::unpacker operator >> (buffer& rhs);
+        buffer::unpacker operator >> (slice& rhs);
         buffer::unpacker operator >> (buffer::padding rhs);
 
     private:

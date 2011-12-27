@@ -69,7 +69,7 @@ TEST(BufferTest, PackBuffer)
     std::auto_ptr<e::buffer> buf(e::buffer::create("the buffer", 10));
     std::auto_ptr<e::buffer> packed(e::buffer::create(34));
 
-    *packed << a << b << c << d << e::buffer::padding(5) << *buf;
+    *packed << a << b << c << d << e::buffer::padding(5) << buf->as_slice();
     EXPECT_EQ(34, packed->size());
     EXPECT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
@@ -80,7 +80,7 @@ TEST(BufferTest, PackBuffer)
                   "\x00\x00\x00\x0athe buffer",
                   34);
 
-    packed->pack_at(12) << d << c << *buf << e::buffer::padding(4);
+    packed->pack_at(12) << d << c << buf->as_slice() << e::buffer::padding(4);
     EXPECT_EQ(34, packed->size());
     EXPECT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
@@ -98,7 +98,7 @@ TEST(BufferTest, UnpackBuffer)
     uint32_t b;
     uint16_t c;
     uint8_t d;
-    std::auto_ptr<e::buffer> buf(e::buffer::create(10));
+    e::slice sl;
     std::auto_ptr<e::buffer> packed(e::buffer::create(
                 "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                 "\x8b\xad\xf0\x0d"
@@ -107,13 +107,13 @@ TEST(BufferTest, UnpackBuffer)
                 "\x00\x00\x00\x00\x00"
                 "\x00\x00\x00\x0athe buffer", 34));
 
-    *packed >> a >> b >> c >> d >> e::buffer::padding(5) >> *buf;
+    *packed >> a >> b >> c >> d >> e::buffer::padding(5) >> sl;
     EXPECT_EQ(0xdeadbeefcafebabe, a);
     EXPECT_EQ(0x8badf00d, b);
     EXPECT_EQ(0xface, c);
     EXPECT_EQ('!', d);
-    EXPECT_EQ(10, buf->size());
-    EXPECT_MEMCMP("the buffer", buf->data(), 10);
+    EXPECT_EQ(10, sl.size());
+    EXPECT_MEMCMP("the buffer", sl.data(), 10);
 }
 
 TEST(BufferTest, UnpackErrors)
