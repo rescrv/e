@@ -65,7 +65,7 @@ class buffer
     public:
         void* operator new (size_t sz, uint32_t num);
         void operator delete (void* mem);
-        template <typename T> packer operator << (T t);
+        template <typename T> packer operator << (const T& t);
         template <typename T> unpacker operator >> (T& t);
         unpacker operator >> (padding t);
 
@@ -146,7 +146,7 @@ class buffer::unpacker
 
 template <typename T>
 e::buffer::packer
-e :: buffer :: operator << (T t)
+e :: buffer :: operator << (const T& t)
 {
     return packer(this, 0) << t;
 }
