@@ -52,6 +52,7 @@
 
 // e
 #include <e/guard.h>
+#include <e/slice.h>
 
 namespace e
 {
@@ -238,6 +239,7 @@ class buffer
 
         inline packer pack();
         inline unpacker unpack() const;
+        inline e::slice as_slice() const { return e::slice(reinterpret_cast<const char*>(cget()), size()); }
 
     public:
         bool operator < (const buffer& rhs) const
