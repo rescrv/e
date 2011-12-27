@@ -35,6 +35,9 @@
 // STL
 #include <string>
 
+// e
+#include <e/slice.h>
+
 namespace e
 {
 
@@ -50,6 +53,7 @@ class buffer
         static buffer* create(const char* buf, uint32_t sz) { return new (sz) buffer(buf, sz); }
 
     public:
+        slice as_slice() const { return slice(m_data, m_size); }
         uint32_t capacity() const throw () { return m_cap; }
         bool cmp(const char* buf, uint32_t sz) const throw ();
         const uint8_t* data() const throw () { return m_data; }
