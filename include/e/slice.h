@@ -40,17 +40,17 @@ class slice
 {
     public:
         slice();
-        slice(const char* data, size_t sz);
+        slice(const uint8_t* data, size_t sz);
         slice(const slice& other);
         ~slice() throw ();
 
     public:
-        const char* data() const;
+        const uint8_t* data() const;
         size_t size() const;
 
     public:
         void reset();
-        void reset(const char* data, size_t sz);
+        void reset(const uint8_t* data, size_t sz);
 
     public:
         slice& operator = (const slice& rhs);
@@ -65,19 +65,19 @@ class slice
         int compare(const slice& rhs) const;
 
     private:
-        const char* m_data;
+        const uint8_t* m_data;
         size_t m_sz;
 };
 
 inline
 slice :: slice()
-    : m_data("")
+    : m_data(NULL)
     , m_sz(0)
 {
 }
 
 inline
-slice :: slice(const char* data, size_t sz)
+slice :: slice(const uint8_t* data, size_t sz)
     : m_data(data)
     , m_sz(sz)
 {
@@ -95,7 +95,7 @@ slice :: ~slice() throw ()
 {
 }
 
-inline const char*
+inline const uint8_t*
 slice :: data() const
 {
     return m_data;
@@ -110,12 +110,12 @@ slice :: size() const
 inline void
 slice :: reset()
 {
-    m_data = "";
+    m_data = NULL;
     m_sz = 0;
 }
 
 inline void
-slice :: reset(const char* data, size_t sz)
+slice :: reset(const uint8_t* data, size_t sz)
 {
     m_data = data;
     m_sz = sz;

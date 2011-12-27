@@ -1,4 +1,4 @@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = benchmarks include test
+SUBDIRS = benchmarks include src test
 
 EXTRA_DIST = LICENSE

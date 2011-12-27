@@ -29,600 +29,145 @@
 #define e_buffer_h_
 
 // C
-#include <cassert>
+#include <cstdlib>
 #include <stdint.h>
-#include <string.h>
-
-// POSIX
-#include <arpa/inet.h>
-#include <endian.h>
-
-// C++
-#include <iomanip>
-#include <iostream>
 
 // STL
-#include <algorithm>
-#include <sstream>
 #include <string>
-#include <vector>
-
-// po6
-#include <po6/io/fd.h>
 
 // e
-#include <e/guard.h>
 #include <e/slice.h>
 
 namespace e
 {
 
-// Easily pack/unpack values for transfer over the network.  Integers are
-// converted using the host to network and network to host conversion functions.
-//
-// Many unpackers can work concurrently on the same buffer.
-// Only a single packer may operate on a buffer at time.
-class packer;
-class unpacker;
-
 class buffer
 {
     public:
-        class padding
-        {
-            public:
-                padding(size_t sz)
-                    : m_sz(sz)
-                {
-                }
-
-            public:
-                size_t size() const
-                {
-                    return m_sz;
-                }
-
-            private:
-                size_t m_sz;
-        };
-
-        class sized
-        {
-            public:
-                sized(size_t _sz, buffer* _buf)
-                    : m_sz(_sz)
-                    , m_buf(_buf)
-                {
-                }
-
-                sized(const sized& s)
-                    : m_sz(s.m_sz)
-                    , m_buf(s.m_buf)
-                {
-                }
-
-            public:
-                size_t size() const { return m_sz; }
-                buffer* buf() const { return m_buf; }
-
-            public:
-                sized& operator = (const sized& s)
-                {
-                    if (this != &s)
-                    {
-                        m_sz = s.m_sz;
-                        m_buf = s.m_buf;
-                    }
-
-                    return *this;
-                }
-
-            private:
-                size_t m_sz;
-                buffer* m_buf;
-        };
+        class packer;
+        class padding;
+        class unpacker;
 
     public:
-        buffer()
-            : m_buf()
-        {
-        }
-
-        buffer(size_t sz)
-            : m_buf()
-        {
-            m_buf.reserve(sz);
-        }
-
-        buffer(const char* buf, size_t sz)
-            : m_buf(sz)
-        {
-            memmove(this->mget(), buf, sz);
-        }
-
-        buffer(const std::string& str)
-            : m_buf(str.size())
-        {
-            memmove(this->mget(), str.c_str(), str.size());
-        }
-
-        buffer(const void* buf, size_t sz)
-            : m_buf(sz)
-        {
-            memmove(this->mget(), buf, sz);
-        }
+        static buffer* create(uint32_t sz) { return new (sz) buffer(sz); }
+        static buffer* create(const char* buf, uint32_t sz) { return new (sz) buffer(buf, sz); }
 
     public:
-        std::string hex() const
-        {
-            std::ostringstream ostr;
-            ostr << std::hex;
-            const uint8_t* buf = cget();
-
-            for (size_t i = 0; i < size(); ++i)
-            {
-                unsigned int num = buf[i];
-                ostr << std::setw(2) << std::setfill('0') << num;
-            }
-
-            return ostr.str();
-        }
-
-        const void* get() const
-        {
-            return &m_buf.front();
-        }
-
-        std::string str() const
-        {
-            return std::string(reinterpret_cast<const char*>(&m_buf.front()), m_buf.size());
-        }
-
-        size_t size() const
-        {
-            return m_buf.size();
-        }
-
-        bool empty() const
-        {
-            return m_buf.size() == 0;
-        }
-
-        size_t index(uint8_t byte) const
-        {
-            const uint8_t* ptr = static_cast<const uint8_t*>(memchr(cget(), byte, size()));
-
-            if (ptr == NULL)
-            {
-                return size();
-            }
-            else
-            {
-                return ptr - cget();
-            }
-        }
-
-        bool contains(uint8_t byte) const
-        {
-            return memchr(cget(), byte, size()) != NULL;
-        }
-
-        buffer slice(size_t start, size_t end) const
-        {
-            return buffer(cget() + start, end - start);
-        }
+        slice as_slice() const { return slice(m_data, m_size); }
+        uint32_t capacity() const throw () { return m_cap; }
+        bool cmp(const char* buf, uint32_t sz) const throw ();
+        const uint8_t* data() const throw () { return m_data; }
+        std::string hex() const;
+        uint32_t index(uint8_t b) const throw ();
+        uint32_t size() const throw () { return m_size; }
 
     public:
-        void* get()
-        {
-            return &m_buf.front();
-        }
-
-        void swap(buffer& other) throw ()
-        {
-            m_buf.swap(other.m_buf);
-        }
-
-        void clear()
-        {
-            m_buf.clear();
-        }
-
-        size_t trim_prefix(size_t sz)
-        {
-            sz = std::min(sz, m_buf.size());
-            size_t remain = m_buf.size() - sz;
-            memmove(this->mget(), this->mget() + sz, remain);
-            m_buf.resize(remain);
-            return sz;
-        }
-
-        inline packer pack();
-        inline unpacker unpack() const;
-        inline e::slice as_slice() const { return e::slice(reinterpret_cast<const char*>(cget()), size()); }
+        void clear() throw () { m_size = 0; }
+        packer pack_at(uint32_t off);
+        void shift(uint32_t off) throw ();
 
     public:
-        bool operator < (const buffer& rhs) const
-        {
-            const buffer& lhs(*this);
+        void* operator new (size_t sz, uint32_t num);
+        void operator delete (void* mem);
+        template <typename T> packer operator << (const T& t);
+        template <typename T> unpacker operator >> (T& t);
+        unpacker operator >> (padding t);
 
-            if (lhs.m_buf.size() < rhs.m_buf.size())
-            {
-                return true;
-            }
-            else if (lhs.m_buf.size() == rhs.m_buf.size())
-            {
-                return memcmp(lhs.get(), rhs.get(), lhs.size()) < 0;
-            }
+    private:
+        __attribute__ ((visibility ("default"))) buffer(uint32_t sz);
+        __attribute__ ((visibility ("default"))) buffer(const char* buf, uint32_t sz);
 
-            return false;
-        }
+    // Please see:
+    // http://stackoverflow.com/questions/4559558/one-element-array-in-struct
+    private:
+        uint32_t m_cap;
+        uint32_t m_size;
+        uint8_t m_data[1];
+};
 
-        bool operator == (const buffer& rhs) const
-        {
-            const buffer& lhs(*this);
+class buffer::packer
+{
+    public:
+        packer(buffer* buf, uint32_t off);
+        packer(buffer* buf, uint32_t off, bool overflow);
+        packer(const packer& p, bool overflow);
 
-            if (lhs.m_buf.size() == rhs.m_buf.size())
-            {
-                return memcmp(lhs.get(), rhs.get(), lhs.size()) == 0;
-            }
+    public:
+        uint32_t remain() const { return m_buf->m_cap - m_off; }
+        bool overflow() const { return m_overflow; }
 
-            return false;
-        }
+    public:
+        buffer::packer operator << (uint8_t rhs);
+        buffer::packer operator << (uint16_t rhs);
+        buffer::packer operator << (uint32_t rhs);
+        buffer::packer operator << (uint64_t rhs);
+        buffer::packer operator << (const slice& rhs);
+        buffer::packer operator << (const buffer::padding& rhs);
 
-        bool operator > (const buffer& rhs) const
-        {
-            const buffer& lhs(*this);
+    private:
+        buffer* m_buf;
+        uint32_t m_off;
+        bool m_overflow;
+};
 
-            if (lhs.m_buf.size() > rhs.m_buf.size())
-            {
-                return true;
-            }
-            else if (lhs.m_buf.size() == rhs.m_buf.size())
-            {
-                return memcmp(lhs.get(), rhs.get(), lhs.size()) > 0;
-            }
-
-            return false;
-        }
-
-        bool operator != (const buffer& rhs) const { return !(*this == rhs); }
-
-        buffer& operator += (const buffer& rhs)
-        {
-            buffer& lhs(*this);
-            size_t sz = lhs.m_buf.size();
-            lhs.m_buf.resize(sz + rhs.m_buf.size());
-            std::copy(rhs.m_buf.begin(), rhs.m_buf.end(), lhs.m_buf.begin() + sz);
-            return lhs;
-        }
+class buffer::padding
+{
+    public:
+        padding(uint32_t pad) : m_pad(pad) {}
 
     private:
         friend class packer;
         friend class unpacker;
-        friend size_t read(po6::io::fd*, buffer*, size_t);
-        friend size_t xread(po6::io::fd*, buffer*, size_t);
 
     private:
-        // Get a mutable reference to the buffer.
-        uint8_t* mget()
-        {
-            return &m_buf.front();
-        }
-
-        // Get a constant reference to the buffer.
-        const uint8_t* cget() const
-        {
-            return &m_buf.front();
-        }
-
-    private:
-        std::vector<uint8_t> m_buf;
+        uint32_t m_pad;
 };
 
-class packer
+class buffer::unpacker
 {
     public:
-        packer(buffer* buf)
-            : m_buf(buf)
-        {
-        }
+        unpacker(buffer* buf, uint32_t off);
+        unpacker(buffer* buf, uint32_t off, bool overflow);
+        unpacker(const unpacker& up, bool overflow);
 
     public:
-        packer& operator << (const uint64_t& rhs)
-        {
-            size_t size = m_buf->m_buf.size();
-            m_buf->m_buf.resize(size + sizeof(uint64_t));
-            uint64_t a = htobe64(rhs);
-            memmove(m_buf->mget() + size, &a, sizeof(uint64_t));
-            return *this;
-        }
+        uint32_t remain() const { return m_buf->m_size - m_off; }
+        bool overflow() const { return m_overflow; }
 
-        packer& operator << (const uint32_t& rhs)
-        {
-            size_t size = m_buf->m_buf.size();
-            m_buf->m_buf.resize(size + sizeof(uint32_t));
-            uint32_t a = htonl(rhs);
-            memmove(m_buf->mget() + size, &a, sizeof(uint32_t));
-            return *this;
-        }
-
-        packer& operator << (const uint16_t& rhs)
-        {
-            size_t size = m_buf->m_buf.size();
-            m_buf->m_buf.resize(size + sizeof(uint16_t));
-            uint16_t a = htons(rhs);
-            memmove(m_buf->mget() + size, &a, sizeof(uint16_t));
-            return *this;
-        }
-
-        packer& operator << (const uint8_t& rhs)
-        {
-            m_buf->m_buf.push_back(rhs);
-            return *this;
-        }
-
-        packer& operator << (const buffer::padding& p)
-        {
-            m_buf->m_buf.resize(m_buf->m_buf.size() + p.size());
-            return *this;
-        }
-
-        packer& operator << (const buffer& rhs)
-        {
-            uint32_t sz = rhs.size();
-            *this << sz;
-            *m_buf += rhs;
-            return *this;
-        }
-
-        packer& operator << (const slice& rhs)
-        {
-            uint32_t sz = rhs.size();
-            *this << sz;
-            size_t oldsz = m_buf->m_buf.size();
-            m_buf->m_buf.resize(oldsz + rhs.size());
-            memmove(m_buf->mget(), rhs.data(), sz);
-            return *this;
-        }
-
-        template <typename T>
-        packer& operator << (const std::vector<T>& rhs)
-        {
-            uint16_t elem = rhs.size();
-            *this << elem;
-
-            for (size_t i = 0; i < rhs.size(); ++i)
-            {
-                *this << rhs[i];
-            }
-
-            return *this;
-        }
-
-    private:
-        packer& operator = (const packer&);
+    public:
+        buffer::unpacker operator >> (uint8_t& rhs);
+        buffer::unpacker operator >> (uint16_t& rhs);
+        buffer::unpacker operator >> (uint32_t& rhs);
+        buffer::unpacker operator >> (uint64_t& rhs);
+        buffer::unpacker operator >> (slice& rhs);
+        buffer::unpacker operator >> (buffer::padding rhs);
 
     private:
         buffer* m_buf;
+        uint32_t m_off;
+        bool m_overflow;
 };
 
-class unpacker
+template <typename T>
+e::buffer::packer
+e :: buffer :: operator << (const T& t)
 {
-    public:
-        unpacker(const buffer& buf)
-            : m_buf(buf)
-            , m_off(0)
-        {
-        }
-
-    public:
-        size_t remain() const
-        {
-            if (m_buf.m_buf.size() < m_off)
-            {
-                return 0;
-            }
-            else
-            {
-                return m_buf.m_buf.size() - m_off;
-            }
-        }
-
-        void leftovers(e::buffer* buf) const
-        {
-            size_t rem = remain();
-            buf->m_buf.resize(rem);
-            memmove(buf->mget(), m_buf.cget() + m_off, rem);
-        }
-
-        size_t offset() const
-        {
-            return m_off;
-        }
-
-    public:
-        void rewind(size_t off)
-        {
-            assert(m_off >= off);
-            m_off = off;
-        }
-
-    public:
-        unpacker& operator >> (uint64_t& rhs)
-        {
-            if (m_off + sizeof(uint64_t) > m_buf.m_buf.size())
-            {
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint64_t));
-            m_off += sizeof(uint64_t);
-            rhs = be64toh(rhs);
-            return *this;
-        }
-
-        unpacker& operator >> (uint32_t& rhs)
-        {
-            if (m_off + sizeof(uint32_t) > m_buf.m_buf.size())
-            {
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint32_t));
-            m_off += sizeof(uint32_t);
-            rhs = ntohl(rhs);
-            return *this;
-        }
-
-        unpacker& operator >> (uint16_t& rhs)
-        {
-            if (m_off + sizeof(uint16_t) > m_buf.m_buf.size())
-            {
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint16_t));
-            m_off += sizeof(uint16_t);
-            rhs = ntohs(rhs);
-            return *this;
-        }
-
-        unpacker& operator >> (uint8_t& rhs)
-        {
-            if (m_off + sizeof(uint8_t) > m_buf.m_buf.size())
-            {
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            memmove(&rhs, m_buf.cget() + m_off, sizeof(uint8_t));
-            m_off += sizeof(uint8_t);
-            return *this;
-        }
-
-        unpacker& operator >> (buffer::padding p)
-        {
-            if (m_off + p.size() > m_buf.m_buf.size())
-            {
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            m_off += p.size();
-            return *this;
-        }
-
-        unpacker& operator >> (buffer::sized s)
-        {
-            if (m_off + s.size() > m_buf.m_buf.size())
-            {
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            s.buf()->clear();
-            s.buf()->m_buf.resize(s.size());
-            memmove(s.buf()->mget(), m_buf.cget() + m_off, s.size());
-            m_off += s.size();
-            return *this;
-        }
-
-        unpacker& operator >> (buffer& b)
-        {
-            b.clear();
-            uint32_t sz;
-            *this >> sz;
-
-            if (m_off + sz > m_buf.m_buf.size())
-            {
-                m_off -= sizeof(uint32_t);
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            b.clear();
-            b.m_buf.resize(sz);
-            memmove(b.mget(), m_buf.cget() + m_off, sz);
-            m_off += sz;
-            return *this;
-        }
-
-        unpacker& operator >> (slice& rhs)
-        {
-            uint32_t sz;
-            *this >> sz;
-
-            if (m_off + sz > m_buf.m_buf.size())
-            {
-                m_off -= sizeof(uint32_t);
-                throw std::out_of_range("Nothing left to unpack.");
-            }
-
-            rhs.reset(reinterpret_cast<const char*>(m_buf.cget()) + m_off, sz);
-            return *this;
-        }
-
-        template <typename T>
-        unpacker& operator >> (std::vector<T>& rhs)
-        {
-            size_t off = this->offset();
-
-            try
-            {
-                uint16_t cols;
-                *this >> cols;
-
-                for (uint16_t i = 0; i < cols; ++i)
-                {
-                    T tmp;
-                    *this >> tmp;
-                    rhs.push_back(tmp);
-                }
-            }
-            catch (std::out_of_range& e)
-            {
-                rewind(off);
-                throw e;
-            }
-
-            return *this;
-        }
-
-    private:
-        unpacker& operator = (const unpacker&);
-
-    private:
-        const buffer& m_buf;
-        size_t m_off;
-};
-
-inline packer
-buffer :: pack()
-{
-    return packer(this);
+    return packer(this, 0) << t;
 }
 
-inline unpacker
-buffer :: unpack() const
+template <typename T>
+e::buffer::unpacker
+e :: buffer :: operator >> (T& t)
 {
-    return unpacker(*this);
+    return unpacker(this, 0) >> t;
 }
 
-inline size_t
-read(po6::io::fd* fd, buffer* buf, size_t amt)
+// This is needed because buffer::padding is passed by value, and the above
+// templates take objects by reference.
+e::buffer::unpacker
+e :: buffer :: operator >> (buffer::padding t)
 {
-    size_t oldsize = buf->m_buf.size();
-    buf->m_buf.resize(oldsize + amt);
-    e::guard g = makeobjguard(buf->m_buf, &std::vector<uint8_t>::resize, oldsize, 0);
-    size_t ret = fd->read(&buf->m_buf.front() + oldsize, amt);
-    buf->m_buf.resize(oldsize + ret);
-    g.dismiss();
-    return ret;
-}
-
-inline size_t
-xread(po6::io::fd* fd, buffer* buf, size_t amt)
-{
-    size_t oldsize = buf->m_buf.size();
-    buf->m_buf.resize(oldsize + amt);
-    return fd->xread(&buf->m_buf.front() + oldsize, amt);
+    return unpacker(this, 0) >> t;
 }
 
 } // namespace e
