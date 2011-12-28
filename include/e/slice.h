@@ -29,6 +29,7 @@
 #define e_slice_h_
 
 // C
+#include <cassert>
 #include <cstring>
 
 namespace e
@@ -50,6 +51,7 @@ class slice
         size_t size() const;
 
     public:
+        void advance(size_t sz);
         void reset();
         void reset(const uint8_t* data, size_t sz);
 
@@ -115,6 +117,14 @@ inline size_t
 slice :: size() const
 {
     return m_sz;
+}
+
+inline void
+slice :: advance(size_t sz)
+{
+    assert(sz <= m_sz);
+    m_data += sz;
+    m_sz -= sz;
 }
 
 inline void
