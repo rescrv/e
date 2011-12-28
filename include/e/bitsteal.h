@@ -25,63 +25,76 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef e_bitsteal_h_
+#define e_bitsteal_h_
+
+#ifndef __x86_64__
+#error Bit stealing requires x86 64.
+#endif
+
 // C
+#include <cassert>
 #include <stdint.h>
 
-// Google Test
-#include <gtest/gtest.h>
+// On current 64-bit x86 chips, only the 48 lower-order bits are used for
+// addressing, yet a pointer has 64 bits.  Those extra 16 bits sound like a good
+// opportunity for extra storage which may be CASed atomically with the
+// pointer.  Intel may not provide DCAS, but this sounds like the next best
+// thing.
 
-// po6
-#include <e/bit_stealing.h>
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
-
-namespace
+namespace e
+{
+namespace bitsteal
 {
 
-TEST(BitStealingTest, Strip)
+template <typename T>
+inline bool
+get(T* t, size_t i)
 {
-    uintptr_t v = 0xdeadbeefcafebabeul;
-    uint64_t* p = reinterpret_cast<uint64_t*>(v);
-    p = e::bit_stealing::strip(p);
-    v = reinterpret_cast<uintptr_t>(p);
-    EXPECT_EQ(0x0000beefcafebabeul, v);
+    assert(sizeof(T*) == sizeof(uint64_t));
+    assert(i < 16);
+    uint64_t ret = reinterpret_cast<uint64_t>(t);
+    uint64_t bit = 1;
+    bit <<= i + 48;
+    return ret & bit;
 }
 
-TEST(BitStealingTest, Get)
+template <typename T>
+inline T*
+set(T* t, size_t i)
 {
-    uintptr_t v = 0xdeadbeefcafebabeul;
-    uint64_t* p = reinterpret_cast<uint64_t*>(v);
-    EXPECT_EQ(0xdead, e::bit_stealing::get(p));
+    assert(sizeof(T*) == sizeof(uint64_t));
+    assert(i < 16);
+    uint64_t ret = reinterpret_cast<uint64_t>(t);
+    uint64_t bit = 1;
+    bit <<= i + 48;
+    ret |= bit;
+    return reinterpret_cast<T*>(ret);
 }
 
-TEST(BitStealingTest, SetAndUnset)
+template <typename T>
+inline T*
+strip(T* t)
 {
-    using e::bit_stealing::set;
-    using e::bit_stealing::unset;
-    uintptr_t v1 = 0x0000beefcafebabeul;
-    uint64_t* p1 = reinterpret_cast<uint64_t*>(v1);
-    uintptr_t v2 = 0xffffbeefcafebabeul;
-    uint64_t* p2 = reinterpret_cast<uint64_t*>(v2);
-    set(p1, 0); set(p2, 0);
-    unset(p1, 1); unset(p2, 1);
-    set(p1, 2); set(p2, 2);
-    set(p1, 3); set(p2, 3);
-    unset(p1, 4); unset(p2, 4);
-    set(p1, 5); set(p2, 5);
-    unset(p1, 6); unset(p2, 6);
-    set(p1, 7); set(p2, 7);
-    unset(p1, 8); unset(p2, 8);
-    set(p1, 9); set(p2, 9);
-    set(p1, 10); set(p2, 10);
-    set(p1, 11); set(p2, 11);
-    set(p1, 12); set(p2, 12);
-    unset(p1, 13); unset(p2, 13);
-    set(p1, 14); set(p2, 14);
-    set(p1, 15); set(p2, 15);
-    EXPECT_EQ(p1, p2);
-    EXPECT_EQ(0xdeadbeefcafebabeul, reinterpret_cast<uintptr_t>(p1));
-    EXPECT_EQ(0xdeadbeefcafebabeul, reinterpret_cast<uintptr_t>(p2));
+    assert(sizeof(T*) == sizeof(uint64_t));
+    uint64_t ret = reinterpret_cast<uint64_t>(t);
+    return reinterpret_cast<T*>(0x0000ffffffffffff & ret);
 }
 
-} // namespace
+template <typename T>
+inline T*
+unset(T* t, size_t i)
+{
+    assert(sizeof(T*) == sizeof(uint64_t));
+    assert(i < 16);
+    uint64_t ret = reinterpret_cast<uint64_t>(t);
+    uint64_t bit = 1;
+    bit <<= i + 48;
+    ret &= ~bit;
+    return reinterpret_cast<T*>(ret);
+}
+
+} // namespace bitsteal
+} // namespace e
+
+#endif // e_bitsteal_h_

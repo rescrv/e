@@ -32,7 +32,7 @@
 #include <vector>
 
 // e
-#include <e/bit_stealing.h>
+#include <e/bitsteal.h>
 #include <e/hazard_ptrs.h>
 
 namespace e
@@ -67,8 +67,8 @@ class lockfree_hash_map
     private:
         bool is_clean(node* ptr) const
         {
-            return e::bit_stealing::get(ptr, VALID) &&
-                   !e::bit_stealing::get(ptr, DELETED);
+            return e::bitsteal::get(ptr, VALID) &&
+                   !e::bitsteal::get(ptr, DELETED);
         }
 
     private:
@@ -96,7 +96,7 @@ lockfree_hash_map<K, V, H> :: lockfree_hash_map(uint16_t magnitude)
     , m_size(0)
 {
     node* valid_empty = NULL;
-    e::bit_stealing::set(valid_empty, VALID);
+    valid_empty = e::bitsteal::set(valid_empty, VALID);
     m_table.resize((1 << magnitude), valid_empty);
 }
 
@@ -105,12 +105,12 @@ lockfree_hash_map<K, V, H> :: ~lockfree_hash_map() throw ()
 {
     for (size_t i = 0; i < m_table.size(); ++i)
     {
-        node* n = e::bit_stealing::strip(m_table[i]);
+        node* n = e::bitsteal::strip(m_table[i]);
 
         while (n)
         {
             node* tmp = n;
-            n = e::bit_stealing::strip(n->next);
+            n = e::bitsteal::strip(n->next);
             delete tmp;
         }
     }
@@ -141,7 +141,7 @@ lockfree_hash_map<K, V, H> :: lookup(const K& k, V* v)
 
             if (v)
             {
-                *v = e::bit_stealing::strip(cur)->value;
+                *v = e::bitsteal::strip(cur)->value;
             }
 
             return true;
@@ -173,8 +173,7 @@ lockfree_hash_map<K, V, H> :: insert(const K& k, const V& v)
 
         assert(is_clean(cur));
         std::auto_ptr<node> nn(new node(hash, k, v, cur));
-        node* inserted = nn.get();
-        e::bit_stealing::set(inserted, VALID);
+        node* inserted = e::bitsteal::set(nn.get(), VALID);
 
         if (cas(prev, cur, inserted))
         {
@@ -203,31 +202,31 @@ lockfree_hash_map<K, V, H> :: remove(const K& k)
         }
 
         assert(is_clean(cur));
-        node* next_old = e::bit_stealing::strip(cur)->next;
+        node* next_old = e::bitsteal::strip(cur)->next;
         node* next_new = next_old;
-        assert(e::bit_stealing::get(next_old, VALID));
+        assert(e::bitsteal::get(next_old, VALID));
 
-        if (e::bit_stealing::get(next_old, DELETED))
+        if (e::bitsteal::get(next_old, DELETED))
         {
             continue;
         }
 
         // Mark it as deleted.
-        e::bit_stealing::set(next_new, DELETED);
-        e::bit_stealing::set(next_new, VALID);
+        next_new = e::bitsteal::set(next_new, DELETED);
+        next_new = e::bitsteal::set(next_new, VALID);
 
-        if (!cas(&e::bit_stealing::strip(cur)->next, next_old, next_new))
+        if (!cas(&e::bitsteal::strip(cur)->next, next_old, next_new))
         {
             continue;
         }
 
-        e::bit_stealing::unset(next_new, DELETED);
-        e::bit_stealing::unset(cur, DELETED);
+        next_new = e::bitsteal::unset(next_new, DELETED);
+        cur = e::bitsteal::unset(cur, DELETED);
         assert(is_clean(cur));
 
         if (cas(prev, cur, next_new))
         {
-            hptr->retire(e::bit_stealing::strip(cur));
+            hptr->retire(e::bitsteal::strip(cur));
         }
         else
         {
@@ -269,24 +268,24 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
     {
         *prev = &m_table[offset];
         *cur = **prev;
-        assert(e::bit_stealing::get(*cur, VALID));
-        hptr->set(1, e::bit_stealing::strip(*cur));
+        assert(e::bitsteal::get(*cur, VALID));
+        hptr->set(1, e::bitsteal::strip(*cur));
 
-        if (**prev != *cur || e::bit_stealing::get(*cur, DELETED))
+        if (**prev != *cur || e::bitsteal::get(*cur, DELETED))
         {
             continue;
         }
 
         while (true)
         {
-            assert(e::bit_stealing::get(*cur, VALID));
+            assert(e::bitsteal::get(*cur, VALID));
 
-            if (e::bit_stealing::get(*cur, DELETED))
+            if (e::bitsteal::get(*cur, DELETED))
             {
                 break;
             }
 
-            node* cur_stripped = e::bit_stealing::strip(*cur);
+            node* cur_stripped = e::bitsteal::strip(*cur);
 
             if (cur_stripped == NULL)
             {
@@ -294,8 +293,8 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
             }
 
             node* next = cur_stripped->next;
-            bool cmark = e::bit_stealing::get(next, DELETED);
-            hptr->set(0, e::bit_stealing::strip(next));
+            bool cmark = e::bitsteal::get(next, DELETED);
+            hptr->set(0, e::bitsteal::strip(next));
 
             if (cur_stripped->next != next)
             {
@@ -305,7 +304,7 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
             uint64_t chash = cur_stripped->hash;
             K& ckey = cur_stripped->key;
 
-            if (**prev != *cur || e::bit_stealing::get(*cur, DELETED))
+            if (**prev != *cur || e::bitsteal::get(*cur, DELETED))
             {
                 break;
             }
@@ -324,8 +323,8 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
             {
                 node* A = *cur;
                 node* B = next;
-                e::bit_stealing::unset(A, DELETED);
-                e::bit_stealing::unset(B, DELETED);
+                A = e::bitsteal::unset(A, DELETED);
+                B = e::bitsteal::unset(B, DELETED);
 
                 if (cas(*prev, A, B))
                 {
@@ -338,7 +337,7 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
             }
 
             *cur = next;
-            hptr->set(1, e::bit_stealing::strip(*cur));
+            hptr->set(1, e::bitsteal::strip(*cur));
         }
     }
 }
