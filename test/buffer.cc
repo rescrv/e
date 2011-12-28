@@ -122,21 +122,21 @@ TEST(BufferTest, UnpackErrors)
     e::buffer::unpacker up = *buf >> a;
     EXPECT_EQ(0x8badf00d, a);
     EXPECT_EQ(2, up.remain());
-    EXPECT_FALSE(up.overflow());
+    EXPECT_FALSE(up.error());
 
     // "a" should not change even if nup fails
     e::buffer::unpacker nup = up >> a;
     EXPECT_EQ(0x8badf00d, a);
     EXPECT_EQ(2, up.remain());
-    EXPECT_FALSE(up.overflow());
-    EXPECT_TRUE(nup.overflow());
+    EXPECT_FALSE(up.error());
+    EXPECT_TRUE(nup.error());
 
     // Getting the next value should succeed
     uint16_t b;
     up = up >> b;
     EXPECT_EQ(0xface, b);
     EXPECT_EQ(0, up.remain());
-    EXPECT_FALSE(up.overflow());
+    EXPECT_FALSE(up.error());
 }
 
 TEST(BufferTest, Shift)

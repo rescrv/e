@@ -67,6 +67,7 @@ class buffer
         packer pack_at(uint32_t off);
         void resize(uint32_t size) throw ();
         void shift(uint32_t off) throw ();
+        unpacker unpack_from(uint32_t off);
 
     public:
         void* operator new (size_t sz, uint32_t num);
@@ -91,25 +92,25 @@ class buffer::packer
 {
     public:
         packer(buffer* buf, uint32_t off);
-        packer(buffer* buf, uint32_t off, bool overflow);
-        packer(const packer& p, bool overflow);
+        packer(const packer& p);
 
     public:
+        packer as_error() const;
+        bool error() const { return m_error; }
         uint32_t remain() const { return m_buf->m_cap - m_off; }
-        bool overflow() const { return m_overflow; }
 
     public:
-        buffer::packer operator << (uint8_t rhs);
-        buffer::packer operator << (uint16_t rhs);
-        buffer::packer operator << (uint32_t rhs);
-        buffer::packer operator << (uint64_t rhs);
-        buffer::packer operator << (const slice& rhs);
-        buffer::packer operator << (const buffer::padding& rhs);
+        packer operator << (uint8_t rhs);
+        packer operator << (uint16_t rhs);
+        packer operator << (uint32_t rhs);
+        packer operator << (uint64_t rhs);
+        packer operator << (const slice& rhs);
+        packer operator << (const buffer::padding& rhs);
 
     private:
         buffer* m_buf;
         uint32_t m_off;
-        bool m_overflow;
+        bool m_error;
 };
 
 class buffer::padding
@@ -128,26 +129,27 @@ class buffer::padding
 class buffer::unpacker
 {
     public:
-        unpacker(buffer* buf, uint32_t off);
-        unpacker(buffer* buf, uint32_t off, bool overflow);
-        unpacker(const unpacker& up, bool overflow);
+        unpacker(const buffer* buf, uint32_t off);
+        unpacker(const unpacker& up);
 
     public:
+        unpacker as_error() const;
+        slice as_slice() const;
+        bool error() const { return m_error; }
         uint32_t remain() const { return m_buf->m_size - m_off; }
-        bool overflow() const { return m_overflow; }
 
     public:
-        buffer::unpacker operator >> (uint8_t& rhs);
-        buffer::unpacker operator >> (uint16_t& rhs);
-        buffer::unpacker operator >> (uint32_t& rhs);
-        buffer::unpacker operator >> (uint64_t& rhs);
-        buffer::unpacker operator >> (slice& rhs);
-        buffer::unpacker operator >> (buffer::padding rhs);
+        unpacker operator >> (uint8_t& rhs);
+        unpacker operator >> (uint16_t& rhs);
+        unpacker operator >> (uint32_t& rhs);
+        unpacker operator >> (uint64_t& rhs);
+        unpacker operator >> (slice& rhs);
+        unpacker operator >> (buffer::padding rhs);
 
     private:
-        buffer* m_buf;
+        const buffer* m_buf;
         uint32_t m_off;
-        bool m_overflow;
+        bool m_error;
 };
 
 template <typename T>

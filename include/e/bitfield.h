@@ -142,9 +142,9 @@ operator >> (e::buffer::unpacker lhs, e::bitfield& rhs)
     e::slice data;
     e::buffer::unpacker up = lhs >> tmp.m_num_bits >> data;
 
-    if (tmp.bytes() != data.size() || up.overflow())
+    if (tmp.bytes() != data.size() || up.error())
     {
-        return e::buffer::unpacker(up, true);
+        return up.as_error();
     }
 
     tmp.m_bits.resize(data.size());

@@ -102,6 +102,12 @@ e :: buffer :: shift(uint32_t off) throw ()
     }
 }
 
+e::buffer::unpacker
+e :: buffer :: unpack_from(uint32_t off)
+{
+    return unpacker(this, off);
+}
+
 void*
 e :: buffer :: operator new (size_t, uint32_t num)
 {
@@ -132,22 +138,23 @@ e :: buffer :: buffer(const char* buf, uint32_t sz)
 e :: buffer :: packer :: packer(buffer* buf, uint32_t off)
     : m_buf(buf)
     , m_off(off)
-    , m_overflow(false)
+    , m_error(off > m_buf->m_cap)
 {
 }
 
-e :: buffer :: packer :: packer(buffer* buf, uint32_t off, bool ovf)
-    : m_buf(buf)
-    , m_off(off)
-    , m_overflow(ovf)
-{
-}
-
-e :: buffer :: packer :: packer(const packer& p, bool ovf)
+e :: buffer :: packer :: packer(const packer& p)
     : m_buf(p.m_buf)
     , m_off(p.m_off)
-    , m_overflow(ovf)
+    , m_error(p.m_error)
 {
+}
+
+e::buffer::packer
+e :: buffer :: packer :: as_error() const
+{
+    packer ret(*this);
+    ret.m_error = true;
+    return ret;
 }
 
 e::buffer::packer
@@ -155,7 +162,7 @@ e :: buffer :: packer :: operator << (uint8_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint8_t);
 
-    if (!m_overflow && newsize <= m_buf->m_cap)
+    if (!m_error && newsize <= m_buf->m_cap)
     {
         m_buf->m_data[m_off] = rhs;
         m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
@@ -163,7 +170,7 @@ e :: buffer :: packer :: operator << (uint8_t rhs)
     }
     else
     {
-        return packer(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -172,7 +179,7 @@ e :: buffer :: packer :: operator << (uint16_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint16_t);
 
-    if (!m_overflow && newsize <= m_buf->m_cap)
+    if (!m_error && newsize <= m_buf->m_cap)
     {
         m_buf->m_data[m_off] = rhs >> 8;
         m_buf->m_data[m_off + 1] = rhs & 0xff;
@@ -181,7 +188,7 @@ e :: buffer :: packer :: operator << (uint16_t rhs)
     }
     else
     {
-        return packer(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -190,7 +197,7 @@ e :: buffer :: packer :: operator << (uint32_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t);
 
-    if (!m_overflow && newsize <= m_buf->m_cap)
+    if (!m_error && newsize <= m_buf->m_cap)
     {
         m_buf->m_data[m_off] = rhs >> 24;
         m_buf->m_data[m_off + 1] = (rhs >> 16) & 0xff;
@@ -201,7 +208,7 @@ e :: buffer :: packer :: operator << (uint32_t rhs)
     }
     else
     {
-        return packer(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -210,7 +217,7 @@ e :: buffer :: packer :: operator << (uint64_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint64_t);
 
-    if (!m_overflow && newsize <= m_buf->m_cap)
+    if (!m_error && newsize <= m_buf->m_cap)
     {
         m_buf->m_data[m_off] = rhs >> 56;
         m_buf->m_data[m_off + 1] = (rhs >> 48) & 0xff;
@@ -225,7 +232,7 @@ e :: buffer :: packer :: operator << (uint64_t rhs)
     }
     else
     {
-        return packer(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -234,7 +241,7 @@ e :: buffer :: packer :: operator << (const slice& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t) + rhs.size();
 
-    if (!m_overflow && newsize <= m_buf->m_cap && rhs.size() <= UINT32_MAX)
+    if (!m_error && newsize <= m_buf->m_cap && rhs.size() <= UINT32_MAX)
     {
         uint32_t sz = rhs.size();
         *this << sz; // XXX perf loss
@@ -244,7 +251,7 @@ e :: buffer :: packer :: operator << (const slice& rhs)
     }
     else
     {
-        return packer(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -253,7 +260,7 @@ e :: buffer :: packer :: operator << (const buffer::padding& rhs)
 {
     uint64_t newsize = m_off + rhs.m_pad;
 
-    if (!m_overflow && newsize <= m_buf->m_cap)
+    if (!m_error && newsize <= m_buf->m_cap)
     {
         // Zero the new bytes which the padding adds to the buffer's size.
         // The padded region is not zeroed absolutely because the padding can be
@@ -269,29 +276,36 @@ e :: buffer :: packer :: operator << (const buffer::padding& rhs)
     }
     else
     {
-        return packer(m_buf, m_off, true);
+        return as_error();
     }
 }
 
-e :: buffer :: unpacker :: unpacker(buffer* buf, uint32_t off)
+e :: buffer :: unpacker :: unpacker(const buffer* buf, uint32_t off)
     : m_buf(buf)
     , m_off(off)
-    , m_overflow(false)
+    , m_error(off > m_buf->m_cap)
 {
 }
 
-e :: buffer :: unpacker :: unpacker(buffer* buf, uint32_t off, bool ovf)
-    : m_buf(buf)
-    , m_off(off)
-    , m_overflow(ovf)
-{
-}
-
-e :: buffer :: unpacker :: unpacker(const unpacker& p, bool ovf)
+e :: buffer :: unpacker :: unpacker(const unpacker& p)
     : m_buf(p.m_buf)
     , m_off(p.m_off)
-    , m_overflow(ovf)
+    , m_error(p.m_error)
 {
+}
+
+e::buffer::unpacker
+e :: buffer :: unpacker :: as_error() const
+{
+    unpacker ret(*this);
+    ret.m_error = true;
+    return ret;
+}
+
+e::slice
+e :: buffer :: unpacker :: as_slice() const
+{
+    return e::slice(m_buf->m_data + m_off, m_buf->m_size - m_off);
 }
 
 e::buffer::unpacker
@@ -299,14 +313,14 @@ e :: buffer :: unpacker :: operator >> (uint8_t& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint8_t);
 
-    if (!m_overflow && newsize <= m_buf->m_size)
+    if (!m_error && newsize <= m_buf->m_size)
     {
         rhs = m_buf->m_data[m_off];
         return unpacker(m_buf, newsize);
     }
     else
     {
-        return unpacker(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -315,7 +329,7 @@ e :: buffer :: unpacker :: operator >> (uint16_t& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint16_t);
 
-    if (!m_overflow && newsize <= m_buf->m_size)
+    if (!m_error && newsize <= m_buf->m_size)
     {
         rhs = static_cast<uint16_t>(m_buf->m_data[m_off]) << 8
             | static_cast<uint16_t>(m_buf->m_data[m_off + 1]);
@@ -323,7 +337,7 @@ e :: buffer :: unpacker :: operator >> (uint16_t& rhs)
     }
     else
     {
-        return unpacker(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -332,7 +346,7 @@ e :: buffer :: unpacker :: operator >> (uint32_t& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t);
 
-    if (!m_overflow && newsize <= m_buf->m_size)
+    if (!m_error && newsize <= m_buf->m_size)
     {
         rhs = static_cast<uint32_t>(m_buf->m_data[m_off]) << 24
             | static_cast<uint32_t>(m_buf->m_data[m_off + 1]) << 16
@@ -342,7 +356,7 @@ e :: buffer :: unpacker :: operator >> (uint32_t& rhs)
     }
     else
     {
-        return unpacker(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -351,7 +365,7 @@ e :: buffer :: unpacker :: operator >> (uint64_t& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint64_t);
 
-    if (!m_overflow && newsize <= m_buf->m_size)
+    if (!m_error && newsize <= m_buf->m_size)
     {
         rhs = static_cast<uint64_t>(m_buf->m_data[m_off]) << 56
             | static_cast<uint64_t>(m_buf->m_data[m_off + 1]) << 48
@@ -365,7 +379,7 @@ e :: buffer :: unpacker :: operator >> (uint64_t& rhs)
     }
     else
     {
-        return unpacker(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -375,14 +389,14 @@ e :: buffer :: unpacker :: operator >> (slice& rhs)
     uint32_t sz;
     e::buffer::unpacker tmp = *this >> sz;
 
-    if (!tmp.m_overflow && tmp.m_off + sz <= m_buf->m_size)
+    if (!tmp.m_error && tmp.m_off + sz <= m_buf->m_size)
     {
         rhs = slice(m_buf->m_data + tmp.m_off, sz);
         return unpacker(m_buf, tmp.m_off + sz);
     }
     else
     {
-        return unpacker(m_buf, m_off, true);
+        return as_error();
     }
 }
 
@@ -391,12 +405,12 @@ e :: buffer :: unpacker :: operator >> (buffer::padding rhs)
 {
     uint64_t newsize = m_off + rhs.m_pad;
 
-    if (!m_overflow && newsize <= m_buf->m_size)
+    if (!m_error && newsize <= m_buf->m_size)
     {
         return unpacker(m_buf, newsize);
     }
     else
     {
-        return unpacker(m_buf, m_off, true);
+        return as_error();
     }
 }
