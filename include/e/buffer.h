@@ -34,6 +34,7 @@
 
 // STL
 #include <string>
+#include <vector>
 
 // e
 #include <e/slice.h>
@@ -106,6 +107,7 @@ class buffer::packer
         packer operator << (uint64_t rhs);
         packer operator << (const slice& rhs);
         packer operator << (const buffer::padding& rhs);
+        template <typename T> packer operator << (const std::vector<T>& rhs);
 
     private:
         buffer* m_buf;
@@ -145,6 +147,7 @@ class buffer::unpacker
         unpacker operator >> (uint64_t& rhs);
         unpacker operator >> (slice& rhs);
         unpacker operator >> (buffer::padding rhs);
+        template <typename T> unpacker operator >> (std::vector<T>& rhs);
 
     private:
         const buffer* m_buf;
@@ -172,6 +175,38 @@ inline e::buffer::unpacker
 e :: buffer :: operator >> (buffer::padding t)
 {
     return unpacker(this, 0) >> t;
+}
+
+template <typename T>
+inline e::buffer::packer
+e :: buffer :: packer :: operator << (const std::vector<T>& rhs)
+{
+    uint32_t sz = rhs.size();
+    e::buffer::packer ret = *this << sz;
+
+    for (uint32_t i = 0; !ret.error() && i < sz; ++i)
+    {
+        ret = ret << rhs[i];
+    }
+
+    return ret;
+}
+
+template <typename T>
+inline e::buffer::unpacker
+e :: buffer :: unpacker :: operator >> (std::vector<T>& rhs)
+{
+    uint32_t sz;
+    e::buffer::unpacker ret = *this >> sz;
+    rhs.clear();
+
+    for (uint32_t i = 0; !ret.error() && i < sz; ++i)
+    {
+        rhs.push_back(T());
+        ret = ret >> rhs.back();
+    }
+
+    return ret;
 }
 
 } // namespace e
