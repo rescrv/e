@@ -78,8 +78,8 @@ slice :: slice()
 }
 
 inline
-slice :: slice(const uint8_t* data, size_t sz)
-    : m_data(data)
+slice :: slice(const uint8_t* d, size_t sz)
+    : m_data(d)
     , m_sz(sz)
 {
 }
@@ -87,8 +87,8 @@ slice :: slice(const uint8_t* data, size_t sz)
 // sz is the number of bytes, not the number of pointed-to elements.
 template <typename T>
 inline
-slice :: slice(const T* data, size_t sz)
-    : m_data(reinterpret_cast<const uint8_t*>(data))
+slice :: slice(const T* d, size_t sz)
+    : m_data(reinterpret_cast<const uint8_t*>(d))
     , m_sz(sz)
 {
 }
@@ -125,9 +125,9 @@ slice :: reset()
 }
 
 inline void
-slice :: reset(const uint8_t* data, size_t sz)
+slice :: reset(const uint8_t* d, size_t sz)
 {
-    m_data = data;
+    m_data = d;
     m_sz = sz;
 }
 
@@ -137,6 +137,7 @@ slice :: operator = (const slice& rhs)
     // We do not need to check for self-assignment.
     m_data = rhs.m_data;
     m_sz = rhs.m_sz;
+    return *this;
 }
 
 inline int

@@ -82,10 +82,10 @@ e :: buffer :: pack_at(uint32_t off)
 }
 
 void
-e :: buffer :: resize(uint32_t size) throw ()
+e :: buffer :: resize(uint32_t sz) throw ()
 {
-    assert(size <= m_cap);
-    m_size = size;
+    assert(sz <= m_cap);
+    m_size = sz;
 }
 
 void
