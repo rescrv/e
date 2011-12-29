@@ -42,6 +42,9 @@ template <typename K, typename V, uint64_t (*H)(const K&)>
 class lockfree_hash_map
 {
     public:
+        class iterator;
+
+    public:
         lockfree_hash_map(uint16_t magnitude = 5);
         ~lockfree_hash_map() throw ();
 
@@ -50,6 +53,11 @@ class lockfree_hash_map
         bool lookup(const K& k, V* v);
         bool insert(const K& k, const V& v);
         bool remove(const K& k);
+
+    // Sloppy iteration
+    public:
+        iterator begin();
+        iterator end();
 
     private:
         enum bits
@@ -86,14 +94,44 @@ class lockfree_hash_map
     private:
         hazard_ptrs<node, 3> m_hazards;
         std::vector<node*> m_table;
-        uint64_t m_size;
+};
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+class lockfree_hash_map<K, V, H> :: iterator
+{
+    public:
+        iterator(const iterator& other);
+
+    public:
+        const K& key();
+        const V& value();
+        void next();
+
+    public:
+        bool operator == (const iterator& rhs) const;
+        bool operator != (const iterator& rhs) const;
+        iterator& operator = (const iterator& rhs);
+
+    private:
+        friend class lockfree_hash_map<K, V, H>;
+
+    private:
+        iterator(lockfree_hash_map<K, V, H>* c, uint64_t o, node* e);
+
+    private:
+        void prime();
+
+    private:
+        lockfree_hash_map<K, V, H>* m_container;
+        hazard_ptr m_hptr;
+        uint64_t m_offset;
+        node* m_elem;
 };
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 lockfree_hash_map<K, V, H> :: lockfree_hash_map(uint16_t magnitude)
     : m_hazards()
     , m_table()
-    , m_size(0)
 {
     node* valid_empty = NULL;
     valid_empty = e::bitsteal::set(valid_empty, VALID);
@@ -159,7 +197,6 @@ lockfree_hash_map<K, V, H> :: insert(const K& k, const V& v)
 {
     hazard_ptr hptr = m_hazards.get();
     const uint64_t hash = H(k);
-    __sync_add_and_fetch(&m_size, 1);
 
     while (true)
     {
@@ -189,7 +226,6 @@ lockfree_hash_map<K, V, H> :: remove(const K& k)
 {
     hazard_ptr hptr = m_hazards.get();
     const uint64_t hash = H(k);
-    __sync_fetch_and_sub(&m_size, 1);
 
     while (true)
     {
@@ -235,6 +271,20 @@ lockfree_hash_map<K, V, H> :: remove(const K& k)
 
         return true;
     }
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+typename lockfree_hash_map<K, V, H>::iterator
+lockfree_hash_map<K, V, H> :: begin()
+{
+    return iterator(this, 0, NULL);
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+typename lockfree_hash_map<K, V, H>::iterator
+lockfree_hash_map<K, V, H> :: end()
+{
+    return iterator(this, m_table.size(), NULL);
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -338,6 +388,150 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
 
             *cur = next;
             hptr->set(1, e::bitsteal::strip(*cur));
+        }
+    }
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+lockfree_hash_map<K, V, H> :: iterator :: iterator(const iterator& other)
+    : m_container(other.m_container)
+    , m_hptr(m_container->m_hazards.get())
+    , m_offset(other.m_offset)
+    , m_elem(other.m_elem)
+{
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+const K&
+lockfree_hash_map<K, V, H> :: iterator :: key()
+{
+    assert(m_elem);
+    return m_elem->key;
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+const V&
+lockfree_hash_map<K, V, H> :: iterator :: value()
+{
+    assert(m_elem);
+    return m_elem->value;
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+void
+lockfree_hash_map<K, V, H> :: iterator :: next()
+{
+    node* tmp;
+
+    // Grab a safe reference to m_elem->next and put it in tmp.
+    while (true)
+    {
+        tmp = m_elem->next;
+        assert(e::bitsteal::get(tmp, VALID));
+        m_hptr->set(1, e::bitsteal::strip(tmp));
+
+        if (m_elem->next != tmp)
+        {
+            continue;
+        }
+
+        m_hptr->set(0, e::bitsteal::strip(tmp));
+        break;
+    }
+
+    // The item can be deleted, valid, or NULL.
+    if (e::bitsteal::get(tmp, DELETED))
+    {
+        // Go back to the beginning of this bucket and reprime.
+        m_elem = NULL;
+        prime();
+    }
+    else if (e::bitsteal::strip(tmp))
+    {
+        // We've just stepped forward in the linked list.
+        m_elem = e::bitsteal::strip(tmp);
+    }
+    else
+    {
+        // We move on to the next bucket and reprime.
+        ++m_offset;
+        m_elem = NULL;
+        prime();
+    }
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+bool
+lockfree_hash_map<K, V, H> :: iterator :: operator == (const iterator& rhs) const
+{
+    return m_container == rhs.m_container &&
+           m_offset == rhs.m_offset &&
+           m_elem == rhs.m_elem;
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+bool
+lockfree_hash_map<K, V, H> :: iterator :: operator != (const iterator& rhs) const
+{
+    return !(*this == rhs);
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+typename lockfree_hash_map<K, V, H>::iterator&
+lockfree_hash_map<K, V, H> :: iterator :: operator = (const iterator& rhs)
+{
+    // No need to check self-assignment
+    m_container = rhs.m_container;
+    m_hptr = m_container->m_hazards.get();
+    m_offset = rhs.m_offset;
+    m_elem = rhs.m_elem;
+    return *this;
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+lockfree_hash_map<K, V, H> :: iterator :: iterator(lockfree_hash_map<K, V, H>* c,
+                                                   uint64_t o,
+                                                   node* e)
+    : m_container(c)
+    , m_hptr(m_container->m_hazards.get())
+    , m_offset(o)
+    , m_elem(e)
+{
+    prime();
+}
+
+// Advance to the first non-empty bucket.  It will first check the bucket
+// pointed to by m_offset, and then move on from there.
+// POST CONDITION:  m_offset == m_container->m_table.size() || m_elem
+//      Hazard pointers will be set appropriately to protect m_elem and
+//      safeguard all future accesses via m_elem.
+template <typename K, typename V, uint64_t (*H)(const K&)>
+void
+lockfree_hash_map<K, V, H> :: iterator :: prime()
+{
+    while (m_offset < m_container->m_table.size() && !m_elem)
+    {
+        node* tmp = m_container->m_table[m_offset];
+        assert(e::bitsteal::get(tmp, VALID));
+        m_hptr->set(1, e::bitsteal::strip(tmp));
+
+        if (m_container->m_table[m_offset] != tmp || e::bitsteal::get(tmp, DELETED))
+        {
+            continue;
+        }
+
+        // We've grabbed a valid pointer.  Let's set m_elem, and our second
+        // hazard pointer.
+        m_elem = e::bitsteal::strip(tmp);
+        m_hptr->set(0, m_elem);
+
+        // If the pointer we've managed to grab is null, we're moving on to the
+        // next bucket.  We know we can do this because we started with !m_elem
+        // and only ever look at the head of the list in the bucket.  If we end
+        // up with !m_elem, it means the list must be empty.
+        if (!m_elem)
+        {
+            ++m_offset;
         }
     }
 }
