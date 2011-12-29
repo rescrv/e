@@ -68,7 +68,6 @@ class lockfree_fifo
         hazard_ptrs<node, 2> m_hazards;
         node* m_head;
         node* m_tail;
-        size_t m_estimate;
 };
 
 template <typename T>
@@ -76,7 +75,6 @@ lockfree_fifo<T> :: lockfree_fifo()
     : m_hazards()
     , m_head(new node())
     , m_tail(m_head)
-    , m_estimate(0)
 {
 }
 
@@ -94,17 +92,9 @@ lockfree_fifo<T> :: ~lockfree_fifo() throw ()
 }
 
 template <typename T>
-bool
-lockfree_fifo<T> :: optimistically_empty()
-{
-    return __sync_add_and_fetch(&m_estimate, 0) == 0;
-}
-
-template <typename T>
 void
 lockfree_fifo<T> :: push(T& val)
 {
-    __sync_add_and_fetch(&m_estimate, 1);
     std::auto_ptr<typename hazard_ptrs<node, 2>::hazard_ptr> hptr = m_hazards.get();
     node* tail;
     node* next;
@@ -201,7 +191,6 @@ lockfree_fifo<T> :: pop(T* val)
     // even if the assignment fails.
     *val = next->data;
     hptr->retire(head);
-    __sync_sub_and_fetch(&m_estimate, 1);
     return true;
 }
 
