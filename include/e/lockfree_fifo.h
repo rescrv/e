@@ -52,7 +52,7 @@ class lockfree_fifo
         // operations in progress, then this will intuitively correspond to the
         // notion of empty() in the STL queue.
         bool optimistically_empty();
-        void push(const T& val);
+        void push(T& val);
         bool pop(T* val);
 
     private:
@@ -102,7 +102,7 @@ lockfree_fifo<T> :: optimistically_empty()
 
 template <typename T>
 void
-lockfree_fifo<T> :: push(const T& val)
+lockfree_fifo<T> :: push(T& val)
 {
     __sync_add_and_fetch(&m_estimate, 1);
     std::auto_ptr<typename hazard_ptrs<node, 2>::hazard_ptr> hptr = m_hazards.get();
@@ -210,7 +210,7 @@ class lockfree_fifo<T> :: node
 {
     public:
         node() : next(NULL), data() {}
-        node(node* n, const T& d) : next(n), data(d) {}
+        node(node* n, T& d) : next(n), data(d) {}
 
     public:
         node* next;
