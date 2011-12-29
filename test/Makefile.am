@@ -5,6 +5,7 @@ AM_LDFLAGS = $(GTEST_LDFLAGS)
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = bitfield bitsteal buffer convert guard intrusive_ptr \
 				 locking_iterable_fifo profiler
+noinst_PROGRAMS = lockfree_hash_map
 bitfield_SOURCES = runner.cc bitfield.cc
 bitfield_LDADD = ../src/libe.la ${GTEST_LIBS}
 bitsteal_SOURCES = runner.cc bitsteal.cc
@@ -17,6 +18,8 @@ guard_SOURCES = runner.cc guard.cc
 guard_LDADD = $(GTEST_LIBS)
 intrusive_ptr_SOURCES = runner.cc intrusive_ptr.cc
 intrusive_ptr_LDADD = $(GTEST_LIBS)
+lockfree_hash_map_SOURCES = lockfree_hash_map.cc
+lockfree_hash_map_LDADD = -lpthread
 locking_iterable_fifo_SOURCES = runner.cc locking_iterable_fifo.cc
 locking_iterable_fifo_LDADD = $(GTEST_LIBS)
 profiler_SOURCES = runner.cc profiler.cc
