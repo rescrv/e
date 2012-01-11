@@ -121,20 +121,22 @@ usage()
 void
 worker_thread()
 {
-    uint64_t work = __sync_fetch_and_add(&done, workunit);
+    uint64_t lower = __sync_fetch_and_add(&done, workunit);
+    uint64_t upper = lower + workunit;
 
-    while (work < ops)
+    while (lower < ops)
     {
-        uint64_t val;
+        upper = std::min(upper, ops);
 
-        for (uint64_t i = 0; i < work; ++i)
+        for (; lower < upper; ++lower)
         {
-            fifo.push(i);
-
-            while (!fifo.pop(&val))
-                ;
+            uint64_t val;
+            fifo.push(lower);
+            bool ret = fifo.pop(&val);
+            assert(ret);
         }
 
-        work = __sync_fetch_and_add(&done, workunit);
+        lower = __sync_fetch_and_add(&done, workunit);
+        upper = lower + workunit;
     }
 }
