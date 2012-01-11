@@ -511,6 +511,7 @@ lockfree_hash_map<K, V, H> :: iterator :: prime()
 {
     while (m_offset < m_container->m_table.size() && !m_elem)
     {
+        __sync_synchronize();
         node* tmp = m_container->m_table[m_offset];
         assert(e::bitsteal::get(tmp, VALID));
         m_hptr->set(1, e::bitsteal::strip(tmp));
