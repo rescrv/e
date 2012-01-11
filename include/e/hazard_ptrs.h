@@ -211,6 +211,7 @@ template <typename T, size_t P, typename S>
 inline void
 hazard_ptrs<T, P, S> :: hazard_ptr :: retire(T* ptr)
 {
+    __sync_synchronize();
     size_t i;
 
     for (i = 0; i < m_rec->rlist.size(); ++i)
@@ -266,6 +267,7 @@ template <typename T, size_t P, typename S>
 void
 hazard_ptrs<T, P, S> :: hazard_rec :: scan()
 {
+    __sync_synchronize();
     hazard_rec* rec = m_parent.m_recs;
     std::set<const T*> hazardous;
 
