@@ -52,7 +52,7 @@ recv(po6::net::socket* fd, buffer* buf, size_t len, int flags);
 ssize_t
 xrecv(po6::net::socket* fd, buffer* buf, size_t len, int flags);
 
-ssize_t
+inline ssize_t
 read(po6::io::fd* fd, buffer* buf, size_t len)
 {
     len = std::min(len, static_cast<size_t>(buf->capacity() - buf->size()));
@@ -66,7 +66,7 @@ read(po6::io::fd* fd, buffer* buf, size_t len)
     return ret;
 }
 
-ssize_t
+inline ssize_t
 xread(po6::io::fd* fd, buffer* buf, size_t len)
 {
     len = std::min(len, static_cast<size_t>(buf->capacity() - buf->size()));
@@ -80,7 +80,7 @@ xread(po6::io::fd* fd, buffer* buf, size_t len)
     return ret;
 }
 
-ssize_t
+inline ssize_t
 recv(po6::net::socket* fd, buffer* buf, size_t len, int flags)
 {
     len = std::min(len, static_cast<size_t>(buf->capacity() - buf->size()));
@@ -94,7 +94,7 @@ recv(po6::net::socket* fd, buffer* buf, size_t len, int flags)
     return ret;
 }
 
-ssize_t
+inline ssize_t
 xrecv(po6::net::socket* fd, buffer* buf, size_t len, int flags)
 {
     len = std::min(len, static_cast<size_t>(buf->capacity() - buf->size()));
