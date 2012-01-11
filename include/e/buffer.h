@@ -58,13 +58,16 @@ class buffer
         uint32_t capacity() const throw () { return m_cap; }
         bool cmp(const char* buf, uint32_t sz) const throw ();
         const uint8_t* data() const throw () { return m_data; }
+        bool empty() const throw () { return m_size == 0; }
         std::string hex() const;
         uint32_t index(uint8_t b) const throw ();
         uint32_t size() const throw () { return m_size; }
 
     public:
         void clear() throw () { m_size = 0; }
+        e::buffer* copy();
         uint8_t* data() throw () { return m_data; }
+        packer pack();
         packer pack_at(uint32_t off);
         void resize(uint32_t size) throw ();
         void shift(uint32_t off) throw ();

@@ -34,6 +34,7 @@
 // STL
 #include <algorithm>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 
 #include <iostream>
@@ -73,6 +74,22 @@ e :: buffer :: index(uint8_t b) const throw ()
     const uint8_t* loc;
     loc = static_cast<const uint8_t*>(memchr(m_data, b, m_size));
     return loc ? loc - m_data : m_cap;
+}
+
+e::buffer*
+e :: buffer :: copy()
+{
+    std::auto_ptr<e::buffer> ret(create(m_cap));
+    ret->m_cap = m_cap;
+    ret->m_size = m_size;
+    memmove(ret->m_data, m_data, m_cap);
+    return ret.release();
+}
+
+e::buffer::packer
+e :: buffer :: pack()
+{
+    return packer(this, 0);
 }
 
 e::buffer::packer
