@@ -31,6 +31,7 @@
 // C
 #include <cassert>
 #include <cstring>
+#include <stdint.h>
 
 namespace e
 {
@@ -47,8 +48,9 @@ class slice
         ~slice() throw ();
 
     public:
-        const uint8_t* data() const;
-        size_t size() const;
+        const uint8_t* data() const { return m_data; }
+        bool empty() const { return m_sz == 0; }
+        size_t size() const { return m_sz; }
 
     public:
         void advance(size_t sz);
@@ -105,18 +107,6 @@ slice :: slice(const slice& other)
 inline
 slice :: ~slice() throw ()
 {
-}
-
-inline const uint8_t*
-slice :: data() const
-{
-    return m_data;
-}
-
-inline size_t
-slice :: size() const
-{
-    return m_sz;
 }
 
 inline void
