@@ -163,7 +163,7 @@ lockfree_fifo<T> :: pop(T* val)
         hptr->set(1, next);
 
         // Check that the head is still valid.
-        if (head != m_head)
+        if (head != m_head || next != head->next)
         {
             continue;
         }
