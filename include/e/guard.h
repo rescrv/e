@@ -45,6 +45,9 @@ class guard_base
             m_dismissed = true;
         }
 
+    public:
+        void use_variable() const throw () {}
+
     protected:
         guard_base()
             : m_dismissed(false)
