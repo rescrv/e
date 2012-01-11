@@ -361,7 +361,7 @@ lockfree_hash_map<K, V, H> :: find(const hazard_ptr& hptr, uint64_t hash,
 
             if (!cmark)
             {
-                if ((hash == chash && key >= ckey) || hash > chash)
+                if ((hash == chash && !(key < ckey)) || hash > chash)
                 {
                     return ckey == key;
                 }
