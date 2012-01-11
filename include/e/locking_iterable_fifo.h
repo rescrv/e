@@ -113,6 +113,7 @@ template <typename N>
 class locking_iterable_fifo<N> :: iterator
 {
     public:
+        iterator();
         iterator(const iterator&);
         ~iterator() throw ();
 
@@ -366,6 +367,14 @@ locking_iterable_fifo<N> :: release(node* pos)
             break;
         }
     }
+}
+
+template <typename N>
+locking_iterable_fifo<N> :: iterator :: iterator()
+    : m_l(NULL)
+    , m_n(NULL)
+    , m_valid(false)
+{
 }
 
 template <typename N>
