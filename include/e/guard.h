@@ -325,6 +325,84 @@ makeobjguard(O& obj, F func, P1 p1, P2 p2, P3 p3)
     return guard_obj3<O, F, P1, P2, P3>(obj, func, p1, p2, p3);
 }
 
+template <typename O, typename F, typename P1, typename P2, typename P3, typename P4>
+class guard_obj4 : public guard_base
+{
+    public:
+        guard_obj4(O& obj, F func, P1 p1, P2 p2, P3 p3, P4 p4)
+            : m_obj(obj)
+            , m_func(func)
+            , m_p1(p1)
+            , m_p2(p2)
+            , m_p3(p3)
+            , m_p4(p4)
+        {
+        }
+
+        ~guard_obj4()
+        {
+            if (!m_dismissed)
+            {
+                (m_obj.*m_func)(m_p1, m_p2, m_p3, m_p4);
+            }
+        }
+
+    private:
+        O& m_obj;
+        F m_func;
+        const P1 m_p1;
+        const P2 m_p2;
+        const P3 m_p3;
+        const P4 m_p4;
+};
+
+template <typename O, typename F, typename P1, typename P2, typename P3, typename P4>
+guard_obj4<O, F, P1, P2, P3, P4>
+makeobjguard(O& obj, F func, P1 p1, P2 p2, P3 p3, P4 p4)
+{
+    return guard_obj4<O, F, P1, P2, P3, P4>(obj, func, p1, p2, p3, p4);
+}
+
+template <typename O, typename F, typename P1, typename P2, typename P3, typename P4, typename P5>
+class guard_obj5 : public guard_base
+{
+    public:
+        guard_obj5(O& obj, F func, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+            : m_obj(obj)
+            , m_func(func)
+            , m_p1(p1)
+            , m_p2(p2)
+            , m_p3(p3)
+            , m_p4(p4)
+            , m_p5(p5)
+        {
+        }
+
+        ~guard_obj5()
+        {
+            if (!m_dismissed)
+            {
+                (m_obj.*m_func)(m_p1, m_p2, m_p3, m_p4, m_p5);
+            }
+        }
+
+    private:
+        O& m_obj;
+        F m_func;
+        const P1 m_p1;
+        const P2 m_p2;
+        const P3 m_p3;
+        const P4 m_p4;
+        const P5 m_p5;
+};
+
+template <typename O, typename F, typename P1, typename P2, typename P3, typename P4, typename P5>
+guard_obj5<O, F, P1, P2, P3, P4, P5>
+makeobjguard(O& obj, F func, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+{
+    return guard_obj5<O, F, P1, P2, P3, P4, P5>(obj, func, p1, p2, p3, p4, p5);
+}
+
 typedef const guard_base& guard;
 
 } // namespace e
