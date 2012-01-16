@@ -33,6 +33,10 @@
 #include <cstring>
 #include <stdint.h>
 
+// STL
+#include <string>
+#include <vector>
+
 namespace e
 {
 
@@ -43,6 +47,8 @@ class slice
     public:
         slice();
         slice(const uint8_t* data, size_t sz);
+        slice(const std::string& str);
+        slice(const std::vector<uint8_t>& buf);
         template <typename T> slice(const T* data, size_t sz);
         slice(const slice& other);
         ~slice() throw ();
@@ -85,6 +91,20 @@ inline
 slice :: slice(const uint8_t* d, size_t sz)
     : m_data(d)
     , m_sz(sz)
+{
+}
+
+inline
+slice :: slice(const std::string& str)
+    : m_data(reinterpret_cast<const uint8_t*>(str.data()))
+    , m_sz(str.size())
+{
+}
+
+inline
+slice :: slice(const std::vector<uint8_t>& buf)
+    : m_data(&buf.front())
+    , m_sz(buf.size())
 {
 }
 
