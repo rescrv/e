@@ -34,6 +34,7 @@
 // STL
 #include <memory>
 #include <set>
+#include <vector>
 
 // e
 #include <e/guard.h>
