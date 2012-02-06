@@ -59,7 +59,7 @@ class buffer
         bool cmp(const char* buf, uint32_t sz) const throw ();
         const uint8_t* data() const throw () { return m_data; }
         bool empty() const throw () { return m_size == 0; }
-        std::string hex() const;
+        std::string hex() const { return as_slice().hex(); }
         uint32_t index(uint8_t b) const throw ();
         uint32_t size() const throw () { return m_size; }
 

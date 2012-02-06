@@ -56,6 +56,7 @@ class slice
     public:
         const uint8_t* data() const { return m_data; }
         bool empty() const { return m_sz == 0; }
+        std::string hex() const;
         size_t size() const { return m_sz; }
 
     public:

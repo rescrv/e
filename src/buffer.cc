@@ -53,21 +53,6 @@ e :: buffer :: cmp(const char* buf, uint32_t sz) const throw ()
     return false;
 }
 
-std::string
-e:: buffer :: hex() const
-{
-    std::ostringstream ostr;
-    ostr << std::hex;
-
-    for (uint32_t i = 0; i < m_size; ++i)
-    {
-        unsigned int num = m_data[i];
-        ostr << std::setw(2) << std::setfill('0') << num;
-    }
-
-    return ostr.str();
-}
-
 uint32_t
 e :: buffer :: index(uint8_t b) const throw ()
 {
