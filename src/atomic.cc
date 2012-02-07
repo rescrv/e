@@ -41,7 +41,7 @@
 #include <cstring>
 
 // e
-#include "include/e/atomic.h"
+#include "e/atomic.h"
 
 // Inline cpuid instruction.  In PIC compilations, %ebx contains the address
 // of the global offset table.  To avoid breaking such executables, this code
