@@ -29,6 +29,7 @@
 
 // C
 #include <cassert>
+#include <cstddef>
 #include <cstring>
 
 // STL
