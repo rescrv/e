@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.66])
-AC_INIT([e], [0.2.1], [escriva@cs.cornell.edu])
+AC_INIT([libe], [0.2.1], [escriva@cs.cornell.edu])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign dist-bzip2 dist-lzma])
 AM_SILENT_RULES([yes])
@@ -18,6 +18,7 @@ AC_PROG_CC
 
 # Checks for libraries.
 GTEST_LIB_CHECK
+PKG_CHECK_MODULES([PO6], [libpo6-0.2.1 >= 0.2.1])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
@@ -43,5 +44,6 @@ AC_CONFIG_FILES([Makefile
                  benchmarks/Makefile
                  include/Makefile
                  src/Makefile
-                 test/Makefile])
+                 test/Makefile
+                 libe-0.2.pc])
 AC_OUTPUT

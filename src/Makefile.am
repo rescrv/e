@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(abs_top_srcdir)/include
+AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(PO6_CFLAGS)
 
 lib_LTLIBRARIES = libe.la
 
