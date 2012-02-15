@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(abs_top_srcdir)/include
+AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(PO6_CFLAGS)
 noinst_PROGRAMS = lockfree_fifo lockfree_hash_map lockfree_hash_set locking_iterable_fifo
 
 lockfree_fifo_SOURCES = lockfree_fifo.cc

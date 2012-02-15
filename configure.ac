@@ -18,7 +18,7 @@ AC_PROG_CC
 
 # Checks for libraries.
 GTEST_LIB_CHECK
-PKG_CHECK_MODULES([PO6], [libpo6-0.2.1 >= 0.2.1])
+PKG_CHECK_MODULES([PO6], [libpo6 >= 0.2.1])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
@@ -45,5 +45,5 @@ AC_CONFIG_FILES([Makefile
                  include/Makefile
                  src/Makefile
                  test/Makefile
-                 libe-0.2.pc])
+                 libe.pc])
 AC_OUTPUT
