@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.66])
-AC_INIT([libe], [0.2.1], [escriva@cs.cornell.edu])
+AC_INIT([libe], [0.2.2], [escriva@cs.cornell.edu])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign dist-bzip2 dist-lzma])
 AM_SILENT_RULES([yes])
