@@ -1,5 +1,5 @@
 if HAVE_GTEST
-AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(GTEST_CPPFLAGS)
+AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(PO6_CFLAGS) $(GTEST_CPPFLAGS)
 AM_LDFLAGS = $(GTEST_LDFLAGS)
 
 TESTS = $(check_PROGRAMS)

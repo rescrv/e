@@ -5,4 +5,4 @@ SUBDIRS = benchmarks include src test
 EXTRA_DIST = LICENSE THIRD-PARTY
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libe-0.2.pc
+pkgconfig_DATA = libe.pc

@@ -8,5 +8,5 @@ Description: C++ systems-building utilities
 Version: @VERSION@
 
 Requires: libpo6 >= 0.2.1
-Libs: -L${libdir}
+Libs: -L${libdir} -le
 Cflags: -I${includedir}
