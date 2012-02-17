@@ -18,7 +18,7 @@ AC_PROG_CC
 
 # Checks for libraries.
 GTEST_LIB_CHECK
-PKG_CHECK_MODULES([PO6], [libpo6 >= 0.2.1])
+PKG_CHECK_MODULES([PO6], [libpo6 >= 0.2])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
