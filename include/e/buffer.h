@@ -60,7 +60,10 @@ class buffer
         const uint8_t* data() const throw () { return m_data; }
         bool empty() const throw () { return m_size == 0; }
         std::string hex() const { return as_slice().hex(); }
-        uint32_t index(uint8_t b) const throw ();
+        uint32_t index(const uint8_t* mem, size_t sz) const throw ();
+        uint32_t index(const char* mem, size_t sz) const throw ()
+        { return index(reinterpret_cast<const uint8_t*>(mem), sz); }
+        uint32_t index(uint8_t byte) const throw ();
         uint32_t size() const throw () { return m_size; }
 
     public:

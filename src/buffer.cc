@@ -55,10 +55,29 @@ e :: buffer :: cmp(const char* buf, uint32_t sz) const throw ()
 }
 
 uint32_t
-e :: buffer :: index(uint8_t b) const throw ()
+e :: buffer :: index(const uint8_t* mem, size_t sz) const throw ()
+{
+    const uint8_t* loc = static_cast<const uint8_t*>(memmem(m_data, m_size, mem, sz));
+
+    if (loc == NULL)
+    {
+        return m_cap;
+    }
+    else if (loc <= m_data)
+    {
+        return 0;
+    }
+    else
+    {
+        return loc - m_data;
+    }
+}
+
+uint32_t
+e :: buffer :: index(uint8_t byte) const throw ()
 {
     const uint8_t* loc;
-    loc = static_cast<const uint8_t*>(memchr(m_data, b, m_size));
+    loc = static_cast<const uint8_t*>(memchr(m_data, byte, m_size));
     return loc ? loc - m_data : m_cap;
 }
 
