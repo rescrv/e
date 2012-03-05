@@ -136,7 +136,7 @@ main(int argc, char* argv[])
 int
 usage()
 {
-    std::cerr << "Usage: benchmark "
+    std::cerr << "Usage: test "
               << "<threads> "
               << "<ops> "
               << "<workunit> "
