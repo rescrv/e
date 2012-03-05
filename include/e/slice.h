@@ -178,6 +178,78 @@ slice :: compare(const slice& rhs) const
     }
 }
 
+inline bool
+operator < (const slice& lhs, const std::string& rhs)
+{
+    return lhs < e::slice(rhs.data(), rhs.size());
+}
+
+inline bool
+operator <= (const slice& lhs, const std::string& rhs)
+{
+    return lhs <= e::slice(rhs.data(), rhs.size());
+}
+
+inline bool
+operator == (const slice& lhs, const std::string& rhs)
+{
+    return lhs == e::slice(rhs.data(), rhs.size());
+}
+
+inline bool
+operator != (const slice& lhs, const std::string& rhs)
+{
+    return lhs != e::slice(rhs.data(), rhs.size());
+}
+
+inline bool
+operator >= (const slice& lhs, const std::string& rhs)
+{
+    return lhs >= e::slice(rhs.data(), rhs.size());
+}
+
+inline bool
+operator > (const slice& lhs, const std::string& rhs)
+{
+    return lhs < e::slice(rhs.data(), rhs.size());
+}
+
+inline bool
+operator < (const std::string& lhs, const slice& rhs)
+{
+    return e::slice(lhs.data(), lhs.size()) < rhs;
+}
+
+inline bool
+operator <= (const std::string& lhs, const slice& rhs)
+{
+    return e::slice(lhs.data(), lhs.size()) <= rhs;
+}
+
+inline bool
+operator == (const std::string& lhs, const slice& rhs)
+{
+    return e::slice(lhs.data(), lhs.size()) == rhs;
+}
+
+inline bool
+operator != (const std::string& lhs, const slice& rhs)
+{
+    return e::slice(lhs.data(), lhs.size()) != rhs;
+}
+
+inline bool
+operator >= (const std::string& lhs, const slice& rhs)
+{
+    return e::slice(lhs.data(), lhs.size()) >= rhs;
+}
+
+inline bool
+operator > (const std::string& lhs, const slice& rhs)
+{
+    return e::slice(lhs.data(), lhs.size()) > rhs;
+}
+
 } // namespace e
 
 #endif // e_slice_h_

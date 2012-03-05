@@ -175,7 +175,70 @@ TEST(BufferTest, ShiftExcess)
     EXPECT_TRUE(buf->cmp("", 0));
 }
 
-TEST(BufferTest, Index)
+TEST(BufferTest, IndexMem)
+{
+    std::auto_ptr<e::buffer> buf(e::buffer::create("0123456789", 10));
+    EXPECT_EQ(0, buf->index("", 0)); // Test for bad glibc
+    EXPECT_EQ(0, buf->index("0", 1));
+    EXPECT_EQ(1, buf->index("1", 1));
+    EXPECT_EQ(2, buf->index("2", 1));
+    EXPECT_EQ(3, buf->index("3", 1));
+    EXPECT_EQ(4, buf->index("4", 1));
+    EXPECT_EQ(5, buf->index("5", 1));
+    EXPECT_EQ(6, buf->index("6", 1));
+    EXPECT_EQ(7, buf->index("7", 1));
+    EXPECT_EQ(8, buf->index("8", 1));
+    EXPECT_EQ(9, buf->index("9", 1));
+    EXPECT_EQ(0, buf->index("01", 2));
+    EXPECT_EQ(1, buf->index("12", 2));
+    EXPECT_EQ(2, buf->index("23", 2));
+    EXPECT_EQ(3, buf->index("34", 2));
+    EXPECT_EQ(4, buf->index("45", 2));
+    EXPECT_EQ(5, buf->index("56", 2));
+    EXPECT_EQ(6, buf->index("67", 2));
+    EXPECT_EQ(7, buf->index("78", 2));
+    EXPECT_EQ(8, buf->index("89", 2));
+    EXPECT_EQ(0, buf->index("012", 3));
+    EXPECT_EQ(1, buf->index("123", 3));
+    EXPECT_EQ(2, buf->index("234", 3));
+    EXPECT_EQ(3, buf->index("345", 3));
+    EXPECT_EQ(4, buf->index("456", 3));
+    EXPECT_EQ(5, buf->index("567", 3));
+    EXPECT_EQ(6, buf->index("678", 3));
+    EXPECT_EQ(7, buf->index("789", 3));
+    EXPECT_EQ(0, buf->index("0123", 4));
+    EXPECT_EQ(1, buf->index("1234", 4));
+    EXPECT_EQ(2, buf->index("2345", 4));
+    EXPECT_EQ(3, buf->index("3456", 4));
+    EXPECT_EQ(4, buf->index("4567", 4));
+    EXPECT_EQ(5, buf->index("5678", 4));
+    EXPECT_EQ(6, buf->index("6789", 4));
+    EXPECT_EQ(0, buf->index("01234", 5));
+    EXPECT_EQ(1, buf->index("12345", 5));
+    EXPECT_EQ(2, buf->index("23456", 5));
+    EXPECT_EQ(3, buf->index("34567", 5));
+    EXPECT_EQ(4, buf->index("45678", 5));
+    EXPECT_EQ(5, buf->index("56789", 5));
+    EXPECT_EQ(0, buf->index("012345", 6));
+    EXPECT_EQ(1, buf->index("123456", 6));
+    EXPECT_EQ(2, buf->index("234567", 6));
+    EXPECT_EQ(3, buf->index("345678", 6));
+    EXPECT_EQ(4, buf->index("456789", 6));
+    EXPECT_EQ(0, buf->index("0123456", 7));
+    EXPECT_EQ(1, buf->index("1234567", 7));
+    EXPECT_EQ(2, buf->index("2345678", 7));
+    EXPECT_EQ(3, buf->index("3456789", 7));
+    EXPECT_EQ(0, buf->index("01234567", 8));
+    EXPECT_EQ(1, buf->index("12345678", 8));
+    EXPECT_EQ(2, buf->index("23456789", 8));
+    EXPECT_EQ(0, buf->index("012345678", 9));
+    EXPECT_EQ(1, buf->index("123456789", 9));
+    EXPECT_EQ(0, buf->index("0123456789", 10));
+    EXPECT_EQ(buf->capacity(), buf->index("A", 1)); // It's not there.
+    EXPECT_EQ(buf->capacity(), buf->index("B", 1)); // It's not there.
+}
+
+TEST(BufferTest, IndexChr)
 {
     std::auto_ptr<e::buffer> buf(e::buffer::create("0123456789", 10));
     EXPECT_EQ(0, buf->index('0'));
