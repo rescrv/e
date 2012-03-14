@@ -38,7 +38,6 @@
 #include <vector>
 
 // po6 includes
-#include <po6/threads/mutex.h>
 #include <po6/threads/thread.h>
 
 // e includes

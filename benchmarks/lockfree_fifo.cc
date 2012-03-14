@@ -1,10 +1,10 @@
 // Copyright (c) 2011, Robert Escriva
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright
 //       notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
 //     * Neither the name of this project nor the names of its
 //       contributors may be used to endorse or promote products derived
 //       from this software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -87,7 +87,7 @@ main(int argc, char* argv[])
     }
 
     std::cout << "benchmark: " << threads << " threads will perform "
-              << ops << " enqueue/dequeue operations on the list."
+              << ops << " push/pop operations on the fifo."
               << std::endl;
 
     std::vector<std::tr1::shared_ptr<po6::threads::thread> > workers;
@@ -131,9 +131,10 @@ worker_thread()
         for (; lower < upper; ++lower)
         {
             uint64_t val;
+
             fifo.push(lower);
-            bool ret = fifo.pop(&val);
-            assert(ret);
+            bool popped = fifo.pop(&val);
+            assert(popped);
         }
 
         lower = __sync_fetch_and_add(&done, workunit);
