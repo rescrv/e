@@ -1,5 +1,5 @@
 AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(PO6_CFLAGS)
-noinst_PROGRAMS = lockfree_fifo lockfree_hash_map lockfree_hash_set locking_iterable_fifo
+noinst_PROGRAMS = lockfree_fifo lockfree_hash_map lockfree_hash_set locking_iterable_fifo nonblocking_bounded_fifo
 
 lockfree_fifo_SOURCES = lockfree_fifo.cc
 lockfree_fifo_LDADD = -lpthread
@@ -9,3 +9,5 @@ lockfree_hash_set_SOURCES = lockfree_hash_set.cc
 lockfree_hash_set_LDADD = -lpthread
 locking_iterable_fifo_SOURCES = locking_iterable_fifo.cc
 locking_iterable_fifo_LDADD = -lpthread -lrt
+nonblocking_bounded_fifo_SOURCES = nonblocking_bounded_fifo.cc
+nonblocking_bounded_fifo_LDADD = -lpthread
