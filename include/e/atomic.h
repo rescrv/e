@@ -419,6 +419,42 @@ increment_64_fullbarrier(volatile uint64_t* ptr, uint64_t increment)
     return temp + increment;
 }
 
+/////////////////////////////////// Atomic Or //////////////////////////////////
+
+inline void
+or_32_nobarrier(volatile uint32_t* ptr, uint32_t orwith)
+{
+    __asm__ __volatile__("lock; orl %0,%1"
+                         : "+r" (orwith), "+m" (*ptr)
+                         : : "memory");
+}
+
+inline void
+or_64_nobarrier(volatile uint64_t* ptr, uint64_t orwith)
+{
+    __asm__ __volatile__("lock; orq %0,%1"
+                         : "+r" (orwith), "+m" (*ptr)
+                         : : "memory");
+}
+
+////////////////////////////////// Atomic And //////////////////////////////////
+
+inline void
+and_32_nobarrier(volatile uint32_t* ptr, uint32_t andwith)
+{
+    __asm__ __volatile__("lock; andl %0,%1"
+                         : "+r" (andwith), "+m" (*ptr)
+                         : : "memory");
+}
+
+inline void
+and_64_nobarrier(volatile uint64_t* ptr, uint64_t andwith)
+{
+    __asm__ __volatile__("lock; andq %0,%1"
+                         : "+r" (andwith), "+m" (*ptr)
+                         : : "memory");
+}
+
 } // namespace atomic
 } // namespace e
 
