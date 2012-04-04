@@ -107,6 +107,10 @@ class buffer::packer
         uint32_t remain() const { return m_buf->m_cap - m_off; }
 
     public:
+        packer operator << (int8_t rhs);
+        packer operator << (int16_t rhs);
+        packer operator << (int32_t rhs);
+        packer operator << (int64_t rhs);
         packer operator << (uint8_t rhs);
         packer operator << (uint16_t rhs);
         packer operator << (uint32_t rhs);
@@ -147,6 +151,10 @@ class buffer::unpacker
         uint32_t remain() const { return m_buf->m_size - m_off; }
 
     public:
+        unpacker operator >> (int8_t& rhs);
+        unpacker operator >> (int16_t& rhs);
+        unpacker operator >> (int32_t& rhs);
+        unpacker operator >> (int64_t& rhs);
         unpacker operator >> (uint8_t& rhs);
         unpacker operator >> (uint16_t& rhs);
         unpacker operator >> (uint32_t& rhs);

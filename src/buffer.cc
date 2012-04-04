@@ -180,6 +180,34 @@ e :: buffer :: packer :: as_error() const
 }
 
 e::buffer::packer
+e :: buffer :: packer :: operator << (int8_t rhs)
+{
+    uint8_t nrhs = static_cast<uint8_t>(rhs);
+    return *this << nrhs;
+}
+
+e::buffer::packer
+e :: buffer :: packer :: operator << (int16_t rhs)
+{
+    uint16_t nrhs = static_cast<uint16_t>(rhs);
+    return *this << nrhs;
+}
+
+e::buffer::packer
+e :: buffer :: packer :: operator << (int32_t rhs)
+{
+    uint32_t nrhs = static_cast<uint32_t>(rhs);
+    return *this << nrhs;
+}
+
+e::buffer::packer
+e :: buffer :: packer :: operator << (int64_t rhs)
+{
+    uint64_t nrhs = static_cast<uint64_t>(rhs);
+    return *this << nrhs;
+}
+
+e::buffer::packer
 e :: buffer :: packer :: operator << (uint8_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint8_t);
@@ -328,6 +356,42 @@ e::slice
 e :: buffer :: unpacker :: as_slice() const
 {
     return e::slice(m_buf->m_data + m_off, m_buf->m_size - m_off);
+}
+
+e::buffer::unpacker
+e :: buffer :: unpacker :: operator >> (int8_t& rhs)
+{
+    uint8_t nhrs;
+    e::buffer::unpacker ret = *this >> nhrs;
+    rhs = static_cast<int8_t>(nhrs);
+    return ret;
+}
+
+e::buffer::unpacker
+e :: buffer :: unpacker :: operator >> (int16_t& rhs)
+{
+    uint16_t nhrs;
+    e::buffer::unpacker ret = *this >> nhrs;
+    rhs = static_cast<int16_t>(nhrs);
+    return ret;
+}
+
+e::buffer::unpacker
+e :: buffer :: unpacker :: operator >> (int32_t& rhs)
+{
+    uint32_t nhrs;
+    e::buffer::unpacker ret = *this >> nhrs;
+    rhs = static_cast<int32_t>(nhrs);
+    return ret;
+}
+
+e::buffer::unpacker
+e :: buffer :: unpacker :: operator >> (int64_t& rhs)
+{
+    uint64_t nhrs;
+    e::buffer::unpacker ret = *this >> nhrs;
+    rhs = static_cast<int64_t>(nhrs);
+    return ret;
 }
 
 e::buffer::unpacker
