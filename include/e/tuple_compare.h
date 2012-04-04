@@ -28,27 +28,6 @@
 #ifndef e_tuple_compare_h_
 #define e_tuple_compare_h_
 
-// C
-#include <stdint.h>
-#include <string.h>
-
-// POSIX
-#include <arpa/inet.h>
-#include <endian.h>
-
-// C++
-#include <iomanip>
-#include <iostream>
-
-// STL
-#include <algorithm>
-#include <sstream>
-#include <string>
-#include <vector>
-
-// po6
-#include <po6/io/fd.h>
-
 namespace e
 {
 
