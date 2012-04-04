@@ -42,6 +42,7 @@
 
 // e
 #include "../include/e/buffer.h"
+#include "../include/e/endian.h"
 
 bool
 e :: buffer :: cmp(const char* buf, uint32_t sz) const throw ()
@@ -214,7 +215,7 @@ e :: buffer :: packer :: operator << (uint8_t rhs)
 
     if (!m_error && newsize <= m_buf->m_cap)
     {
-        m_buf->m_data[m_off] = rhs;
+        e::pack8be(rhs, m_buf->m_data + m_off);
         m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
         return packer(m_buf, newsize);
     }
@@ -231,8 +232,7 @@ e :: buffer :: packer :: operator << (uint16_t rhs)
 
     if (!m_error && newsize <= m_buf->m_cap)
     {
-        m_buf->m_data[m_off] = rhs >> 8;
-        m_buf->m_data[m_off + 1] = rhs & 0xff;
+        e::pack16be(rhs, m_buf->m_data + m_off);
         m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
         return packer(m_buf, newsize);
     }
@@ -249,10 +249,7 @@ e :: buffer :: packer :: operator << (uint32_t rhs)
 
     if (!m_error && newsize <= m_buf->m_cap)
     {
-        m_buf->m_data[m_off] = rhs >> 24;
-        m_buf->m_data[m_off + 1] = (rhs >> 16) & 0xff;
-        m_buf->m_data[m_off + 2] = (rhs >> 8) & 0xff;
-        m_buf->m_data[m_off + 3] = rhs & 0xff;
+        e::pack32be(rhs, m_buf->m_data + m_off);
         m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
         return packer(m_buf, newsize);
     }
@@ -269,14 +266,7 @@ e :: buffer :: packer :: operator << (uint64_t rhs)
 
     if (!m_error && newsize <= m_buf->m_cap)
     {
-        m_buf->m_data[m_off] = rhs >> 56;
-        m_buf->m_data[m_off + 1] = (rhs >> 48) & 0xff;
-        m_buf->m_data[m_off + 2] = (rhs >> 40) & 0xff;
-        m_buf->m_data[m_off + 3] = (rhs >> 32) & 0xff;
-        m_buf->m_data[m_off + 4] = (rhs >> 24) & 0xff;
-        m_buf->m_data[m_off + 5] = (rhs >> 16) & 0xff;
-        m_buf->m_data[m_off + 6] = (rhs >> 8) & 0xff;
-        m_buf->m_data[m_off + 7] = rhs & 0xff;
+        e::pack64be(rhs, m_buf->m_data + m_off);
         m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
         return packer(m_buf, newsize);
     }
@@ -401,7 +391,7 @@ e :: buffer :: unpacker :: operator >> (uint8_t& rhs)
 
     if (!m_error && newsize <= m_buf->m_size)
     {
-        rhs = m_buf->m_data[m_off];
+        e::unpack8be(m_buf->m_data + m_off, &rhs);
         return unpacker(m_buf, newsize);
     }
     else
@@ -417,8 +407,7 @@ e :: buffer :: unpacker :: operator >> (uint16_t& rhs)
 
     if (!m_error && newsize <= m_buf->m_size)
     {
-        rhs = static_cast<uint16_t>(m_buf->m_data[m_off]) << 8
-            | static_cast<uint16_t>(m_buf->m_data[m_off + 1]);
+        e::unpack16be(m_buf->m_data + m_off, &rhs);
         return unpacker(m_buf, newsize);
     }
     else
@@ -434,10 +423,7 @@ e :: buffer :: unpacker :: operator >> (uint32_t& rhs)
 
     if (!m_error && newsize <= m_buf->m_size)
     {
-        rhs = static_cast<uint32_t>(m_buf->m_data[m_off]) << 24
-            | static_cast<uint32_t>(m_buf->m_data[m_off + 1]) << 16
-            | static_cast<uint32_t>(m_buf->m_data[m_off + 2]) << 8
-            | static_cast<uint32_t>(m_buf->m_data[m_off + 3]);
+        e::unpack32be(m_buf->m_data + m_off, &rhs);
         return unpacker(m_buf, newsize);
     }
     else
@@ -453,14 +439,7 @@ e :: buffer :: unpacker :: operator >> (uint64_t& rhs)
 
     if (!m_error && newsize <= m_buf->m_size)
     {
-        rhs = static_cast<uint64_t>(m_buf->m_data[m_off]) << 56
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 1]) << 48
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 2]) << 40
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 3]) << 32
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 4]) << 24
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 5]) << 16
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 6]) << 8
-            | static_cast<uint64_t>(m_buf->m_data[m_off + 7]);
+        e::unpack64be(m_buf->m_data + m_off, &rhs);
         return unpacker(m_buf, newsize);
     }
     else
