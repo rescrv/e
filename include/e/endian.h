@@ -192,6 +192,20 @@ unpack64le(const uint8_t* buffer, uint64_t* number)
     return buffer + sizeof(uint64_t);
 }
 
+#define SIGNED_WRAPPER(SZ, END) \
+    inline const uint8_t* \
+    unpack ## SZ ## END(const uint8_t* buffer, int ## SZ ## _t* number) \
+    { \
+        uint ## SZ ## _t tmp; \
+        const uint8_t* ret = unpack ## SZ ## END(buffer, &tmp); \
+        *number = static_cast<int ## SZ ## _t>(tmp); \
+    }
+
+SIGNED_WRAPPER(8, le)
+SIGNED_WRAPPER(16, le)
+SIGNED_WRAPPER(32, le)
+SIGNED_WRAPPER(64, le)
+
 } // namespace e
 
 #endif // e_endian_h_
