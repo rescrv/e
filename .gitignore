@@ -55,6 +55,8 @@ test/buffer.o
 test/convert
 test/convert.o
 test/.deps/
+test/endian
+test/endian.o
 test/guard
 test/guard.o
 test/intrusive_ptr
