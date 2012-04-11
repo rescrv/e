@@ -53,7 +53,7 @@ class nonblocking_bounded_fifo
         ~nonblocking_bounded_fifo() throw ();
 
     public:
-        bool push(T& data);
+        bool push(T data);
         bool pop(T* data);
 
     private:
@@ -103,7 +103,7 @@ nonblocking_bounded_fifo<T> :: ~nonblocking_bounded_fifo() throw ()
 
 template <typename T>
 bool
-nonblocking_bounded_fifo<T> :: push(T& t)
+nonblocking_bounded_fifo<T> :: push(T t)
 {
     using namespace e::atomic;
     element* elems = load_ptr_acquire(&m_elems);
