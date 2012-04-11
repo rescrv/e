@@ -40,6 +40,17 @@
 #include <e/atomic.h>
 #include <e/guard.h>
 
+// This mostly follows the safe memory reclamation method described in
+//
+//     Maged M. Michael: Hazard Pointers: Safe Memory Reclamation for Lock-Free
+//     Objects. IEEE Trans. Parallel Distrib. Syst. 15(6): 491-504 (2004)
+//
+// There is one specific thing to note:  An object is only deleted once "retire"
+// is called on it, *and* there are no remaining hazard pointers pointing to it.
+// "retire" does not alter the current hazard record's pointers, so a call to
+// "set(ptr)", "retire(ptr)" allows the object to be used until the pointer is
+// unset, or the hazard record is released (which implicitly unsets pointers).
+
 namespace e
 {
 

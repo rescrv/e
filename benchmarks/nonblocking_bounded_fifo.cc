@@ -1,4 +1,4 @@
-// Copyright (c) 2011, Robert Escriva
+// Copyright (c) 2012, Robert Escriva
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,12 +42,12 @@
 
 // e includes
 #include <e/convert.h>
-#include <e/lockfree_fifo.h>
+#include <e/nonblocking_bounded_fifo.h>
 
 static uint64_t ops;
 static uint64_t workunit;
 static uint64_t done;
-static e::lockfree_fifo<uint64_t> fifo;
+static std::auto_ptr<e::nonblocking_bounded_fifo<uint64_t> > fifo;
 
 void
 usage();
@@ -85,6 +85,8 @@ main(int argc, char* argv[])
         std::cerr << "All parameters must be suitably small.";
         return EXIT_FAILURE;
     }
+
+    fifo.reset(new e::nonblocking_bounded_fifo<uint64_t>(2));
 
     std::cout << "benchmark: " << threads << " threads will perform "
               << ops << " push/pop operations on the fifo."
@@ -132,8 +134,9 @@ worker_thread()
         {
             uint64_t val;
 
-            fifo.push(lower);
-            bool popped = fifo.pop(&val);
+            bool pushed = fifo->push(lower);
+            assert(pushed);
+            bool popped = fifo->pop(&val);
             assert(popped);
         }
 
