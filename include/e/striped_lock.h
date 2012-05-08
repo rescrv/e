@@ -28,6 +28,9 @@
 #ifndef e_striped_lock_h_
 #define e_striped_lock_h_
 
+// STL
+#include <algorithm>
+
 namespace e
 {
 
@@ -36,6 +39,7 @@ class striped_lock
 {
     public:
         class hold;
+        class multihold;
 
     public:
         striped_lock(size_t striping);
@@ -107,6 +111,60 @@ striped_lock<T> :: hold :: ~hold() throw ()
         }
         catch (...)
         {
+        }
+    }
+}
+
+template <typename T>
+class striped_lock<T> :: multihold
+{
+    public:
+        multihold(striped_lock<T>* l, const std::vector<size_t>& stripe_nums);
+        ~multihold() throw ();
+
+    private:
+        striped_lock<T>* m_l;
+        std::vector<size_t> m_stripes;
+};
+
+template <typename T>
+striped_lock<T> :: multihold :: multihold(striped_lock<T>* l, const std::vector<size_t>& stripe_nums)
+    : m_l(l)
+    , m_stripes(stripe_nums)
+{
+    for (size_t i = 0; i < m_stripes.size(); ++i)
+    {
+        m_stripes[i] = m_stripes[i] % m_l->m_striping;
+    }
+
+    std::sort(m_stripes.begin(), m_stripes.end());
+    std::vector<size_t>::iterator newend = std::unique(m_stripes.begin(), m_stripes.end());
+    m_stripes.resize(newend - m_stripes.begin());
+
+    for (size_t i = 0; i < m_stripes.size(); ++i)
+    {
+        m_l->m_locks[m_stripes[i]].lock();
+    }
+}
+
+template <typename T>
+striped_lock<T> :: multihold :: ~multihold() throw ()
+{
+    for (size_t i = 0; i < m_stripes.size(); ++i)
+    {
+        try
+        {
+            m_l->m_locks[m_stripes[i]].unlock();
+        }
+        catch (...)
+        {
+            try
+            {
+                PO6_DTOR_ERROR("Unable to release striped_lock with RAII.");
+            }
+            catch (...)
+            {
+            }
         }
     }
 }
