@@ -58,18 +58,22 @@ class buffer
         uint32_t capacity() const throw () { return m_cap; }
         bool cmp(const char* buf, uint32_t sz) const throw ();
         const uint8_t* data() const throw () { return m_data; }
+        const uint8_t* end() const throw () { return m_data + m_size; }
         bool empty() const throw () { return m_size == 0; }
         std::string hex() const { return as_slice().hex(); }
         uint32_t index(const uint8_t* mem, size_t sz) const throw ();
         uint32_t index(const char* mem, size_t sz) const throw ()
         { return index(reinterpret_cast<const uint8_t*>(mem), sz); }
         uint32_t index(uint8_t byte) const throw ();
+        uint32_t remain() const throw () { assert(m_cap >= m_size); return m_cap - m_size; }
         uint32_t size() const throw () { return m_size; }
 
     public:
         void clear() throw () { m_size = 0; }
         e::buffer* copy();
         uint8_t* data() throw () { return m_data; }
+        uint8_t* end() throw () { return m_data + m_size; }
+        void extend(uint32_t by) throw () { assert(m_cap >= m_size + by); m_size += by; }
         packer pack();
         packer pack_at(uint32_t off);
         void resize(uint32_t size) throw ();
@@ -118,6 +122,7 @@ class buffer::packer
         packer operator << (const slice& rhs);
         packer operator << (const buffer::padding& rhs);
         template <typename T> packer operator << (const std::vector<T>& rhs);
+        template <typename A, typename B> packer operator << (const std::pair<A, B>& rhs);
 
     private:
         buffer* m_buf;
@@ -162,6 +167,7 @@ class buffer::unpacker
         unpacker operator >> (slice& rhs);
         unpacker operator >> (buffer::padding rhs);
         template <typename T> unpacker operator >> (std::vector<T>& rhs);
+        template <typename A, typename B> unpacker operator >> (std::pair<A, B>& rhs);
 
     private:
         const buffer* m_buf;
@@ -206,6 +212,13 @@ e :: buffer :: packer :: operator << (const std::vector<T>& rhs)
     return ret;
 }
 
+template <typename A, typename B>
+inline e::buffer::packer
+e :: buffer :: packer :: operator << (const std::pair<A, B>& rhs)
+{
+    return *this << rhs.first << rhs.second;
+}
+
 template <typename T>
 inline e::buffer::unpacker
 e :: buffer :: unpacker :: operator >> (std::vector<T>& rhs)
@@ -221,6 +234,13 @@ e :: buffer :: unpacker :: operator >> (std::vector<T>& rhs)
     }
 
     return ret;
+}
+
+template <typename A, typename B>
+inline e::buffer::unpacker
+e :: buffer :: unpacker :: operator >> (std::pair<A, B>& rhs)
+{
+    return *this >> rhs.first >> rhs.second;
 }
 
 } // namespace e
