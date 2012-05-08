@@ -41,7 +41,7 @@ template <typename T>
 class envconfig
 {
     public:
-        envconfig(const char* envvar, T def);
+        envconfig(const char* envvar, T def = T());
 
     public:
         operator const T& () const;
@@ -51,7 +51,7 @@ class envconfig
 };
 
 template <typename T>
-envconfig<T> :: envconfig(const char* envvar, T def = T())
+envconfig<T> :: envconfig(const char* envvar, T def)
     : m_t(def)
 {
     const char* env = getenv(envvar);
