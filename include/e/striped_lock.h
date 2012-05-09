@@ -60,20 +60,7 @@ striped_lock<T> :: striped_lock(size_t striping)
 template <typename T>
 striped_lock<T> :: ~striped_lock() throw ()
 {
-    try
-    {
-        delete[] m_locks;
-    }
-    catch (...)
-    {
-        try
-        {
-            PO6_DTOR_ERROR("Unable to destruct striped lock.");
-        }
-        catch (...)
-        {
-        }
-    }
+    delete[] m_locks;
 }
 
 template <typename T>
@@ -99,20 +86,7 @@ striped_lock<T> :: hold :: hold(striped_lock<T>* l, size_t stripe_num)
 template <typename T>
 striped_lock<T> :: hold :: ~hold() throw ()
 {
-    try
-    {
-        m_l->m_locks[m_stripe].unlock();
-    }
-    catch (...)
-    {
-        try
-        {
-            PO6_DTOR_ERROR("Unable to release striped_lock with RAII.");
-        }
-        catch (...)
-        {
-        }
-    }
+    m_l->m_locks[m_stripe].unlock();
 }
 
 template <typename T>
@@ -152,20 +126,7 @@ striped_lock<T> :: multihold :: ~multihold() throw ()
 {
     for (size_t i = 0; i < m_stripes.size(); ++i)
     {
-        try
-        {
-            m_l->m_locks[m_stripes[i]].unlock();
-        }
-        catch (...)
-        {
-            try
-            {
-                PO6_DTOR_ERROR("Unable to release striped_lock with RAII.");
-            }
-            catch (...)
-            {
-            }
-        }
+        m_l->m_locks[m_stripes[i]].unlock();
     }
 }
 
