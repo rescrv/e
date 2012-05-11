@@ -184,7 +184,8 @@ nonblocking_bounded_fifo<T> :: pop(T* t)
     }
 
     *t = elem->t;
-    elem->t = T();
+    T fresh;
+    elem->t = fresh;
     store_64_release(&elem->count, po + m_sz);
     return true;
 }
