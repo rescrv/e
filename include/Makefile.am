@@ -7,5 +7,5 @@ nobase_include_HEADERS = e/atomic.h e/bitfield.h e/bitsteal.h e/buffer.h \
 						 e/lockfree_hash_set.h e/locking_fifo.h \
 						 e/locking_iterable_fifo.h \
 						 e/nonblocking_bounded_fifo.h e/pow2.h e/profiler.h \
-						 e/slice.h e/striped_lock.h e/timer.h \
+						 e/safe_math.h e/slice.h e/striped_lock.h e/timer.h \
 						 e/tuple_compare.h e/worker_barrier.h
