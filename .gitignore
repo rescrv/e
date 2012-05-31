@@ -73,3 +73,5 @@ test/nonblocking_bounded_fifo.o
 test/profiler
 test/profiler.o
 test/runner.o
+test/safe_math
+test/safe_math.o
