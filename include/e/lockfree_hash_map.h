@@ -103,8 +103,8 @@ class lockfree_hash_map<K, V, H> :: iterator
         iterator(const iterator& other);
 
     public:
-        const K& key();
-        const V& value();
+        const K& key() const;
+        const V& value() const;
         void next();
 
     public:
@@ -403,7 +403,7 @@ lockfree_hash_map<K, V, H> :: iterator :: iterator(const iterator& other)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 const K&
-lockfree_hash_map<K, V, H> :: iterator :: key()
+lockfree_hash_map<K, V, H> :: iterator :: key() const
 {
     assert(m_elem);
     return m_elem->key;
@@ -411,7 +411,7 @@ lockfree_hash_map<K, V, H> :: iterator :: key()
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 const V&
-lockfree_hash_map<K, V, H> :: iterator :: value()
+lockfree_hash_map<K, V, H> :: iterator :: value() const
 {
     assert(m_elem);
     return m_elem->value;
@@ -535,6 +535,13 @@ lockfree_hash_map<K, V, H> :: iterator :: prime()
             ++m_offset;
         }
     }
+}
+
+template <typename K>
+uint64_t
+hash_map_id(const K& k)
+{
+    return k;
 }
 
 } // namespace e

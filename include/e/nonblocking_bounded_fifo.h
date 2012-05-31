@@ -66,10 +66,10 @@ class nonblocking_bounded_fifo
         nonblocking_bounded_fifo& operator = (const nonblocking_bounded_fifo&);
 
     private:
+        uint64_t m_push __attribute__ ((aligned (64)));
+        uint64_t m_pop __attribute__ ((aligned (64)));
         const size_t m_sz;
         element* m_elems;
-        uint64_t m_push;
-        uint64_t m_pop;
 };
 
 template <typename T>
@@ -184,7 +184,8 @@ nonblocking_bounded_fifo<T> :: pop(T* t)
     }
 
     *t = elem->t;
-    elem->t = T();
+    T fresh;
+    elem->t = fresh;
     store_64_release(&elem->count, po + m_sz);
     return true;
 }

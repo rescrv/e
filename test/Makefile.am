@@ -1,10 +1,11 @@
 if HAVE_GTEST
 AM_CPPFLAGS = -I$(abs_top_srcdir)/include $(PO6_CFLAGS) $(GTEST_CPPFLAGS)
+AM_CXXFLAGS = $(WANAL_CXXFLAGS)
 AM_LDFLAGS = $(GTEST_LDFLAGS)
 
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = bitfield bitsteal buffer convert endian guard intrusive_ptr \
-				 locking_iterable_fifo nonblocking_bounded_fifo profiler
+				 locking_iterable_fifo nonblocking_bounded_fifo profiler safe_math
 bitfield_SOURCES = runner.cc bitfield.cc
 bitfield_LDADD = ../src/libe.la ${GTEST_LIBS}
 bitsteal_SOURCES = runner.cc bitsteal.cc
@@ -25,4 +26,6 @@ nonblocking_bounded_fifo_SOURCES = runner.cc nonblocking_bounded_fifo.cc
 nonblocking_bounded_fifo_LDADD = $(GTEST_LIBS)
 profiler_SOURCES = runner.cc profiler.cc
 profiler_LDADD = -lrt $(GTEST_LIBS)
+safe_math_SOURCES = runner.cc safe_math.cc
+safe_math_LDADD = -lrt $(GTEST_LIBS)
 endif

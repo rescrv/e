@@ -1,4 +1,4 @@
-// Copyright (c) 2011, Robert Escriva
+// Copyright (c) 2012, Robert Escriva
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,57 +25,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef e_envconfig_h_
-#define e_envconfig_h_
-
-// C
-#include <cstdlib>
-
-// C++
-#include <sstream>
+#ifndef e_pow2_h_
+#define e_pow2_h_
 
 namespace e
 {
 
-template <typename T>
-class envconfig
+// Compute the next highest power of two
+
+uint32_t
+next_pow2(uint32_t in)
 {
-    public:
-        envconfig(const char* envvar, T def = T());
-
-    public:
-        operator const T& () const;
-
-    private:
-        T m_t;
-};
-
-template <typename T>
-envconfig<T> :: envconfig(const char* envvar, T def)
-    : m_t(def)
-{
-    const char* env = getenv(envvar);
-
-    if (env)
-    {
-        std::string s(getenv(envvar));
-        std::istringstream iss(s);
-        T tmp;
-        iss >> tmp;
-
-        if (!iss.fail() && !iss.bad() && iss.eof())
-        {
-            m_t = tmp;
-        }
-    }
+    --in;
+    in = (in >> 1) | in;
+    in = (in >> 4) | in;
+    in = (in >> 8) | in;
+    in = (in >> 16) | in;
+    ++in;
+    return in;
 }
 
-template <typename T>
-envconfig<T> :: operator const T&() const
+uint64_t
+next_pow2(uint64_t in)
 {
-    return m_t;
+    --in;
+    in = (in >> 1) | in;
+    in = (in >> 4) | in;
+    in = (in >> 8) | in;
+    in = (in >> 16) | in;
+    in = (in >> 32) | in;
+    ++in;
+    return in;
 }
 
 } // namespace e
 
-#endif // e_envconfig_h_
+#endif // e_pow2_h_

@@ -38,6 +38,9 @@ template <typename K, uint64_t (*H)(const K&)>
 class lockfree_hash_set
 {
     public:
+        class iterator;
+
+    public:
         lockfree_hash_set(uint16_t magnitude = 5);
         ~lockfree_hash_set() throw ();
 
@@ -45,6 +48,11 @@ class lockfree_hash_set
         bool contains(const K& k);
         bool insert(const K& k);
         bool remove(const K& k);
+
+    // Sloppy iteration
+    public:
+        iterator begin();
+        iterator end();
 
     private:
         class node;
@@ -57,6 +65,31 @@ class lockfree_hash_set
 
     private:
         lockfree_hash_map<K, int, H> m_map;
+};
+
+template <typename K, uint64_t (*H)(const K&)>
+class lockfree_hash_set<K, H> :: iterator
+{
+    public:
+        iterator(const iterator& other);
+
+    public:
+        void next();
+
+    public:
+        const K* operator -> () const;
+        bool operator == (const iterator& rhs) const;
+        bool operator != (const iterator& rhs) const;
+        iterator& operator = (const iterator& rhs);
+
+    private:
+        friend class lockfree_hash_set<K, H>;
+
+    private:
+        iterator(typename lockfree_hash_map<K, int, H>::iterator iter);
+
+    private:
+        typename lockfree_hash_map<K, int, H>::iterator m_iter;
 };
 
 template <typename K, uint64_t (*H)(const K&)>
@@ -89,6 +122,69 @@ inline bool
 lockfree_hash_set<K, H> :: remove(const K& k)
 {
     return m_map.remove(k);
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+typename lockfree_hash_set<K, H>::iterator
+lockfree_hash_set<K, H> :: begin()
+{
+    return iterator(m_map.begin());
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+typename lockfree_hash_set<K, H>::iterator
+lockfree_hash_set<K, H> :: end()
+{
+    return iterator(m_map.end());
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+lockfree_hash_set<K, H> :: iterator :: iterator(const iterator& other)
+    : m_iter(other.m_iter)
+{
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+void
+lockfree_hash_set<K, H> :: iterator :: next()
+{
+    m_iter.next();
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+const K*
+lockfree_hash_set<K, H> :: iterator :: operator -> () const
+{
+    return &m_iter.key();
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+bool
+lockfree_hash_set<K, H> :: iterator :: operator == (const iterator& rhs) const
+{
+    return m_iter == rhs.m_iter;
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+bool
+lockfree_hash_set<K, H> :: iterator :: operator != (const iterator& rhs) const
+{
+    return !(*this == rhs);
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+typename lockfree_hash_set<K, H>::iterator&
+lockfree_hash_set<K, H> :: iterator :: operator = (const iterator& rhs)
+{
+    // No need to check self-assignment
+    m_iter = rhs.m_iter;
+    return *this;
+}
+
+template <typename K, uint64_t (*H)(const K&)>
+lockfree_hash_set<K, H> :: iterator :: iterator(typename lockfree_hash_map<K, int, H>::iterator iter)
+    : m_iter(iter)
+{
 }
 
 } // namespace e
