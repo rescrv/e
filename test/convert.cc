@@ -48,11 +48,11 @@ TEST(ConvertTest, Uint64NormalCases)
         EXPECT_EQ(0, e::convert::to_uint64_t("00"));
         EXPECT_EQ(0, e::convert::to_uint64_t("00", 8));
 
-        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("18446744073709551615"));
-        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("0xffffffffffffffff"));
-        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("0xffffffffffffffff", 16));
-        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("01777777777777777777777"));
-        EXPECT_EQ(18446744073709551615L, e::convert::to_uint64_t("01777777777777777777777", 8));
+        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("18446744073709551615"));
+        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff"));
+        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff", 16));
+        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("01777777777777777777777"));
+        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("01777777777777777777777", 8));
     }
     catch (...)
     {
@@ -72,11 +72,11 @@ TEST(ConvertTest, Uint32NormalCases)
         EXPECT_EQ(0, e::convert::to_uint32_t("00"));
         EXPECT_EQ(0, e::convert::to_uint32_t("00", 8));
 
-        EXPECT_EQ(4294967295, e::convert::to_uint32_t("4294967295"));
-        EXPECT_EQ(4294967295, e::convert::to_uint32_t("0xffffffff"));
-        EXPECT_EQ(4294967295, e::convert::to_uint32_t("0xffffffff", 16));
-        EXPECT_EQ(4294967295, e::convert::to_uint32_t("037777777777"));
-        EXPECT_EQ(4294967295, e::convert::to_uint32_t("037777777777", 8));
+        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("4294967295"));
+        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff"));
+        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff", 16));
+        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("037777777777"));
+        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("037777777777", 8));
     }
     catch (...)
     {
