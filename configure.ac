@@ -1,11 +1,11 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.66])
+AC_PREREQ([2.61])
 AC_INIT([libe], [0.3.dev], [escriva@cs.cornell.edu])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign dist-bzip2 dist-lzma])
-AM_SILENT_RULES([yes])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 LT_PREREQ([2.2])
 LT_INIT
 AC_CONFIG_SRCDIR([include/e/buffer.h])
