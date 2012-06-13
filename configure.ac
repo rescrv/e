@@ -4,11 +4,11 @@
 AC_PREREQ([2.61])
 AC_INIT([libe], [0.3.dev], [escriva@cs.cornell.edu])
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE([foreign dist-bzip2])
+AM_INIT_AUTOMAKE([foreign subdir-objects dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 LT_PREREQ([2.2])
 LT_INIT
-AC_CONFIG_SRCDIR([include/e/buffer.h])
+AC_CONFIG_SRCDIR([e/buffer.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -43,9 +43,5 @@ AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull])
 
 AC_CONFIG_FILES([Makefile
-                 benchmarks/Makefile
-                 include/Makefile
-                 src/Makefile
-                 test/Makefile
                  libe.pc])
 AC_OUTPUT
