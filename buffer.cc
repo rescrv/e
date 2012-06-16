@@ -181,6 +181,23 @@ e :: buffer :: packer :: as_error() const
 }
 
 e::buffer::packer
+e :: buffer :: packer :: copy(const slice& from)
+{
+    uint64_t newsize = m_off + from.size();
+
+    if (!m_error && newsize <= m_buf->m_cap)
+    {
+        memmove(m_buf->m_data + m_off, from.data(), from.size());
+        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+        return packer(m_buf, newsize);
+    }
+    else
+    {
+        return as_error();
+    }
+}
+
+e::buffer::packer
 e :: buffer :: packer :: operator << (int8_t rhs)
 {
     uint8_t nrhs = static_cast<uint8_t>(rhs);

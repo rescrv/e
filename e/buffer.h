@@ -109,6 +109,10 @@ class buffer::packer
         packer as_error() const;
         bool error() const { return m_error; }
         uint32_t remain() const { return m_buf->m_cap - m_off; }
+        // Unlike the operator on slices, this does not pack the size.  It
+        // simply copies the contents of "from" and advances the internal
+        // offset, performing error checking along the way.
+        packer copy(const slice& from);
 
     public:
         packer operator << (int8_t rhs);
