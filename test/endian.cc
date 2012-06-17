@@ -29,7 +29,7 @@
 #include <gtest/gtest.h>
 
 // e
-#include "../include/e/endian.h"
+#include "e/endian.h"
 
 #define EXPECT_MEMCMP(X, Y, S) EXPECT_EQ(0, memcmp(X, Y, S))
 #pragma GCC diagnostic ignored "-Wswitch-default"

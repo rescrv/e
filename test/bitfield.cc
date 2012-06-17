@@ -32,8 +32,8 @@
 #include <gtest/gtest.h>
 
 // e
-#include "../include/e/bitfield.h"
-#include "../include/e/buffer.h"
+#include "e/bitfield.h"
+#include "e/buffer.h"
 
 #pragma GCC diagnostic ignored "-Wswitch-default"
 

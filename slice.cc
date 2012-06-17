@@ -30,7 +30,7 @@
 #include <sstream>
 
 // e
-#include "../include/e/slice.h"
+#include "e/slice.h"
 
 std::string
 e:: slice :: hex() const

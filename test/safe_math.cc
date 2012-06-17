@@ -31,7 +31,7 @@
 #include <gtest/gtest.h>
 
 // e
-#include "../include/e/safe_math.h"
+#include "e/safe_math.h"
 
 #pragma GCC diagnostic ignored "-Wswitch-default"
 

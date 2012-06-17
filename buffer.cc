@@ -41,8 +41,8 @@
 #include <iostream>
 
 // e
-#include "../include/e/buffer.h"
-#include "../include/e/endian.h"
+#include "e/buffer.h"
+#include "e/endian.h"
 
 bool
 e :: buffer :: cmp(const char* buf, uint32_t sz) const throw ()
