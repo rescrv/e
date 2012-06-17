@@ -36,6 +36,9 @@
 #include <iostream>
 #include <vector>
 
+namespace e
+{
+
 #define RDTSC(a, d) \
     __asm__ volatile("rdtsc\n" : "=a"(a), "=d"(d) : : )
 #define CPUID(a, b, c, d) \
@@ -222,5 +225,7 @@ microbench :: trial(size_t i) const
 
 #undef RDTSC
 #undef CPUID
+
+} // namespace e
 
 #endif // e_microbench_h_
