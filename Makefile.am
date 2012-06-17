@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
-AM_CPPFLAGS =
-AM_CXXFLAGS = $(PO6_CFLAGS) $(WANAL_CXXFLAGS)
+AM_CPPFLAGS = -I$(abs_top_srcdir) $(PO6_CFLAGS)
+AM_CXXFLAGS = $(WANAL_CXXFLAGS)
 AM_LDFLAGS =
 
 EXTRA_DIST = LICENSE README THIRD-PARTY
@@ -27,7 +27,7 @@ libe_la_SOURCES = atomic.cc buffer.cc slice.cc
 ##################################### Tests ####################################
 
 if HAVE_GTEST
-AM_CPPFLAGS += -I$(abs_top_srcdir) $(PO6_CFLAGS) $(GTEST_CPPFLAGS)
+AM_CPPFLAGS += $(GTEST_CPPFLAGS)
 AM_LDFLAGS += $(GTEST_LDFLAGS)
 
 TESTS = $(check_PROGRAMS)
