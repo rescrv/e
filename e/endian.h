@@ -113,6 +113,38 @@ pack64le(uint64_t number, uint8_t* buffer)
     return buffer + sizeof(uint64_t);
 }
 
+inline uint8_t*
+packfloatbe(float number, uint8_t* buffer)
+{
+    union {float f; uint32_t i;};
+    f = number;
+    return pack32be(i, buffer);
+}
+
+inline uint8_t*
+packfloatle(float number, uint8_t* buffer)
+{
+    union {float f; uint32_t i;};
+    f = number;
+    return pack32le(i, buffer);
+}
+
+inline uint8_t*
+packdoublebe(double number, uint8_t* buffer)
+{
+    union {double d; uint64_t i;};
+    d = number;
+    return pack64be(i, buffer);
+}
+
+inline uint8_t*
+packdoublele(double number, uint8_t* buffer)
+{
+    union {double d; uint64_t i;};
+    d = number;
+    return pack64le(i, buffer);
+}
+
 // Unpack values from the buffer
 inline const uint8_t*
 unpack8be(const uint8_t* buffer, uint8_t* number)
@@ -190,6 +222,42 @@ unpack64le(const uint8_t* buffer, uint64_t* number)
             | static_cast<uint64_t>(buffer[6]) << 48
             | static_cast<uint64_t>(buffer[7]) << 56;
     return buffer + sizeof(uint64_t);
+}
+
+inline const uint8_t*
+unpackfloatbe(const uint8_t* buffer, float* number)
+{
+    union {float f; uint32_t i;};
+    const uint8_t* ret = unpack32be(buffer, &i);
+    *number = f;
+    return ret;
+}
+
+inline const uint8_t*
+unpackfloatle(const uint8_t* buffer, float* number)
+{
+    union {float f; uint32_t i;};
+    const uint8_t* ret = unpack32le(buffer, &i);
+    *number = f;
+    return ret;
+}
+
+inline const uint8_t*
+unpackdoublebe(const uint8_t* buffer, double* number)
+{
+    union {double d; uint64_t i;};
+    const uint8_t* ret = unpack64be(buffer, &i);
+    *number = d;
+    return ret;
+}
+
+inline const uint8_t*
+unpackdoublele(const uint8_t* buffer, double* number)
+{
+    union {double d; uint64_t i;};
+    const uint8_t* ret = unpack64le(buffer, &i);
+    *number = d;
+    return ret;
 }
 
 #define SIGNED_WRAPPER(SZ, END) \

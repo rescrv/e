@@ -60,6 +60,18 @@ TEST(EndianTest, Pack)
     EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
     e::pack64le(0xdeadbeefcafebabeULL, buffer);
     EXPECT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
+
+    float f = 16711938.0;
+    e::packfloatbe(f, buffer);
+    EXPECT_MEMCMP(buffer, "\x4b\x7f\x01\x02", 4);
+    e::packfloatle(f, buffer);
+    EXPECT_MEMCMP(buffer, "\x02\x01\x7f\x4b", 4);
+
+    double d = 9006104071832581.0;
+    e::packdoublebe(d, buffer);
+    EXPECT_MEMCMP(buffer, "\x43\x3f\xff\x01\x02\x03\x04\x05", 8);
+    e::packdoublele(d, buffer);
+    EXPECT_MEMCMP(buffer, "\x05\x04\x03\x02\x01\xff\x3f\x43", 8);
 }
 
 TEST(EndianTest, Unpack)
@@ -93,6 +105,16 @@ TEST(EndianTest, Unpack)
     EXPECT_EQ(0xdeadbeefcafebabeULL, number64);
     e::unpack64le(buffer64, &number64);
     EXPECT_EQ(0xbebafecaefbeaddeULL, number64);
+
+    e::unpackfloatbe(bufferfloatbe, &f);
+    EXPECT_EQ(16711938.0, f);
+    e::unpackfloatle(bufferfloatle, &f);
+    EXPECT_EQ(16711938.0, f);
+
+    e::unpackdoublebe(bufferdoublebe, &d);
+    EXPECT_EQ(9006104071832581.0, d);
+    e::unpackdoublele(bufferdoublele, &d);
+    EXPECT_EQ(9006104071832581.0, d);
 }
 
 } // namespace
