@@ -41,24 +41,40 @@ TEST(EndianTest, Pack)
 {
     uint8_t buffer[sizeof(int64_t)];
 
-    e::pack8be(0xde, buffer);
+    e::pack8be(uint8_t(0xde), buffer);
     EXPECT_MEMCMP(buffer, "\xde", 1);
-    e::pack8le(0xde, buffer);
+    e::pack8le(uint8_t(0xde), buffer);
+    EXPECT_MEMCMP(buffer, "\xde", 1);
+    e::pack8be(int8_t(0xde), buffer);
+    EXPECT_MEMCMP(buffer, "\xde", 1);
+    e::pack8le(int8_t(0xde), buffer);
     EXPECT_MEMCMP(buffer, "\xde", 1);
 
-    e::pack16be(0xdead, buffer);
+    e::pack16be(uint16_t(0xdead), buffer);
     EXPECT_MEMCMP(buffer, "\xde\xad", 2);
-    e::pack16le(0xdead, buffer);
+    e::pack16le(uint16_t(0xdead), buffer);
+    EXPECT_MEMCMP(buffer, "\xad\xde", 2);
+    e::pack16be(int16_t(0xdead), buffer);
+    EXPECT_MEMCMP(buffer, "\xde\xad", 2);
+    e::pack16le(int16_t(0xdead), buffer);
     EXPECT_MEMCMP(buffer, "\xad\xde", 2);
 
-    e::pack32be(0xdeadbeefUL, buffer);
+    e::pack32be(uint32_t(0xdeadbeefUL), buffer);
     EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef", 4);
-    e::pack32le(0xdeadbeefUL, buffer);
+    e::pack32le(uint32_t(0xdeadbeefUL), buffer);
+    EXPECT_MEMCMP(buffer, "\xef\xbe\xad\xde", 4);
+    e::pack32be(int32_t(0xdeadbeefUL), buffer);
+    EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef", 4);
+    e::pack32le(int32_t(0xdeadbeefUL), buffer);
     EXPECT_MEMCMP(buffer, "\xef\xbe\xad\xde", 4);
 
-    e::pack64be(0xdeadbeefcafebabeULL, buffer);
+    e::pack64be(uint64_t(0xdeadbeefcafebabeULL), buffer);
     EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
-    e::pack64le(0xdeadbeefcafebabeULL, buffer);
+    e::pack64le(uint64_t(0xdeadbeefcafebabeULL), buffer);
+    EXPECT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
+    e::pack64be(int64_t(0xdeadbeefcafebabeULL), buffer);
+    EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
+    e::pack64le(int64_t(0xdeadbeefcafebabeULL), buffer);
     EXPECT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
 
     float f = 16711938.0;
@@ -80,31 +96,57 @@ TEST(EndianTest, Unpack)
     const uint8_t buffer16[] = "\xde\xad";
     const uint8_t buffer32[] = "\xde\xad\xbe\xef";
     const uint8_t buffer64[] = "\xde\xad\xbe\xef\xca\xfe\xba\xbe";
+    const uint8_t bufferfloatbe[] = "\x4b\x7f\x01\x02";
+    const uint8_t bufferfloatle[] = "\x02\x01\x7f\x4b";
+    const uint8_t bufferdoublebe[] = "\x43\x3f\xff\x01\x02\x03\x04\x05";
+    const uint8_t bufferdoublele[] = "\x05\x04\x03\x02\x01\xff\x3f\x43";
 
-    uint8_t number8;
-    uint16_t number16;
-    uint32_t number32;
-    uint64_t number64;
+    uint8_t unsigned8;
+    int8_t signed8;
+    uint16_t unsigned16;
+    int16_t signed16;
+    uint32_t unsigned32;
+    int32_t signed32;
+    uint64_t unsigned64;
+    int64_t signed64;
+    float f;
+    double d;
 
-    e::unpack8be(buffer8, &number8);
-    EXPECT_EQ(0xde, number8);
-    e::unpack8le(buffer8, &number8);
-    EXPECT_EQ(0xde, number8);
+    e::unpack8be(buffer8, &unsigned8);
+    EXPECT_EQ(0xde, unsigned8);
+    e::unpack8le(buffer8, &unsigned8);
+    EXPECT_EQ(0xde, unsigned8);
+    e::unpack8be(buffer8, &signed8);
+    EXPECT_EQ(int8_t(0xde), signed8);
+    e::unpack8le(buffer8, &signed8);
+    EXPECT_EQ(int8_t(0xde), signed8);
 
-    e::unpack16be(buffer16, &number16);
-    EXPECT_EQ(0xdead, number16);
-    e::unpack16le(buffer16, &number16);
-    EXPECT_EQ(0xadde, number16);
+    e::unpack16be(buffer16, &unsigned16);
+    EXPECT_EQ(0xdead, unsigned16);
+    e::unpack16le(buffer16, &unsigned16);
+    EXPECT_EQ(0xadde, unsigned16);
+    e::unpack16be(buffer16, &signed16);
+    EXPECT_EQ(int16_t(0xdead), signed16);
+    e::unpack16le(buffer16, &signed16);
+    EXPECT_EQ(int16_t(0xadde), signed16);
 
-    e::unpack32be(buffer32, &number32);
-    EXPECT_EQ(0xdeadbeefUL, number32);
-    e::unpack32le(buffer32, &number32);
-    EXPECT_EQ(0xefbeaddeUL, number32);
+    e::unpack32be(buffer32, &unsigned32);
+    EXPECT_EQ(0xdeadbeefUL, unsigned32);
+    e::unpack32le(buffer32, &unsigned32);
+    EXPECT_EQ(0xefbeaddeUL, unsigned32);
+    e::unpack32be(buffer32, &signed32);
+    EXPECT_EQ(int32_t(0xdeadbeefUL), signed32);
+    e::unpack32le(buffer32, &signed32);
+    EXPECT_EQ(int32_t(0xefbeaddeUL), signed32);
 
-    e::unpack64be(buffer64, &number64);
-    EXPECT_EQ(0xdeadbeefcafebabeULL, number64);
-    e::unpack64le(buffer64, &number64);
-    EXPECT_EQ(0xbebafecaefbeaddeULL, number64);
+    e::unpack64be(buffer64, &unsigned64);
+    EXPECT_EQ(0xdeadbeefcafebabeULL, unsigned64);
+    e::unpack64le(buffer64, &unsigned64);
+    EXPECT_EQ(0xbebafecaefbeaddeULL, unsigned64);
+    e::unpack64be(buffer64, &signed64);
+    EXPECT_EQ(int64_t(0xdeadbeefcafebabeULL), signed64);
+    e::unpack64le(buffer64, &signed64);
+    EXPECT_EQ(int64_t(0xbebafecaefbeaddeULL), signed64);
 
     e::unpackfloatbe(bufferfloatbe, &f);
     EXPECT_EQ(16711938.0, f);

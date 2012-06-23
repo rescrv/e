@@ -261,17 +261,28 @@ unpackdoublele(const uint8_t* buffer, double* number)
 }
 
 #define SIGNED_WRAPPER(SZ, END) \
+    inline uint8_t* \
+    pack ## SZ ## END(int ## SZ ## _t number, uint8_t* buffer) \
+    { \
+        uint ## SZ ## _t tmp = static_cast<uint ## SZ ## _t>(number); \
+        return pack ## SZ ## END(tmp, buffer); \
+    } \
     inline const uint8_t* \
     unpack ## SZ ## END(const uint8_t* buffer, int ## SZ ## _t* number) \
     { \
         uint ## SZ ## _t tmp; \
         const uint8_t* ret = unpack ## SZ ## END(buffer, &tmp); \
         *number = static_cast<int ## SZ ## _t>(tmp); \
+        return ret; \
     }
 
+SIGNED_WRAPPER(8, be)
 SIGNED_WRAPPER(8, le)
+SIGNED_WRAPPER(16, be)
 SIGNED_WRAPPER(16, le)
+SIGNED_WRAPPER(32, be)
 SIGNED_WRAPPER(32, le)
+SIGNED_WRAPPER(64, be)
 SIGNED_WRAPPER(64, le)
 
 } // namespace e
