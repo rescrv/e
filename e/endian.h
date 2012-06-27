@@ -261,12 +261,6 @@ unpackdoublele(const uint8_t* buffer, double* number)
 }
 
 #define SIGNED_WRAPPER(SZ, END) \
-    inline uint8_t* \
-    pack ## SZ ## END(int ## SZ ## _t number, uint8_t* buffer) \
-    { \
-        uint ## SZ ## _t tmp = static_cast<uint ## SZ ## _t>(number); \
-        return pack ## SZ ## END(tmp, buffer); \
-    } \
     inline const uint8_t* \
     unpack ## SZ ## END(const uint8_t* buffer, int ## SZ ## _t* number) \
     { \
