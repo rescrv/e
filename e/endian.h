@@ -279,6 +279,55 @@ SIGNED_WRAPPER(32, le)
 SIGNED_WRAPPER(64, be)
 SIGNED_WRAPPER(64, le)
 
+#undef SIGNED_WRAPPER
+
+#define PACKCHAR_INT_WRAPPER(SZ, END) \
+    inline const char* \
+    unpack ## SZ ## END(const char* buffer, uint ## SZ ## _t* number) \
+    { \
+        return reinterpret_cast<const char*>(unpack ## SZ ## END(reinterpret_cast<const uint8_t*>(buffer), number)); \
+    } \
+    inline const char* \
+    unpack ## SZ ## END(const char* buffer, int ## SZ ## _t* number) \
+    { \
+        return reinterpret_cast<const char*>(unpack ## SZ ## END(reinterpret_cast<const uint8_t*>(buffer), number)); \
+    } \
+    inline char* \
+    pack ## SZ ## END(int ## SZ ## _t number, char* buffer) \
+    { \
+        return reinterpret_cast<char*>(pack ## SZ ## END(number, reinterpret_cast<uint8_t*>(buffer))); \
+    }
+
+PACKCHAR_INT_WRAPPER(8, be)
+PACKCHAR_INT_WRAPPER(8, le)
+PACKCHAR_INT_WRAPPER(16, be)
+PACKCHAR_INT_WRAPPER(16, le)
+PACKCHAR_INT_WRAPPER(32, be)
+PACKCHAR_INT_WRAPPER(32, le)
+PACKCHAR_INT_WRAPPER(64, be)
+PACKCHAR_INT_WRAPPER(64, le)
+
+#undef PACKCHAR_INT_WRAPPER
+
+#define PACKCHAR_FLOAT_WRAPPER(TYPE, END) \
+    inline const char* \
+    unpack ## TYPE ## END(const char* buffer, TYPE* number) \
+    { \
+        return reinterpret_cast<const char*>(unpack ## TYPE ## END(reinterpret_cast<const uint8_t*>(buffer), number)); \
+    } \
+    inline char* \
+    pack ## TYPE ## END(TYPE number, char* buffer) \
+    { \
+        return reinterpret_cast<char*>(pack ## TYPE ## END(number, reinterpret_cast<uint8_t*>(buffer))); \
+    }
+
+PACKCHAR_FLOAT_WRAPPER(float, be)
+PACKCHAR_FLOAT_WRAPPER(float, le)
+PACKCHAR_FLOAT_WRAPPER(double, be)
+PACKCHAR_FLOAT_WRAPPER(double, le)
+
+#undef PACKCHAR_FLOAT_WRAPPER
+
 } // namespace e
 
 #endif // e_endian_h_
