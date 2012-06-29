@@ -1,4 +1,4 @@
-// Copyright (c) 2011, Robert Escriva
+// Copyright (c) 2011-2012, Robert Escriva
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -106,8 +106,6 @@ class buffer::packer
         packer(const packer& p);
 
     public:
-        packer as_error() const;
-        bool error() const { return m_error; }
         uint32_t remain() const { return m_buf->m_cap - m_off; }
         // Unlike the operator on slices, this does not pack the size.  It
         // simply copies the contents of "from" and advances the internal
@@ -131,7 +129,6 @@ class buffer::packer
     private:
         buffer* m_buf;
         uint32_t m_off;
-        bool m_error;
 };
 
 class buffer::padding
@@ -208,7 +205,7 @@ e :: buffer :: packer :: operator << (const std::vector<T>& rhs)
     uint32_t sz = rhs.size();
     e::buffer::packer ret = *this << sz;
 
-    for (uint32_t i = 0; !ret.error() && i < sz; ++i)
+    for (uint32_t i = 0; i < sz; ++i)
     {
         ret = ret << rhs[i];
     }

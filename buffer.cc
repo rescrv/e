@@ -28,7 +28,6 @@
 #define __STDC_LIMIT_MACROS
 
 // C
-#include <cassert>
 #include <cstddef>
 #include <cstring>
 
@@ -41,6 +40,7 @@
 #include <iostream>
 
 // e
+#include "e/assert.h"
 #include "e/buffer.h"
 #include "e/endian.h"
 
@@ -107,7 +107,7 @@ e :: buffer :: pack_at(uint32_t off)
 void
 e :: buffer :: resize(uint32_t sz) throw ()
 {
-    assert(sz <= m_cap);
+    EASSERT(sz <= m_cap);
     m_size = sz;
 }
 
@@ -161,40 +161,24 @@ e :: buffer :: buffer(const char* buf, uint32_t sz)
 e :: buffer :: packer :: packer(buffer* buf, uint32_t off)
     : m_buf(buf)
     , m_off(off)
-    , m_error(off > m_buf->m_cap)
 {
+    EASSERT(off <= m_buf->m_cap);
 }
 
 e :: buffer :: packer :: packer(const packer& p)
     : m_buf(p.m_buf)
     , m_off(p.m_off)
-    , m_error(p.m_error)
 {
-}
-
-e::buffer::packer
-e :: buffer :: packer :: as_error() const
-{
-    packer ret(*this);
-    ret.m_error = true;
-    return ret;
 }
 
 e::buffer::packer
 e :: buffer :: packer :: copy(const slice& from)
 {
     uint64_t newsize = m_off + from.size();
-
-    if (!m_error && newsize <= m_buf->m_cap)
-    {
-        memmove(m_buf->m_data + m_off, from.data(), from.size());
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    EASSERT(newsize <= m_buf->m_cap);
+    memmove(m_buf->m_data + m_off, from.data(), from.size());
+    m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+    return packer(m_buf, newsize);
 }
 
 e::buffer::packer
@@ -229,112 +213,72 @@ e::buffer::packer
 e :: buffer :: packer :: operator << (uint8_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint8_t);
-
-    if (!m_error && newsize <= m_buf->m_cap)
-    {
-        e::pack8be(rhs, m_buf->m_data + m_off);
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    EASSERT(newsize <= m_buf->m_cap);
+    e::pack8be(rhs, m_buf->m_data + m_off);
+    m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+    return packer(m_buf, newsize);
 }
 
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint16_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint16_t);
-
-    if (!m_error && newsize <= m_buf->m_cap)
-    {
-        e::pack16be(rhs, m_buf->m_data + m_off);
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    EASSERT(newsize <= m_buf->m_cap);
+    e::pack16be(rhs, m_buf->m_data + m_off);
+    m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+    return packer(m_buf, newsize);
 }
 
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint32_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t);
-
-    if (!m_error && newsize <= m_buf->m_cap)
-    {
-        e::pack32be(rhs, m_buf->m_data + m_off);
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    EASSERT(newsize <= m_buf->m_cap);
+    e::pack32be(rhs, m_buf->m_data + m_off);
+    m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+    return packer(m_buf, newsize);
 }
 
 e::buffer::packer
 e :: buffer :: packer :: operator << (uint64_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint64_t);
-
-    if (!m_error && newsize <= m_buf->m_cap)
-    {
-        e::pack64be(rhs, m_buf->m_data + m_off);
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    EASSERT(newsize <= m_buf->m_cap);
+    e::pack64be(rhs, m_buf->m_data + m_off);
+    m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+    return packer(m_buf, newsize);
 }
 
 e::buffer::packer
 e :: buffer :: packer :: operator << (const slice& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t) + rhs.size();
-
-    if (!m_error && newsize <= m_buf->m_cap && rhs.size() <= UINT32_MAX)
-    {
-        uint32_t sz = rhs.size();
-        *this << sz; // XXX perf loss
-        memmove(m_buf->m_data + m_off + sizeof(uint32_t), rhs.data(), sz);
-        m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    EASSERT(newsize <= m_buf->m_cap);
+    EASSERT(rhs.size() <= UINT32_MAX);
+    uint32_t sz = rhs.size();
+    e::pack32be(sz, m_buf->m_data + m_off);
+    memmove(m_buf->m_data + m_off + sizeof(uint32_t), rhs.data(), sz);
+    m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
+    return packer(m_buf, newsize);
 }
 
 e::buffer::packer
 e :: buffer :: packer :: operator << (const buffer::padding& rhs)
 {
     uint64_t newsize = m_off + rhs.m_pad;
+    EASSERT(newsize <= m_buf->m_cap);
 
-    if (!m_error && newsize <= m_buf->m_cap)
+    // Zero the new bytes which the padding adds to the buffer's size.
+    // The padded region is not zeroed absolutely because the padding can be
+    // used to skip regions (e.g., headers) so that the packer can pack
+    // after the header.
+    if (m_buf->m_size < newsize)
     {
-        // Zero the new bytes which the padding adds to the buffer's size.
-        // The padded region is not zeroed absolutely because the padding can be
-        // used to skip regions (e.g., headers) so that the packer can pack
-        // after the header.
-        if (m_buf->m_size < newsize)
-        {
-            memset(m_buf->m_data + m_buf->m_size, 0, newsize - m_buf->m_size);
-            m_buf->m_size = newsize;
-        }
+        memset(m_buf->m_data + m_buf->m_size, 0, newsize - m_buf->m_size);
+        m_buf->m_size = newsize;
+    }
 
-        return packer(m_buf, newsize);
-    }
-    else
-    {
-        return as_error();
-    }
+    return packer(m_buf, newsize);
 }
 
 e :: buffer :: unpacker :: unpacker(const buffer* buf, uint32_t off)
