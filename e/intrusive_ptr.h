@@ -61,6 +61,8 @@ namespace e
 //    intrusive_ptr<T> you are going to delete from another thread.
 //  - Destructors should never throw exceptions.  The throw specifiers in here
 //    assume that this convention is adhered to.
+//  - Inc/Dec need to bring their own synchronization around the reference
+//    count.
 
 template <typename T>
 class intrusive_ptr;
