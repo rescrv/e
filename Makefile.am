@@ -9,7 +9,7 @@ EXTRA_DIST = LICENSE README THIRD-PARTY
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libe.pc
 
-nobase_include_HEADERS = e/atomic.h e/bitfield.h e/bitsteal.h e/buffer.h \
+nobase_include_HEADERS = e/array_ptr.h e/atomic.h e/bitfield.h e/bitsteal.h e/buffer.h \
 						 e/bufferio.h e/convert.h e/endian.h e/envconfig.h \
 						 e/guard.h e/hazard_ptrs.h e/intrusive_ptr.h \
 						 e/lockfree_fifo.h e/lockfree_hash_map.h \
@@ -33,6 +33,7 @@ AM_LDFLAGS += $(GTEST_LDFLAGS)
 
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = \
+			test/array_ptr \
 			test/bitfield \
 			test/bitsteal \
 			test/buffer \
@@ -45,6 +46,8 @@ check_PROGRAMS = \
 			test/profiler \
 			test/safe_math
 
+test_array_ptr_SOURCES = test/runner.cc test/array_ptr.cc
+test_array_ptr_LDADD = libe.la ${GTEST_LIBS}
 test_bitfield_SOURCES = test/runner.cc test/bitfield.cc
 test_bitfield_LDADD = libe.la ${GTEST_LIBS}
 test_bitsteal_SOURCES = test/runner.cc test/bitsteal.cc
