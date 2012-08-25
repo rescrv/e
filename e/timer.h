@@ -28,6 +28,9 @@
 #ifndef e_timer_h_
 #define e_timer_h_
 
+// C
+#include <stdint.h>
+
 // POSIX
 #include <errno.h>
 #include <time.h>
