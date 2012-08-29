@@ -151,6 +151,7 @@ class buffer::unpacker
         unpacker(const unpacker& up);
 
     public:
+        unpacker advance(uint32_t by) const;
         unpacker as_error() const;
         slice as_slice() const;
         bool error() const { return m_error; }

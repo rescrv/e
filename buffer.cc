@@ -296,6 +296,21 @@ e :: buffer :: unpacker :: unpacker(const unpacker& p)
 }
 
 e::buffer::unpacker
+e :: buffer :: unpacker :: advance(uint32_t by) const
+{
+    uint64_t newsize = m_off + by;
+
+    if (!m_error && newsize <= m_buf->m_size)
+    {
+        return unpacker(m_buf, newsize);
+    }
+    else
+    {
+        return as_error();
+    }
+}
+
+e::buffer::unpacker
 e :: buffer :: unpacker :: as_error() const
 {
     unpacker ret(*this);
