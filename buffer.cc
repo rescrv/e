@@ -55,6 +55,16 @@ e :: buffer :: cmp(const char* buf, uint32_t sz) const throw ()
     return false;
 }
 
+e::buffer*
+e :: buffer :: copy() const
+{
+    std::auto_ptr<e::buffer> ret(create(m_cap));
+    ret->m_cap = m_cap;
+    ret->m_size = m_size;
+    memmove(ret->m_data, m_data, m_cap);
+    return ret.release();
+}
+
 uint32_t
 e :: buffer :: index(const uint8_t* mem, size_t sz) const throw ()
 {
@@ -80,16 +90,6 @@ e :: buffer :: index(uint8_t byte) const throw ()
     const uint8_t* loc;
     loc = static_cast<const uint8_t*>(memchr(m_data, byte, m_size));
     return loc ? loc - m_data : m_cap;
-}
-
-e::buffer*
-e :: buffer :: copy()
-{
-    std::auto_ptr<e::buffer> ret(create(m_cap));
-    ret->m_cap = m_cap;
-    ret->m_size = m_size;
-    memmove(ret->m_data, m_data, m_cap);
-    return ret.release();
 }
 
 e::buffer::packer

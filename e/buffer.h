@@ -57,6 +57,7 @@ class buffer
         slice as_slice() const { return slice(m_data, m_size); }
         uint32_t capacity() const throw () { return m_cap; }
         bool cmp(const char* buf, uint32_t sz) const throw ();
+        e::buffer* copy() const;
         const uint8_t* data() const throw () { return m_data; }
         const uint8_t* end() const throw () { return m_data + m_size; }
         bool empty() const throw () { return m_size == 0; }
@@ -70,7 +71,6 @@ class buffer
 
     public:
         void clear() throw () { m_size = 0; }
-        e::buffer* copy();
         uint8_t* data() throw () { return m_data; }
         uint8_t* end() throw () { return m_data + m_size; }
         void extend(uint32_t by) throw () { assert(m_cap >= m_size + by); m_size += by; }
