@@ -9,7 +9,7 @@ EXTRA_DIST = LICENSE README THIRD-PARTY
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libe.pc
 
-nobase_include_HEADERS = e/array_ptr.h e/atomic.h e/bitfield.h e/bitsteal.h e/buffer.h \
+nobase_include_HEADERS = e/array_ptr.h e/assert.h e/atomic.h e/bitfield.h e/bitsteal.h e/buffer.h \
 						 e/bufferio.h e/convert.h e/endian.h e/envconfig.h \
 						 e/guard.h e/hazard_ptrs.h e/intrusive_ptr.h \
 						 e/lockfree_fifo.h e/lockfree_hash_map.h \
