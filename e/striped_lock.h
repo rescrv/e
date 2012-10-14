@@ -28,8 +28,12 @@
 #ifndef e_striped_lock_h_
 #define e_striped_lock_h_
 
+// C
+#include <cstdlib>
+
 // STL
 #include <algorithm>
+#include <vector>
 
 namespace e
 {
