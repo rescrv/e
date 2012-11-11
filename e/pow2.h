@@ -33,7 +33,7 @@ namespace e
 
 // Compute the next highest power of two
 
-uint32_t
+inline uint32_t
 next_pow2(uint32_t in)
 {
     --in;
@@ -45,7 +45,7 @@ next_pow2(uint32_t in)
     return in;
 }
 
-uint64_t
+inline uint64_t
 next_pow2(uint64_t in)
 {
     --in;
