@@ -49,6 +49,7 @@ class lockfree_hash_map
         ~lockfree_hash_map() throw ();
 
     public:
+        void clear();
         bool contains(const K& k);
         bool lookup(const K& k, V* v);
         bool insert(const K& k, const V& v);
@@ -152,6 +153,27 @@ lockfree_hash_map<K, V, H> :: ~lockfree_hash_map() throw ()
             delete tmp;
         }
     }
+}
+
+template <typename K, typename V, uint64_t (*H)(const K&)>
+void
+lockfree_hash_map<K, V, H> :: clear()
+{
+    bool seen = true;
+
+    while (seen)
+    {
+        seen = false;
+
+        for (e::lockfree_hash_map<K, V, H>::iterator it = begin();
+                it != end(); it.next())
+        {
+            seen = true;
+            remove(it.key());
+        }
+    }
+
+    m_hazards.force_scan();
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>

@@ -65,6 +65,7 @@ class hazard_ptrs
         ~hazard_ptrs() throw ();
 
     public:
+        void force_scan();
         std::auto_ptr<hazard_ptr> get();
 
     private:
@@ -164,6 +165,38 @@ hazard_ptrs<T, P, S> :: ~hazard_ptrs() throw ()
         rec->scan();
         store_ptr_release(&m_recs, rec->next);
         delete rec;
+    }
+}
+
+template <typename T, size_t P, typename S>
+inline void
+hazard_ptrs<T, P, S> :: force_scan()
+{
+    using namespace e::atomic;
+    hazard_rec* rec = load_ptr_acquire(&m_recs);
+
+    while (rec)
+    {
+        while (exchange_32_nobarrier(&rec->taslock, 1) != 0)
+            ;
+
+        for (size_t i = 0; i < P; ++i)
+        {
+            rec->set(i, NULL);
+        }
+
+        store_32_nobarrier(&rec->taslock, 0);
+        rec = load_ptr_acquire(&rec->next);
+    }
+
+    while (rec)
+    {
+        while (exchange_32_nobarrier(&rec->taslock, 1) != 0)
+            ;
+
+        rec->scan();
+        store_32_nobarrier(&rec->taslock, 0);
+        rec = load_ptr_acquire(&rec->next);
     }
 }
 
