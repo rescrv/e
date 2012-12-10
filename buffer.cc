@@ -281,6 +281,13 @@ e :: buffer :: packer :: operator << (const buffer::padding& rhs)
     return packer(m_buf, newsize);
 }
 
+e :: buffer :: unpacker :: unpacker()
+    : m_buf(NULL)
+    , m_off(0)
+    , m_error(true)
+{
+}
+
 e :: buffer :: unpacker :: unpacker(const buffer* buf, uint32_t off)
     : m_buf(buf)
     , m_off(off)

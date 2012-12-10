@@ -147,6 +147,7 @@ class buffer::padding
 class buffer::unpacker
 {
     public:
+        unpacker();
         unpacker(const buffer* buf, uint32_t off);
         unpacker(const unpacker& up);
 
