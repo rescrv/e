@@ -38,6 +38,7 @@
 
 // e
 #include <e/slice.h>
+#include <e/unpacker.h>
 
 namespace e
 {
@@ -46,8 +47,6 @@ class buffer
 {
     public:
         class packer;
-        class padding;
-        class unpacker;
 
     public:
         static buffer* create(uint32_t sz) { return new (sz) buffer(sz); }
@@ -85,7 +84,6 @@ class buffer
         void operator delete (void* mem);
         template <typename T> packer operator << (const T& t);
         template <typename T> unpacker operator >> (T& t);
-        unpacker operator >> (padding t);
 
     private:
         __attribute__ ((visibility ("default"))) buffer(uint32_t sz);
@@ -122,60 +120,12 @@ class buffer::packer
         packer operator << (uint32_t rhs);
         packer operator << (uint64_t rhs);
         packer operator << (const slice& rhs);
-        packer operator << (const buffer::padding& rhs);
         template <typename T> packer operator << (const std::vector<T>& rhs);
         template <typename A, typename B> packer operator << (const std::pair<A, B>& rhs);
 
     private:
         buffer* m_buf;
         uint32_t m_off;
-};
-
-class buffer::padding
-{
-    public:
-        padding(uint32_t pad) : m_pad(pad) {}
-
-    private:
-        friend class packer;
-        friend class unpacker;
-
-    private:
-        uint32_t m_pad;
-};
-
-class buffer::unpacker
-{
-    public:
-        unpacker();
-        unpacker(const buffer* buf, uint32_t off);
-        unpacker(const unpacker& up);
-
-    public:
-        unpacker advance(uint32_t by) const;
-        unpacker as_error() const;
-        slice as_slice() const;
-        bool error() const { return m_error; }
-        uint32_t remain() const { return m_buf->m_size - m_off; }
-
-    public:
-        unpacker operator >> (int8_t& rhs);
-        unpacker operator >> (int16_t& rhs);
-        unpacker operator >> (int32_t& rhs);
-        unpacker operator >> (int64_t& rhs);
-        unpacker operator >> (uint8_t& rhs);
-        unpacker operator >> (uint16_t& rhs);
-        unpacker operator >> (uint32_t& rhs);
-        unpacker operator >> (uint64_t& rhs);
-        unpacker operator >> (slice& rhs);
-        unpacker operator >> (buffer::padding rhs);
-        template <typename T> unpacker operator >> (std::vector<T>& rhs);
-        template <typename A, typename B> unpacker operator >> (std::pair<A, B>& rhs);
-
-    private:
-        const buffer* m_buf;
-        uint32_t m_off;
-        bool m_error;
 };
 
 template <typename T>
@@ -186,18 +136,10 @@ e :: buffer :: operator << (const T& t)
 }
 
 template <typename T>
-inline e::buffer::unpacker
+inline e::unpacker
 e :: buffer :: operator >> (T& t)
 {
-    return unpacker(this, 0) >> t;
-}
-
-// This is needed because buffer::padding is passed by value, and the above
-// templates take objects by reference.
-inline e::buffer::unpacker
-e :: buffer :: operator >> (buffer::padding t)
-{
-    return unpacker(this, 0) >> t;
+    return unpacker(m_data, m_size);
 }
 
 template <typename T>
@@ -220,30 +162,6 @@ inline e::buffer::packer
 e :: buffer :: packer :: operator << (const std::pair<A, B>& rhs)
 {
     return *this << rhs.first << rhs.second;
-}
-
-template <typename T>
-inline e::buffer::unpacker
-e :: buffer :: unpacker :: operator >> (std::vector<T>& rhs)
-{
-    uint32_t sz;
-    e::buffer::unpacker ret = *this >> sz;
-    rhs.clear();
-
-    for (uint32_t i = 0; !ret.error() && i < sz; ++i)
-    {
-        rhs.push_back(T());
-        ret = ret >> rhs.back();
-    }
-
-    return ret;
-}
-
-template <typename A, typename B>
-inline e::buffer::unpacker
-e :: buffer :: unpacker :: operator >> (std::pair<A, B>& rhs)
-{
-    return *this >> rhs.first >> rhs.second;
 }
 
 } // namespace e
