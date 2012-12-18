@@ -139,7 +139,7 @@ template <typename T>
 inline e::unpacker
 e :: buffer :: operator >> (T& t)
 {
-    return unpacker(m_data, m_size);
+    return unpacker(m_data, m_size) >> t;
 }
 
 template <typename T>

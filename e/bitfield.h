@@ -61,7 +61,7 @@ class bitfield
 
     private:
         friend e::buffer::packer operator << (e::buffer::packer lhs, const e::bitfield& rhs);
-        friend e::buffer::unpacker operator >> (e::buffer::unpacker lhs, e::bitfield& rhs);
+        friend e::unpacker operator >> (e::unpacker lhs, e::bitfield& rhs);
 
     private:
         uint32_t m_num_bits;
@@ -135,12 +135,12 @@ operator << (e::buffer::packer lhs, const e::bitfield& rhs)
 }
 
 
-inline e::buffer::unpacker
-operator >> (e::buffer::unpacker lhs, e::bitfield& rhs)
+inline e::unpacker
+operator >> (e::unpacker lhs, e::bitfield& rhs)
 {
     e::bitfield tmp(0);
     e::slice data;
-    e::buffer::unpacker up = lhs >> tmp.m_num_bits >> data;
+    e::unpacker up = lhs >> tmp.m_num_bits >> data;
 
     if (tmp.bytes() != data.size() || up.error())
     {

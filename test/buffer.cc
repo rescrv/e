@@ -68,27 +68,25 @@ TEST(BufferTest, PackBuffer)
     std::auto_ptr<e::buffer> buf(e::buffer::create("the buffer", 10));
     std::auto_ptr<e::buffer> packed(e::buffer::create(34));
 
-    *packed << a << b << c << d << e::buffer::padding(5) << buf->as_slice();
-    EXPECT_EQ(34, packed->size());
+    *packed << a << b << c << d << buf->as_slice();
+    EXPECT_EQ(29, packed->size());
     EXPECT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                   "\x8b\xad\xf0\x0d"
                   "\xfa\xce"
                   "!"
-                  "\x00\x00\x00\x00\x00"
                   "\x00\x00\x00\x0athe buffer",
-                  34);
+                  29);
 
-    packed->pack_at(12) << d << c << buf->as_slice() << e::buffer::padding(4);
-    EXPECT_EQ(34, packed->size());
+    packed->pack_at(12) << d << c << buf->as_slice();
+    EXPECT_EQ(29, packed->size());
     EXPECT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                   "\x8b\xad\xf0\x0d"
                   "!"
                   "\xfa\xce"
-                  "\x00\x00\x00\x0athe buffer"
-                  "uffer",
-                  34);
+                  "\x00\x00\x00\x0athe buffer",
+                  29);
 }
 
 TEST(BufferTest, UnpackBuffer)
@@ -103,12 +101,11 @@ TEST(BufferTest, UnpackBuffer)
                 "\x8b\xad\xf0\x0d"
                 "\xfa\xce"
                 "!"
-                "\x00\x00\x00\x00\x00"
-                "\x00\x00\x00\x0athe buffer", 34));
+                "\x00\x00\x00\x0athe buffer", 29));
 
-    *packed >> a >> b >> c >> d >> e::buffer::padding(5) >> sl;
-    EXPECT_EQ(0xdeadbeefcafebabe, a);
-    EXPECT_EQ(0x8badf00d, b);
+    *packed >> a >> b >> c >> d >> sl;
+    EXPECT_EQ(0xdeadbeefcafebabeULL, a);
+    EXPECT_EQ(0x8badf00dUL, b);
     EXPECT_EQ(0xface, c);
     EXPECT_EQ('!', d);
     EXPECT_EQ(10, sl.size());
@@ -119,13 +116,13 @@ TEST(BufferTest, UnpackErrors)
 {
     std::auto_ptr<e::buffer> buf(e::buffer::create("\x8b\xad\xf0\x0d" "\xfa\xce", 6));
     uint32_t a;
-    e::buffer::unpacker up = *buf >> a;
+    e::unpacker up = *buf >> a;
     EXPECT_EQ(0x8badf00d, a);
     EXPECT_EQ(2, up.remain());
     EXPECT_FALSE(up.error());
 
     // "a" should not change even if nup fails
-    e::buffer::unpacker nup = up >> a;
+    e::unpacker nup = up >> a;
     EXPECT_EQ(0x8badf00d, a);
     EXPECT_EQ(2, up.remain());
     EXPECT_FALSE(up.error());
@@ -299,8 +296,8 @@ TEST(BufferTest, VectorUnpackFail)
                                                    "\xca\xfe\xba\xbe", 12));
     std::vector<uint32_t> vector_bad;
     std::vector<uint16_t> vector_good;
-    e::buffer::unpacker bad = *buf >> vector_bad;
-    e::buffer::unpacker good = *buf >> vector_good;
+    e::unpacker bad = *buf >> vector_bad;
+    e::unpacker good = *buf >> vector_good;
     EXPECT_TRUE(bad.error());
     EXPECT_FALSE(good.error());
     EXPECT_EQ(4, vector_good.size());
