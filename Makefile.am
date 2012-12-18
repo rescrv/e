@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 
 AM_CPPFLAGS = -I$(abs_top_srcdir) $(PO6_CFLAGS)
-AM_CXXFLAGS = $(WANAL_CXXFLAGS)
+# -fpermissive needed for gtest
+AM_CXXFLAGS = $(WANAL_CXXFLAGS) -fpermissive
 AM_LDFLAGS =
 
 EXTRA_DIST = LICENSE README THIRD-PARTY
