@@ -54,6 +54,7 @@ class slice
         ~slice() throw ();
 
     public:
+        int compare(const slice& rhs) const;
         const uint8_t* data() const { return m_data; }
         bool empty() const { return m_sz == 0; }
         std::string hex() const;
@@ -72,9 +73,6 @@ class slice
         bool operator != (const slice& rhs) const { return compare(rhs) != 0; }
         bool operator >= (const slice& rhs) const { return compare(rhs) >= 0; }
         bool operator > (const slice& rhs) const { return compare(rhs) > 0; }
-
-    private:
-        int compare(const slice& rhs) const;
 
     private:
         const uint8_t* m_data;
@@ -130,6 +128,23 @@ slice :: ~slice() throw ()
 {
 }
 
+inline int
+slice :: compare(const slice& rhs) const
+{
+    if (m_sz < rhs.m_sz)
+    {
+        return -1;
+    }
+    else if (m_sz > rhs.m_sz)
+    {
+        return 1;
+    }
+    else
+    {
+        return memcmp(m_data, rhs.m_data, m_sz);
+    }
+}
+
 inline void
 slice :: advance(size_t sz)
 {
@@ -159,23 +174,6 @@ slice :: operator = (const slice& rhs)
     m_data = rhs.m_data;
     m_sz = rhs.m_sz;
     return *this;
-}
-
-inline int
-slice :: compare(const slice& rhs) const
-{
-    if (m_sz < rhs.m_sz)
-    {
-        return -1;
-    }
-    else if (m_sz > rhs.m_sz)
-    {
-        return 1;
-    }
-    else
-    {
-        return memcmp(m_data, rhs.m_data, m_sz);
-    }
 }
 
 inline bool
