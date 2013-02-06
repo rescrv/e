@@ -38,6 +38,7 @@ next_pow2(uint32_t in)
 {
     --in;
     in = (in >> 1) | in;
+    in = (in >> 2) | in;
     in = (in >> 4) | in;
     in = (in >> 8) | in;
     in = (in >> 16) | in;
@@ -50,6 +51,7 @@ next_pow2(uint64_t in)
 {
     --in;
     in = (in >> 1) | in;
+    in = (in >> 2) | in;
     in = (in >> 4) | in;
     in = (in >> 8) | in;
     in = (in >> 16) | in;
