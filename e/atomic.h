@@ -40,6 +40,10 @@
 #define e_atomic_h_
 
 #include <stdint.h>
+#ifdef _MSC_VER
+#define _WINSOCKAPI_
+#include <Windows.h>
+#endif
 
 // This struct is not part of the public API of this module; clients may not
 // use it.
@@ -53,7 +57,12 @@ struct AtomicOps_x86CPUFeatureStruct {
 };
 extern struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures;
 
+#ifdef _MSC_VER
+#define ATOMICOPS_COMPILER_BARRIER() MemoryBarrier()
+#else
 #define ATOMICOPS_COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
+#endif
+
 
 namespace e
 {
@@ -63,7 +72,11 @@ namespace atomic
 inline void
 memory_barrier()
 {
+#ifdef _MSC_VER
+    MemoryBarrier();
+#else
     __asm__ __volatile__("mfence" : : : "memory");
+#endif
 }
 
 ///////////////////////////////////// Store ////////////////////////////////////
@@ -238,17 +251,24 @@ load_ptr_release(P* volatile const* ptr)
 inline uint32_t
 compare_and_swap_32_nobarrier(volatile uint32_t* ptr, uint32_t old_value, uint32_t new_value)
 {
+#ifdef _MSC_VER
+    return InterlockedCompareExchange(ptr, old_value, new_value);
+#else
     uint32_t prev;
     __asm__ __volatile__("lock; cmpxchgl %1,%2"
                          : "=a" (prev)
                          : "q" (new_value), "m" (*ptr), "0" (old_value)
                          : "memory");
     return prev;
+#endif
 }
 
 inline uint32_t
 compare_and_swap_32_acquire(volatile uint32_t* ptr, uint32_t old_value, uint32_t new_value)
 {
+#ifdef _MSC_VER
+    return InterlockedCompareExchangeAcquire(ptr, old_value, new_value);
+#else
     uint32_t x = compare_and_swap_32_nobarrier(ptr, old_value, new_value);
 
     if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug)
@@ -257,6 +277,7 @@ compare_and_swap_32_acquire(volatile uint32_t* ptr, uint32_t old_value, uint32_t
     }
 
     return x;
+#endif
 }
 
 inline uint32_t
@@ -268,17 +289,24 @@ compare_and_swap_32_release(volatile uint32_t* ptr, uint32_t old_value, uint32_t
 inline uint64_t
 compare_and_swap_64_nobarrier(volatile uint64_t* ptr, uint64_t old_value, uint64_t new_value)
 {
+#ifdef _MSC_VER
+    return InterlockedCompareExchange64((volatile __int64*)ptr, old_value, new_value);
+#else
     uint64_t prev;
     __asm__ __volatile__("lock; cmpxchgq %1,%2"
                          : "=a" (prev)
                          : "q" (new_value), "m" (*ptr), "0" (old_value)
                          : "memory");
     return prev;
+#endif
 }
 
 inline uint64_t
 compare_and_swap_64_acquire(volatile uint64_t* ptr, uint64_t old_value, uint64_t new_value)
 {
+#ifdef _MSC_VER
+    return InterlockedCompareExchangeAcquire64((volatile __int64*)ptr, old_value, new_value);
+#else
     uint64_t x = compare_and_swap_64_nobarrier(ptr, old_value, new_value);
 
     if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug)
@@ -287,30 +315,42 @@ compare_and_swap_64_acquire(volatile uint64_t* ptr, uint64_t old_value, uint64_t
     }
 
     return x;
+#endif
 }
 
 inline uint64_t
 compare_and_swap_64_release(volatile uint64_t* ptr, uint64_t old_value, uint64_t new_value)
 {
+#ifdef _MSC_VER
+    return InterlockedCompareExchangeRelease64((volatile __int64*)ptr, old_value, new_value);
+#else
     return compare_and_swap_64_nobarrier(ptr, old_value, new_value);
+#endif
 }
 
 template <typename P>
 inline P*
 compare_and_swap_ptr_nobarrier(P* volatile* ptr, P* old_value, P* new_value)
 {
+#ifdef _MSC_VER
+    return (P*)InterlockedCompareExchangePointer((PVOID *)ptr, (PVOID)old_value, (PVOID)new_value);
+#else
     P* prev;
     __asm__ __volatile__("lock; cmpxchgq %1,%2"
                          : "=a" (prev)
                          : "q" (new_value), "m" (*ptr), "0" (old_value)
                          : "memory");
     return prev;
+#endif
 }
 
 template <typename P>
 inline P*
 compare_and_swap_ptr_acquire(P* volatile* ptr, P* old_value, P* new_value)
 {
+#ifdef _MSC_VER
+    return (P*)InterlockedCompareExchangePointerAcquire((PVOID *)ptr, (PVOID)old_value, (PVOID)new_value);
+#else
     P* x = compare_and_swap_nobarrier(ptr, old_value, new_value);
 
     if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug)
@@ -319,13 +359,18 @@ compare_and_swap_ptr_acquire(P* volatile* ptr, P* old_value, P* new_value)
     }
 
     return x;
+#endif
 }
 
 template <typename P>
 inline P*
 compare_and_swap_ptr_release(P* volatile* ptr, P* old_value, P* new_value)
 {
+#ifdef _MSC_VER
+	return (P*)InterlockedCompareExchangePointerRelease((PVOID *)ptr, (PVOID)old_value, (PVOID)new_value);
+#else
     return compare_and_swap_ptr_nobarrier(ptr, old_value, new_value);
+#endif
 }
 
 //////////////////////////////// Atomic Exchange ///////////////////////////////
@@ -333,20 +378,28 @@ compare_and_swap_ptr_release(P* volatile* ptr, P* old_value, P* new_value)
 inline uint32_t
 exchange_32_nobarrier(volatile uint32_t* ptr, uint32_t new_value)
 {
+#ifdef _MSC_VER
+    InterlockedExchange(ptr, new_value);
+#else
     __asm__ __volatile__("xchgl %1,%0"  // The lock prefix is implicit for xchg.
                          : "=r" (new_value)
                          : "m" (*ptr), "0" (new_value)
                          : "memory");
+#endif
     return new_value;  // Now it's the previous value.
 }
 
 inline uint64_t
 exchange_64_nobarrier(volatile uint64_t* ptr, uint64_t new_value)
 {
+#ifdef _MSC_VER
+    InterlockedExchange64((volatile __int64*)ptr, new_value);
+#else
     __asm__ __volatile__("xchgq %1,%0"  // The lock prefix is implicit for xchg.
                          : "=r" (new_value)
                          : "m" (*ptr), "0" (new_value)
                          : "memory");
+#endif
     return new_value;  // Now it's the previous value.
 }
 
@@ -354,10 +407,14 @@ template <typename P>
 inline P*
 exchange_ptr_nobarrier(P* volatile* ptr, P* new_value)
 {
+#ifdef _MSC_VER
+    InterlockedExchangePointer(ptr, new_value);
+#else
     __asm__ __volatile__("xchgq %1,%0"  // The lock prefix is implicit for xchg.
                          : "=r" (new_value)
                          : "m" (*ptr), "0" (new_value)
                          : "memory");
+#endif
     return new_value;  // Now it's the previous value.
 }
 
@@ -366,17 +423,24 @@ exchange_ptr_nobarrier(P* volatile* ptr, P* new_value)
 inline uint32_t
 increment_32_nobarrier(volatile uint32_t* ptr, uint32_t increment)
 {
+#ifdef _MSC_VER
+	return InterlockedExchangeAdd((LONG *)ptr, increment);
+#else
     uint32_t temp = increment;
     __asm__ __volatile__("lock; xaddl %0,%1"
                          : "+r" (temp), "+m" (*ptr)
                          : : "memory");
     // temp now holds the old value of *ptr
     return temp + increment;
+#endif
 }
 
 inline uint32_t
 increment_32_fullbarrier(volatile uint32_t* ptr, uint32_t increment)
 {
+#ifdef _MSC_VER
+    return InterlockedExchangeAdd((LONG *)ptr, increment);
+#else
     uint32_t temp = increment;
     __asm__ __volatile__("lock; xaddl %0,%1"
                          : "+r" (temp), "+m" (*ptr)
@@ -389,22 +453,30 @@ increment_32_fullbarrier(volatile uint32_t* ptr, uint32_t increment)
     }
 
     return temp + increment;
+#endif
 }
 
 inline uint64_t
 increment_64_nobarrier(volatile uint64_t* ptr, uint64_t increment)
 {
+#ifdef _MSC_VER
+    return InterlockedExchangeAdd64((LONG64 *) ptr, increment);
+#else
     uint64_t temp = increment;
     __asm__ __volatile__("lock; xaddq %0,%1"
                          : "+r" (temp), "+m" (*ptr)
                          : : "memory");
     // temp now contains the previous value of *ptr
     return temp + increment;
+#endif
 }
 
 inline uint64_t
 increment_64_fullbarrier(volatile uint64_t* ptr, uint64_t increment)
 {
+#ifdef _MSC_VER
+    return InterlockedExchangeAdd64((LONG64 *)ptr, increment);
+#else
     uint64_t temp = increment;
     __asm__ __volatile__("lock; xaddq %0,%1"
                          : "+r" (temp), "+m" (*ptr)
@@ -417,6 +489,7 @@ increment_64_fullbarrier(volatile uint64_t* ptr, uint64_t increment)
     }
 
     return temp + increment;
+#endif
 }
 
 /////////////////////////////////// Atomic Or //////////////////////////////////
@@ -424,17 +497,25 @@ increment_64_fullbarrier(volatile uint64_t* ptr, uint64_t increment)
 inline void
 or_32_nobarrier(volatile uint32_t* ptr, uint32_t orwith)
 {
+#ifdef _MSC_VER
+	_InterlockedOr((LONG *)ptr, (LONG)orwith);
+#else
     __asm__ __volatile__("lock; orl %0,%1"
                          : "+r" (orwith), "+m" (*ptr)
                          : : "memory");
+#endif
 }
 
 inline void
 or_64_nobarrier(volatile uint64_t* ptr, uint64_t orwith)
 {
+#ifdef _MSC_VER
+	InterlockedOr64((__int64*)ptr, orwith);
+#else
     __asm__ __volatile__("lock; orq %0,%1"
                          : "+r" (orwith), "+m" (*ptr)
                          : : "memory");
+#endif
 }
 
 ////////////////////////////////// Atomic And //////////////////////////////////
@@ -442,17 +523,25 @@ or_64_nobarrier(volatile uint64_t* ptr, uint64_t orwith)
 inline void
 and_32_nobarrier(volatile uint32_t* ptr, uint32_t andwith)
 {
+#ifdef _MSC_VER
+	_InterlockedAnd((LONG *)ptr, (LONG)andwith);
+#else
     __asm__ __volatile__("lock; andl %0,%1"
                          : "+r" (andwith), "+m" (*ptr)
                          : : "memory");
+#endif
 }
 
 inline void
 and_64_nobarrier(volatile uint64_t* ptr, uint64_t andwith)
 {
+#ifdef _MSC_VER
+	InterlockedAnd64((volatile __int64*)ptr, andwith);
+#else
     __asm__ __volatile__("lock; andq %0,%1"
                          : "+r" (andwith), "+m" (*ptr)
                          : : "memory");
+#endif
 }
 
 } // namespace atomic
