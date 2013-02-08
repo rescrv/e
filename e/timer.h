@@ -28,6 +28,13 @@
 #ifndef e_timer_h_
 #define e_timer_h_
 
+#ifdef _MSC_VER
+// Windows 
+#define _WINSOCKAPI_
+#include <windows.h>
+#endif
+
+
 // POSIX
 #include <errno.h>
 #include <time.h>
