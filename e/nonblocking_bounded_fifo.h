@@ -66,8 +66,13 @@ class nonblocking_bounded_fifo
         nonblocking_bounded_fifo& operator = (const nonblocking_bounded_fifo&);
 
     private:
+#ifdef _MSC_VER
+		__declspec(align(64)) uint64_t m_push;
+		__declspec(align(64)) uint64_t m_pop;
+#else
         uint64_t m_push __attribute__ ((aligned (64)));
         uint64_t m_pop __attribute__ ((aligned (64)));
+#endif
         const size_t m_sz;
         element* m_elems;
 };

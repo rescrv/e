@@ -86,8 +86,13 @@ class buffer
         template <typename T> unpacker operator >> (T& t);
 
     private:
+#ifdef _MSC_VER
+        buffer(uint32_t sz);
+        buffer(const char* buf, uint32_t sz);
+#else
         __attribute__ ((visibility ("default"))) buffer(uint32_t sz);
         __attribute__ ((visibility ("default"))) buffer(const char* buf, uint32_t sz);
+#endif
 
     // Please see:
     // http://stackoverflow.com/questions/4559558/one-element-array-in-struct

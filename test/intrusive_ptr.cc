@@ -48,8 +48,13 @@ class foo
         friend class e::intrusive_ptr<foo>;
 
     private:
+#ifdef _MSC_VER
+		void inc() { System::Threading::Interlocked::Increment(m_ref); }
+		void dec() { if(System::Threading::Interlocked::Decrement(m_ref) == 0) delete this; }
+#else
         void inc() { __sync_add_and_fetch(&m_ref, 1); }
         void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
+#endif
 
     private:
         size_t m_ref;
@@ -79,8 +84,13 @@ class ctordtor
         }
 
     public:
+#ifdef _MSC_VER
+		void inc() { System::Threading::Interlocked::Increment(m_ref); }
+		void dec() { if(System::Threading::Interlocked::Decrement(m_ref) == 0) delete this; }
+#else
         void inc() { __sync_add_and_fetch(&m_ref, 1); }
         void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
+#endif
 
     public:
         size_t m_ref;
@@ -138,8 +148,13 @@ class accessing
         accessing(int _a, double _b, char _c) : m_ref(0), a(_a), b(_b), c(_c) {}
 
     public:
+#ifdef _MSC_VER
+		void inc() { System::Threading::Interlocked::Increment(m_ref); }
+		void dec() { if(System::Threading::Interlocked::Decrement(m_ref) == 0) delete this; }
+#else
         void inc() { __sync_add_and_fetch(&m_ref, 1); }
         void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
+#endif
 
     public:
         size_t m_ref;
@@ -165,8 +180,13 @@ class assignment
         assignment() : m_ref(0) {}
 
     public:
+#ifdef _MSC_VER
+		void inc() { System::Threading::Interlocked::Increment(m_ref); }
+		void dec() { if(System::Threading::Interlocked::Decrement(m_ref) == 0) delete this; }
+#else
         void inc() { __sync_add_and_fetch(&m_ref, 1); }
         void dec() { if (__sync_sub_and_fetch(&m_ref, 1) == 0) delete this; }
+#endif
 
     public:
         size_t m_ref;
@@ -220,8 +240,13 @@ TEST(IntrusivePtr, Compare)
 struct node
 {
     node() : ref(0), next() {}
+#ifdef _MSC_VER
+	void inc() { System::Threading::Interlocked::Increment(ref); }
+	void dec() { if(System::Threading::Interlocked::Decrement(ref) == 0) delete this; }
+#else
     void inc() { __sync_add_and_fetch(&ref, 1); }
     void dec() { if (__sync_sub_and_fetch(&ref, 1) == 0) delete this; }
+#endif
     size_t ref;
     e::intrusive_ptr<node> next;
 };
