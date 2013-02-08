@@ -123,7 +123,7 @@ microbench :: median() const
     {
         v.push_back(trial(i));
     }
-    
+
     std::sort(v.begin(), v.end());
 
     if (v.size() % 2 == 0)

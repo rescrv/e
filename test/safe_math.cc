@@ -171,8 +171,8 @@ TEST(SafeMath, Mod)
     EXPECT_EQ(1, result);
 
     EXPECT_TRUE(e::safe_mod(5, -2, &result));
-    EXPECT_EQ(-1, result);       
-                                
+    EXPECT_EQ(-1, result);
+
     EXPECT_TRUE(e::safe_mod(5, -3, &result));
     EXPECT_EQ(-1, result);
 }

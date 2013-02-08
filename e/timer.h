@@ -29,7 +29,7 @@
 #define e_timer_h_
 
 #ifdef _MSC_VER
-// Windows 
+// Windows
 #define _WINSOCKAPI_
 #include <windows.h>
 #endif
@@ -195,7 +195,7 @@ class stopwatch
     private:
         uint64_t m_start;
 };
-        
+
 } // namespace e
 
 #endif // e_timer_win_h_
