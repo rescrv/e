@@ -31,7 +31,12 @@
 // C
 #include <cassert>
 
+#ifdef _MSC_VER
+#define EASSERT(expr) \
+	assert(expr)
+#else
 #define EASSERT(expr) \
     assert(__builtin_expect(expr, 1))
+#endif
 
 #endif // e_assert_h_

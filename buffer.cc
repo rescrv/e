@@ -27,6 +27,10 @@
 
 #define __STDC_LIMIT_MACROS
 
+#ifdef _MSC_VER
+#include "memmem.h"
+#endif
+
 // C
 #include <cstddef>
 #include <cstring>

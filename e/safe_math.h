@@ -28,7 +28,9 @@
 #ifndef e_safe_math_h_
 #define e_safe_math_h_
 
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
+#endif
 
 // C
 #include <stdint.h>
@@ -39,6 +41,9 @@ namespace e
 inline bool
 safe_add(int64_t lhs, int64_t rhs, int64_t* result)
 {
+#ifdef _MSC_VER
+    return false; /* not required for client */
+#else
     uint64_t OF = 0;
     int64_t sum = lhs;
     __asm__ __volatile__("addq %2, %0\n\t"
@@ -50,11 +55,15 @@ safe_add(int64_t lhs, int64_t rhs, int64_t* result)
                          : "rax");
     *result = sum;
     return OF == 0;
+#endif
 }
 
 inline bool
 safe_sub(int64_t lhs, int64_t rhs, int64_t* result)
 {
+#ifdef _MSC_VER
+    return false;
+#else
     uint64_t OF = 0;
     int64_t difference = lhs;
     __asm__ __volatile__("subq %2, %0\n\t"
@@ -66,11 +75,15 @@ safe_sub(int64_t lhs, int64_t rhs, int64_t* result)
                          : "rax");
     *result = difference;
     return OF == 0;
+#endif
 }
 
 inline bool
 safe_mul(int64_t lhs, int64_t rhs, int64_t* result)
 {
+#ifdef _MSC_VER
+    return false;
+#else
     uint64_t OF = 0;
     int64_t product = lhs;
     __asm__ __volatile__("imulq %2\n\t"
@@ -81,6 +94,7 @@ safe_mul(int64_t lhs, int64_t rhs, int64_t* result)
                          : );
     *result = product;
     return OF == 0;
+#endif
 }
 
 inline bool

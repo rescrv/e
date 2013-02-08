@@ -28,8 +28,12 @@
 #ifndef e_timer_h_
 #define e_timer_h_
 
-// C
-#include <stdint.h>
+#ifdef _MSC_VER
+// Windows 
+#define _WINSOCKAPI_
+#include <windows.h>
+#endif
+
 
 // POSIX
 #include <errno.h>
@@ -41,13 +45,21 @@
 // po6
 #include <po6/error.h>
 
+#include <stdint.h>
+
 namespace e
 {
-
-// Return a time in nanoseconds.  This uses CLOCK_REALTIME.
 inline uint64_t
 time()
 {
+#ifdef _MSC_VER
+    LARGE_INTEGER tickfreq, timestamp;
+    tickfreq.QuadPart = 0;
+    timestamp.QuadPart = 0;
+    QueryPerformanceFrequency((LARGE_INTEGER*)&tickfreq);
+    QueryPerformanceCounter((LARGE_INTEGER*)&timestamp);
+    return timestamp.QuadPart / (tickfreq.QuadPart/1000000000.0);
+#else
     timespec ts;
 
     if (clock_gettime(CLOCK_REALTIME, &ts) < 0)
@@ -56,15 +68,48 @@ time()
     }
 
     return ts.tv_sec * 1000000000 + ts.tv_nsec;
+#endif
 }
 
 // These sleep functions do not return early when interrupted by signals.
 // If you give a value more than 1 second for ms, us, or ns, the resulting time
 // slept will not necessarily be what you think.
-
 inline void
 sleep_ns(time_t s, long ns)
 {
+#ifdef _MSC_VER
+    HANDLE ts = NULL;
+    LARGE_INTEGER duetime;
+
+    duetime.QuadPart = -1*(ns/100 + s*10000000);
+
+    // Create an unnamed waitable timer.
+    ts = CreateWaitableTimer(NULL, true, NULL);
+    if (ts == NULL)
+    {
+        throw po6::error(GetLastError());
+    }
+
+    if(!SetWaitableTimer(ts, &duetime, 0, NULL, NULL, 0))
+    {
+        throw po6::error(GetLastError());
+    }
+
+    while(WaitForSingleObject(ts, INFINITE) != WAIT_OBJECT_0)
+    {
+        switch(GetLastError())
+        {
+            case EFAULT:
+            case EINVAL:
+            case ENOSYS:
+                throw po6::error(errno);
+            case EINTR:
+                break;
+            default:
+                throw std::logic_error("SetWaitableTimer returned unexpected errno.");
+        }
+    }
+#else
     timespec ts;
     timespec rem;
     ts.tv_sec = s;
@@ -85,6 +130,7 @@ sleep_ns(time_t s, long ns)
                 throw std::logic_error("Nanosleep returned unexpected errno.");
         }
     }
+#endif
 }
 
 inline void
@@ -127,47 +173,18 @@ class stopwatch
         void start() { reset(); }
         void reset()
         {
-            if (clock_gettime(CLOCK_REALTIME, &m_start) < 0)
-            {
-                throw po6::error(errno);
-            }
+            m_start = time();
         }
 
         uint64_t resolution()
         {
-            timespec res;
-
-            if (clock_getres(CLOCK_REALTIME, &res) < 0)
-            {
-                throw po6::error(errno);
-            }
-
-            return res.tv_sec * 1000000000 + res.tv_nsec;
+            return 100;
         }
 
         uint64_t peek()
         {
-            timespec end;
+            return time() - m_start;
 
-            if (clock_gettime(CLOCK_REALTIME, &end) < 0)
-            {
-                throw po6::error(errno);
-            }
-
-            timespec diff;
-
-            if ((end.tv_nsec < m_start.tv_nsec) < 0)
-            {
-                diff.tv_sec = end.tv_sec - m_start.tv_sec - 1;
-                diff.tv_nsec = 1000000000 + end.tv_nsec - m_start.tv_nsec;
-            }
-            else
-            {
-                diff.tv_sec = end.tv_sec - m_start.tv_sec;
-                diff.tv_nsec = end.tv_nsec - m_start.tv_nsec;
-            }
-
-            return diff.tv_sec * 1000000000 + diff.tv_nsec;
         }
 
         uint64_t peek_ms()
@@ -176,9 +193,9 @@ class stopwatch
         }
 
     private:
-        timespec m_start;
+        uint64_t m_start;
 };
-
+        
 } // namespace e
 
-#endif // e_buffer_h_
+#endif // e_timer_win_h_
