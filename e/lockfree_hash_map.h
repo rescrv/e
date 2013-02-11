@@ -169,7 +169,7 @@ lockfree_hash_map<K, V, H> :: clear()
     {
         seen = false;
 
-        for (e::lockfree_hash_map<K, V, H>::iterator it = begin();
+        for (typename e::lockfree_hash_map< K, V, H >::iterator it = begin();
                 it != end(); it.next())
         {
             seen = true;
