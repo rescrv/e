@@ -18,12 +18,12 @@ nobase_include_HEADERS = e/array_ptr.h e/assert.h e/atomic.h e/bitfield.h \
 						 e/locking_fifo.h e/locking_iterable_fifo.h \
 						 e/microbench.h e/nonblocking_bounded_fifo.h e/pow2.h \
 						 e/profiler.h e/safe_math.h e/slice.h e/striped_lock.h \
-						 e/timer.h e/tuple_compare.h e/unpacker.h e/worker_barrier.h
+						 e/time.h e/tuple_compare.h e/unpacker.h e/worker_barrier.h
 
 #################################### Source ####################################
 
 lib_LTLIBRARIES = libe.la
-libe_la_SOURCES = atomic.cc buffer.cc slice.cc unpacker.cc
+libe_la_SOURCES = atomic.cc buffer.cc slice.cc time.cc unpacker.cc
 
 ##################################### Tests ####################################
 
