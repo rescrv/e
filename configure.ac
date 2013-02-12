@@ -20,6 +20,13 @@ ANAL_WARNINGS_CXX
 
 # Checks for libraries.
 GTEST_LIB_CHECK
+AC_CHECK_LIB([rt], [clock_gettime], [needs_lrt=yes], [needs_lrt=no])
+
+if test x"${needs_lrt}" = xyes; then
+    AC_SUBST([LRT_LDFLAGS], ["-lrt"])
+else
+    AC_SUBST([LRT_LDFLAGS], [""])
+fi
 PKG_CHECK_MODULES([PO6], [libpo6 >= 0.2])
 
 # Checks for header files.

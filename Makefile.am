@@ -24,6 +24,7 @@ nobase_include_HEADERS = e/array_ptr.h e/assert.h e/atomic.h e/bitfield.h \
 
 lib_LTLIBRARIES = libe.la
 libe_la_SOURCES = atomic.cc buffer.cc slice.cc time.cc unpacker.cc
+libe_la_LDFLAGS = $(LRT_LDFLAGS)
 
 ##################################### Tests ####################################
 
