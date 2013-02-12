@@ -25,18 +25,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef e_assert_h_
-#define e_assert_h_
+#ifndef e_time_h_
+#define e_time_h_
 
 // C
-#include <cassert>
+#include <stdint.h>
 
-#ifdef _MSC_VER
-#define EASSERT(expr) \
-	assert(expr)
-#else
-#define EASSERT(expr) \
-    assert(__builtin_expect(expr, 1))
-#endif
+namespace e
+{
 
-#endif // e_assert_h_
+uint64_t
+time();
+
+} // namespace e
+
+#endif // e_time_h_

@@ -25,18 +25,64 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef e_assert_h_
-#define e_assert_h_
+#ifndef e_timer_h_
+#define e_timer_h_
 
 // C
-#include <cassert>
+#include <stdint.h>
 
-#ifdef _MSC_VER
-#define EASSERT(expr) \
-	assert(expr)
-#else
-#define EASSERT(expr) \
-    assert(__builtin_expect(expr, 1))
+#if HAVE_CONFIG_H
+#include <config.h>
 #endif
 
-#endif // e_assert_h_
+#ifdef _MSC_VER
+// Windows
+#define _WINSOCKAPI_
+#include <windows.h>
+#endif
+
+//mach
+#ifdef HAVE_MACH_ABSOLUTE_TIME
+#include <mach/mach_time.h>
+#endif
+
+// POSIX
+#include <errno.h>
+#include <time.h>
+
+// STL
+#include <exception>
+
+// po6
+#include <po6/error.h>
+
+// e
+#include "e/time.h"
+
+uint64_t
+e :: time()
+{
+#ifdef _MSC_VER
+    LARGE_INTEGER tickfreq, timestamp;
+    tickfreq.QuadPart = 0;
+    timestamp.QuadPart = 0;
+    QueryPerformanceFrequency((LARGE_INTEGER*)&tickfreq);
+    QueryPerformanceCounter((LARGE_INTEGER*)&timestamp);
+    return timestamp.QuadPart / (tickfreq.QuadPart/1000000000.0);
+#elif defined HAVE_MACH_TIMEBASE_INFO
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return mach_absolute_time()*info.numer/info.denom;
+#else
+    timespec ts;
+
+    if (clock_gettime(CLOCK_REALTIME, &ts) < 0)
+    {
+        throw po6::error(errno);
+    }
+
+    return ts.tv_sec * 1000000000 + ts.tv_nsec;
+#endif
+}
+
+#endif // e_timer_h__

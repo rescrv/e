@@ -28,8 +28,10 @@
 #ifndef e_bitsteal_h_
 #define e_bitsteal_h_
 
+#ifndef _MSC_VER
 #ifndef __x86_64__
 #error Bit stealing requires x86 64.
+#endif
 #endif
 
 // C

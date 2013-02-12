@@ -83,7 +83,11 @@ class lockfree_hash_map
     private:
         bool cas(node** loc, node* A, node* B)
         {
+#ifdef _MSC_VER
+			return (InterlockedCompareExchangePointer((PVOID *)loc, B, A) == A);
+#else
             return __sync_bool_compare_and_swap(loc, A, B);
+#endif
         }
 
         bool find(const hazard_ptr& hptr, uint64_t hash, const K& key,
@@ -165,7 +169,7 @@ lockfree_hash_map<K, V, H> :: clear()
     {
         seen = false;
 
-        for (e::lockfree_hash_map<K, V, H>::iterator it = begin();
+        for (typename e::lockfree_hash_map< K, V, H >::iterator it = begin();
                 it != end(); it.next())
         {
             seen = true;

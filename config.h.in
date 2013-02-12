@@ -15,6 +15,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `mach_absolute_time' function. */
+#undef HAVE_MACH_ABSOLUTE_TIME
+
 /* Define to 1 if you have the `memchr' function. */
 #undef HAVE_MEMCHR
 

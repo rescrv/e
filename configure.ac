@@ -20,6 +20,13 @@ ANAL_WARNINGS_CXX
 
 # Checks for libraries.
 GTEST_LIB_CHECK
+AC_CHECK_LIB([rt], [clock_gettime], [needs_lrt=yes], [needs_lrt=no])
+
+if test x"${needs_lrt}" = xyes; then
+    AC_SUBST([LRT_LDFLAGS], ["-lrt"])
+else
+    AC_SUBST([LRT_LDFLAGS], [""])
+fi
 PKG_CHECK_MODULES([PO6], [libpo6 >= 0.2])
 
 # Checks for header files.
@@ -40,7 +47,7 @@ fi
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
-AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull])
+AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull mach_absolute_time])
 
 AC_CONFIG_FILES([Makefile
                  libe.pc])
