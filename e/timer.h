@@ -28,16 +28,27 @@
 #ifndef e_timer_h_
 #define e_timer_h_
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef _MSC_VER
 // Windows
 #define _WINSOCKAPI_
 #include <windows.h>
 #endif
 
+//mach
+#ifdef HAVE_MACH_ABSOLUTE_TIME
+#include <mach/mach_time.h>
+#endif
+
 
 // POSIX
+#ifdef HAVE_CLOCK_GETTIME
 #include <errno.h>
 #include <time.h>
+#endif
 
 // STL
 #include <exception>
@@ -59,7 +70,7 @@ time()
     QueryPerformanceFrequency((LARGE_INTEGER*)&tickfreq);
     QueryPerformanceCounter((LARGE_INTEGER*)&timestamp);
     return timestamp.QuadPart / (tickfreq.QuadPart/1000000000.0);
-#else
+#elif defined HAVE_CLOCK_GETTIME
     timespec ts;
 
     if (clock_gettime(CLOCK_REALTIME, &ts) < 0)
@@ -68,6 +79,12 @@ time()
     }
 
     return ts.tv_sec * 1000000000 + ts.tv_nsec;
+#elif defined HAVE_MACH_TIMEBASE_INFO
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return mach_absolute_time()*info.numer/info.denom;
+#else
+#error no_timer
 #endif
 }
 
@@ -178,7 +195,28 @@ class stopwatch
 
         uint64_t resolution()
         {
+#ifdef _MSC_VER
             return 100;
+
+#else if defined HAVE_CLOCK_GETTIME
+            timespec res;
+
+            if (clock_getres(CLOCK_REALTIME, &res) < 0)
+            {
+                throw po6::error(errno);
+            }
+
+            return res.tv_sec * 1000000000 + res.tv_nsec;
+
+#else if defined HAVE_MACH_ABSOLUTE_TIME
+            mach_timebase_info_data_t info;
+            mach_timebase_info(&info);
+
+            return info.denom/info.numer;
+
+#else
+#error no_timer
+#endif
         }
 
         uint64_t peek()
@@ -198,4 +236,4 @@ class stopwatch
 
 } // namespace e
 
-#endif // e_timer_win_h_
+#endif // e_timer_h__
