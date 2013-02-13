@@ -69,7 +69,7 @@ e :: time()
     QueryPerformanceFrequency((LARGE_INTEGER*)&tickfreq);
     QueryPerformanceCounter((LARGE_INTEGER*)&timestamp);
     return timestamp.QuadPart / (tickfreq.QuadPart/1000000000.0);
-#elif defined HAVE_MACH_TIMEBASE_INFO
+#elif defined HAVE_MACH_ABSOLUTE_TIME
     mach_timebase_info_data_t info;
     mach_timebase_info(&info);
     return mach_absolute_time()*info.numer/info.denom;
