@@ -52,6 +52,7 @@ class unpacker
         slice as_slice() const;
         bool error() const { return m_error; }
         size_t remain() const { return m_ptr_sz; }
+        size_t empty() const { return m_ptr_sz == 0; }
 
     public:
         unpacker operator >> (int8_t& rhs);
