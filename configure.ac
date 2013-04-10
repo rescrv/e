@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.61])
-AC_INIT([libe], [0.3.dev], [escriva@cs.cornell.edu])
+AC_INIT([libe], [0.4.dev], [escriva@cs.cornell.edu])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign subdir-objects dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
