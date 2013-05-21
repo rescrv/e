@@ -28,14 +28,10 @@
 // STL
 #include <memory>
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
+#include "th.h"
 #include "e/bitfield.h"
 #include "e/buffer.h"
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
 
 namespace
 {
@@ -43,14 +39,14 @@ namespace
 TEST(BitfieldTest, CtorAndDtor)
 {
     e::bitfield b1(8);
-    EXPECT_EQ(8, b1.bits());
-    EXPECT_EQ(1, b1.bytes());
+    ASSERT_EQ(8, b1.bits());
+    ASSERT_EQ(1, b1.bytes());
     e::bitfield b2(16);
-    EXPECT_EQ(16, b2.bits());
-    EXPECT_EQ(2, b2.bytes());
+    ASSERT_EQ(16, b2.bits());
+    ASSERT_EQ(2, b2.bytes());
     e::bitfield b3(75);
-    EXPECT_EQ(75, b3.bits());
-    EXPECT_EQ(10, b3.bytes());
+    ASSERT_EQ(75, b3.bits());
+    ASSERT_EQ(10, b3.bytes());
 }
 
 static void
@@ -60,11 +56,11 @@ all_but_one(const e::bitfield& b, size_t which, bool all_others)
     {
         if (i == which)
         {
-            EXPECT_NE(all_others, b.get(i));
+            ASSERT_NE(all_others, b.get(i));
         }
         else
         {
-            EXPECT_EQ(all_others, b.get(i));
+            ASSERT_EQ(all_others, b.get(i));
         }
     }
 }
@@ -138,7 +134,7 @@ TEST(BitfieldTest, BufferPack)
 
     std::auto_ptr<e::buffer> buf(e::buffer::create(12));
     *buf << bf;
-    EXPECT_TRUE(buf->cmp("\x00\x00\x00\x20"
+    ASSERT_TRUE(buf->cmp("\x00\x00\x00\x20"
                          "\x00\x00\x00\x04"
                          "\xde\xad\xbe\xef", 12));
 }
@@ -152,44 +148,44 @@ TEST(BitfieldTest, BufferUnpack)
     *buf >> bf;
 
     // 0xde
-    EXPECT_FALSE(bf.get(0));
-    EXPECT_TRUE(bf.get(1));
-    EXPECT_TRUE(bf.get(2));
-    EXPECT_TRUE(bf.get(3));
-    EXPECT_TRUE(bf.get(4));
-    EXPECT_FALSE(bf.get(5));
-    EXPECT_TRUE(bf.get(6));
-    EXPECT_TRUE(bf.get(7));
+    ASSERT_FALSE(bf.get(0));
+    ASSERT_TRUE(bf.get(1));
+    ASSERT_TRUE(bf.get(2));
+    ASSERT_TRUE(bf.get(3));
+    ASSERT_TRUE(bf.get(4));
+    ASSERT_FALSE(bf.get(5));
+    ASSERT_TRUE(bf.get(6));
+    ASSERT_TRUE(bf.get(7));
 
     // 0xad
-    EXPECT_TRUE(bf.get(8));
-    EXPECT_FALSE(bf.get(9));
-    EXPECT_TRUE(bf.get(10));
-    EXPECT_TRUE(bf.get(11));
-    EXPECT_FALSE(bf.get(12));
-    EXPECT_TRUE(bf.get(13));
-    EXPECT_FALSE(bf.get(14));
-    EXPECT_TRUE(bf.get(15));
+    ASSERT_TRUE(bf.get(8));
+    ASSERT_FALSE(bf.get(9));
+    ASSERT_TRUE(bf.get(10));
+    ASSERT_TRUE(bf.get(11));
+    ASSERT_FALSE(bf.get(12));
+    ASSERT_TRUE(bf.get(13));
+    ASSERT_FALSE(bf.get(14));
+    ASSERT_TRUE(bf.get(15));
 
     // 0xbe
-    EXPECT_FALSE(bf.get(16));
-    EXPECT_TRUE(bf.get(17));
-    EXPECT_TRUE(bf.get(18));
-    EXPECT_TRUE(bf.get(19));
-    EXPECT_TRUE(bf.get(20));
-    EXPECT_TRUE(bf.get(21));
-    EXPECT_FALSE(bf.get(22));
-    EXPECT_TRUE(bf.get(23));
+    ASSERT_FALSE(bf.get(16));
+    ASSERT_TRUE(bf.get(17));
+    ASSERT_TRUE(bf.get(18));
+    ASSERT_TRUE(bf.get(19));
+    ASSERT_TRUE(bf.get(20));
+    ASSERT_TRUE(bf.get(21));
+    ASSERT_FALSE(bf.get(22));
+    ASSERT_TRUE(bf.get(23));
 
     // 0xef
-    EXPECT_TRUE(bf.get(24));
-    EXPECT_TRUE(bf.get(25));
-    EXPECT_TRUE(bf.get(26));
-    EXPECT_TRUE(bf.get(27));
-    EXPECT_FALSE(bf.get(28));
-    EXPECT_TRUE(bf.get(29));
-    EXPECT_TRUE(bf.get(30));
-    EXPECT_TRUE(bf.get(31));
+    ASSERT_TRUE(bf.get(24));
+    ASSERT_TRUE(bf.get(25));
+    ASSERT_TRUE(bf.get(26));
+    ASSERT_TRUE(bf.get(27));
+    ASSERT_FALSE(bf.get(28));
+    ASSERT_TRUE(bf.get(29));
+    ASSERT_TRUE(bf.get(30));
+    ASSERT_TRUE(bf.get(31));
 }
 
 }

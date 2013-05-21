@@ -25,13 +25,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
-
 // HyperDisk
+#include "th.h"
 #include "e/locking_iterable_fifo.h"
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
 
 namespace
 {
@@ -57,11 +53,11 @@ TEST(LockingIterableFifoTest, SimpleIteration)
     for (int i = 0; i < 1000; ++i)
     {
         ASSERT_TRUE(it.valid());
-        EXPECT_EQ(i, *it);
+        ASSERT_EQ(i, *it);
         it.next();
     }
 
-    EXPECT_FALSE(it.valid());
+    ASSERT_FALSE(it.valid());
 }
 
 TEST(LockingIterableFifoTest, IterateAddIterate)
@@ -79,13 +75,13 @@ TEST(LockingIterableFifoTest, IterateAddIterate)
     // Iterate to the end.
     for (int i = 1; i <= 10; ++i)
     {
-        EXPECT_TRUE(it.valid());
-        EXPECT_EQ(i, *it);
+        ASSERT_TRUE(it.valid());
+        ASSERT_EQ(i, *it);
         it.next();
     }
 
-    EXPECT_FALSE(it.valid());
-    EXPECT_FALSE(it.valid());
+    ASSERT_FALSE(it.valid());
+    ASSERT_FALSE(it.valid());
 
     // Add 10 more items to the queue.
     for (; count <= 20; ++count)
@@ -96,12 +92,12 @@ TEST(LockingIterableFifoTest, IterateAddIterate)
     // Iterate to the end.
     for (int i = 11; i <= 20; ++i)
     {
-        EXPECT_TRUE(it.valid());
-        EXPECT_EQ(i, *it);
+        ASSERT_TRUE(it.valid());
+        ASSERT_EQ(i, *it);
         it.next();
     }
 
-    EXPECT_FALSE(it.valid());
+    ASSERT_FALSE(it.valid());
 }
 
 TEST(LockingIterableFifoTest, IterateFlushIterate)
@@ -120,28 +116,28 @@ TEST(LockingIterableFifoTest, IterateFlushIterate)
     // Iterate to the halfway point.
     for (int i = 1; i <= 10; ++i)
     {
-        EXPECT_TRUE(it.valid());
-        EXPECT_EQ(i, *it);
+        ASSERT_TRUE(it.valid());
+        ASSERT_EQ(i, *it);
         it.next();
     }
 
     // Flush the log
     for (int i = 1; i <= 10; ++i)
     {
-        EXPECT_FALSE(l.empty());
-        EXPECT_EQ(i, l.oldest());
+        ASSERT_FALSE(l.empty());
+        ASSERT_EQ(i, l.oldest());
         l.remove_oldest();
     }
 
     // Iterate the rest of the way.
     for (size_t i = 11; i <= 20; ++i)
     {
-        EXPECT_TRUE(it.valid());
-        EXPECT_EQ(i, *it);
+        ASSERT_TRUE(it.valid());
+        ASSERT_EQ(i, *it);
         it.next();
     }
 
-    EXPECT_FALSE(it.valid());
+    ASSERT_FALSE(it.valid());
 }
 
 TEST(LockingIterableFifoTest, CopyIterator)
@@ -164,18 +160,18 @@ TEST(LockingIterableFifoTest, CopyIterator)
         ASSERT_TRUE(it.valid());
         ASSERT_TRUE(copy1.valid());
         ASSERT_TRUE(copy2.valid());
-        EXPECT_EQ(i, *it);
-        EXPECT_EQ(i, *copy1);
-        EXPECT_EQ(i, *copy2);
+        ASSERT_EQ(i, *it);
+        ASSERT_EQ(i, *copy1);
+        ASSERT_EQ(i, *copy2);
         // Advance for next iteration
         it.next();
         copy1.next();
         copy2.next();
     }
 
-    EXPECT_FALSE(it.valid());
-    EXPECT_FALSE(copy1.valid());
-    EXPECT_FALSE(copy2.valid());
+    ASSERT_FALSE(it.valid());
+    ASSERT_FALSE(copy1.valid());
+    ASSERT_FALSE(copy2.valid());
 }
 
 TEST(LockingIterableFifoTest, BatchAppend)

@@ -28,13 +28,9 @@
 // C
 #include <stdint.h>
 
-// Google Test
-#include <gtest/gtest.h>
-
-// po6
-#include <e/bitsteal.h>
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
+// e
+#include "th.h"
+#include "e/bitsteal.h"
 
 namespace
 {
@@ -45,7 +41,7 @@ TEST(BitStealingTest, Strip)
     uint64_t* p = reinterpret_cast<uint64_t*>(v);
     p = e::bitsteal::strip(p);
     v = reinterpret_cast<uintptr_t>(p);
-    EXPECT_EQ(0x0000beefcafebabeul, v);
+    ASSERT_EQ(0x0000beefcafebabeul, v);
 }
 
 TEST(BitStealingTest, SetAndUnset)
@@ -72,9 +68,9 @@ TEST(BitStealingTest, SetAndUnset)
     p1 = unset(p1, 13); p2 = unset(p2, 13);
     p1 = set(p1, 14); p2 = set(p2, 14);
     p1 = set(p1, 15); p2 = set(p2, 15);
-    EXPECT_EQ(p1, p2);
-    EXPECT_EQ(0xdeadbeefcafebabeul, reinterpret_cast<uintptr_t>(p1));
-    EXPECT_EQ(0xdeadbeefcafebabeul, reinterpret_cast<uintptr_t>(p2));
+    ASSERT_EQ(p1, p2);
+    ASSERT_EQ(0xdeadbeefcafebabeul, reinterpret_cast<uintptr_t>(p1));
+    ASSERT_EQ(0xdeadbeefcafebabeul, reinterpret_cast<uintptr_t>(p2));
 }
 
 } // namespace

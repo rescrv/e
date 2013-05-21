@@ -3,7 +3,6 @@
 
 AC_PREREQ([2.61])
 AC_INIT([libe], [0.4.dev], [escriva@cs.cornell.edu])
-AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign subdir-objects dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 LT_PREREQ([2.2])
@@ -19,7 +18,6 @@ AC_PROG_CC
 ANAL_WARNINGS_CXX
 
 # Checks for libraries.
-GTEST_LIB_CHECK
 AC_CHECK_LIB([rt], [clock_gettime], [needs_lrt=yes], [needs_lrt=no])
 
 if test x"${needs_lrt}" = xyes; then
@@ -40,10 +38,6 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
-
-if test x"${target_cpu}" != "xx86_64"; then
-    AC_MSG_ERROR(['this library requires a 64-bit x86 processor'])
-fi
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE

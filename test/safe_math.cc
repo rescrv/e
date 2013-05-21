@@ -27,13 +27,9 @@
 
 #define __STDC_LIMIT_MACROS
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
+#include "th.h"
 #include "e/safe_math.h"
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
 
 namespace
 {
@@ -42,139 +38,139 @@ TEST(SafeMath, Add)
 {
     int64_t result;
 
-    EXPECT_TRUE(e::safe_add(0, 0, &result));
-    EXPECT_EQ(0, result);
+    ASSERT_TRUE(e::safe_add(0, 0, &result));
+    ASSERT_EQ(0, result);
 
-    EXPECT_TRUE(e::safe_add(0, INT64_MAX, &result));
-    EXPECT_EQ(INT64_MAX, result);
-    EXPECT_TRUE(e::safe_add(INT64_MAX, 0, &result));
-    EXPECT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_add(0, INT64_MAX, &result));
+    ASSERT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_add(INT64_MAX, 0, &result));
+    ASSERT_EQ(INT64_MAX, result);
 
-    EXPECT_FALSE(e::safe_add(1, INT64_MAX, &result));
-    EXPECT_FALSE(e::safe_add(INT64_MAX, 1, &result));
+    ASSERT_FALSE(e::safe_add(1, INT64_MAX, &result));
+    ASSERT_FALSE(e::safe_add(INT64_MAX, 1, &result));
 
-    EXPECT_TRUE(e::safe_add(0, INT64_MIN, &result));
-    EXPECT_EQ(INT64_MIN, result);
-    EXPECT_TRUE(e::safe_add(INT64_MIN, 0, &result));
-    EXPECT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_add(0, INT64_MIN, &result));
+    ASSERT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_add(INT64_MIN, 0, &result));
+    ASSERT_EQ(INT64_MIN, result);
 
-    EXPECT_FALSE(e::safe_add(-1, INT64_MIN, &result));
-    EXPECT_FALSE(e::safe_add(INT64_MIN, -1, &result));
+    ASSERT_FALSE(e::safe_add(-1, INT64_MIN, &result));
+    ASSERT_FALSE(e::safe_add(INT64_MIN, -1, &result));
 
-    EXPECT_TRUE(e::safe_add(INT64_MIN, INT64_MAX, &result));
-    EXPECT_EQ(-1, result);
-    EXPECT_TRUE(e::safe_add(INT64_MAX, INT64_MIN, &result));
-    EXPECT_EQ(-1, result);
+    ASSERT_TRUE(e::safe_add(INT64_MIN, INT64_MAX, &result));
+    ASSERT_EQ(-1, result);
+    ASSERT_TRUE(e::safe_add(INT64_MAX, INT64_MIN, &result));
+    ASSERT_EQ(-1, result);
 }
 
 TEST(SafeMath, Sub)
 {
     int64_t result;
 
-    EXPECT_TRUE(e::safe_sub(0, 0, &result));
-    EXPECT_EQ(0, result);
+    ASSERT_TRUE(e::safe_sub(0, 0, &result));
+    ASSERT_EQ(0, result);
 
-    EXPECT_TRUE(e::safe_sub(0, -INT64_MAX, &result));
-    EXPECT_EQ(INT64_MAX, result);
-    EXPECT_TRUE(e::safe_sub(INT64_MAX, 0, &result));
-    EXPECT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_sub(0, -INT64_MAX, &result));
+    ASSERT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_sub(INT64_MAX, 0, &result));
+    ASSERT_EQ(INT64_MAX, result);
 
-    EXPECT_FALSE(e::safe_sub(INT64_MAX, -1, &result));
-    EXPECT_FALSE(e::safe_sub(INT64_MIN, 1, &result));
+    ASSERT_FALSE(e::safe_sub(INT64_MAX, -1, &result));
+    ASSERT_FALSE(e::safe_sub(INT64_MIN, 1, &result));
 
-    EXPECT_TRUE(e::safe_sub(INT64_MIN, -INT64_MAX, &result));
-    EXPECT_EQ(-1, result);
-    EXPECT_TRUE(e::safe_sub(-INT64_MAX, INT64_MIN, &result));
-    EXPECT_EQ(1, result);
+    ASSERT_TRUE(e::safe_sub(INT64_MIN, -INT64_MAX, &result));
+    ASSERT_EQ(-1, result);
+    ASSERT_TRUE(e::safe_sub(-INT64_MAX, INT64_MIN, &result));
+    ASSERT_EQ(1, result);
 }
 
 TEST(SafeMath, Mul)
 {
     int64_t result;
 
-    EXPECT_TRUE(e::safe_mul(0, 0, &result));
-    EXPECT_EQ(0, result);
+    ASSERT_TRUE(e::safe_mul(0, 0, &result));
+    ASSERT_EQ(0, result);
 
-    EXPECT_TRUE(e::safe_mul(1, INT64_MAX, &result));
-    EXPECT_EQ(INT64_MAX, result);
-    EXPECT_TRUE(e::safe_mul(INT64_MAX, 1, &result));
-    EXPECT_EQ(INT64_MAX, result);
-    EXPECT_TRUE(e::safe_mul(1, INT64_MIN, &result));
-    EXPECT_EQ(INT64_MIN, result);
-    EXPECT_TRUE(e::safe_mul(INT64_MIN, 1, &result));
-    EXPECT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_mul(1, INT64_MAX, &result));
+    ASSERT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_mul(INT64_MAX, 1, &result));
+    ASSERT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_mul(1, INT64_MIN, &result));
+    ASSERT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_mul(INT64_MIN, 1, &result));
+    ASSERT_EQ(INT64_MIN, result);
 
-    EXPECT_FALSE(e::safe_mul(4611686018427387904LL, 2, &result));
-    EXPECT_FALSE(e::safe_mul(2, 4611686018427387904LL, &result));
+    ASSERT_FALSE(e::safe_mul(4611686018427387904LL, 2, &result));
+    ASSERT_FALSE(e::safe_mul(2, 4611686018427387904LL, &result));
 
-    EXPECT_TRUE(e::safe_mul(-4611686018427387904LL, 2, &result));
-    EXPECT_EQ(INT64_MIN, result);
-    EXPECT_TRUE(e::safe_mul(2, -4611686018427387904LL, &result));
-    EXPECT_EQ(INT64_MIN, result);
-    EXPECT_TRUE(e::safe_mul(4611686018427387904LL, -2, &result));
-    EXPECT_EQ(INT64_MIN, result);
-    EXPECT_TRUE(e::safe_mul(-2, 4611686018427387904LL, &result));
-    EXPECT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_mul(-4611686018427387904LL, 2, &result));
+    ASSERT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_mul(2, -4611686018427387904LL, &result));
+    ASSERT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_mul(4611686018427387904LL, -2, &result));
+    ASSERT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_mul(-2, 4611686018427387904LL, &result));
+    ASSERT_EQ(INT64_MIN, result);
 
-    EXPECT_FALSE(e::safe_mul(3074457345618258603, -3, &result));
-    EXPECT_FALSE(e::safe_mul(-3, 3074457345618258603, &result));
-    EXPECT_FALSE(e::safe_mul(-3074457345618258603, 3, &result));
-    EXPECT_FALSE(e::safe_mul(3, -3074457345618258603, &result));
+    ASSERT_FALSE(e::safe_mul(3074457345618258603, -3, &result));
+    ASSERT_FALSE(e::safe_mul(-3, 3074457345618258603, &result));
+    ASSERT_FALSE(e::safe_mul(-3074457345618258603, 3, &result));
+    ASSERT_FALSE(e::safe_mul(3, -3074457345618258603, &result));
 }
 
 TEST(SafeMath, Div)
 {
     int64_t result;
 
-    EXPECT_FALSE(e::safe_div(INT64_MIN, -1, &result));
-    EXPECT_FALSE(e::safe_div(INT64_MIN, 0, &result));
+    ASSERT_FALSE(e::safe_div(INT64_MIN, -1, &result));
+    ASSERT_FALSE(e::safe_div(INT64_MIN, 0, &result));
 
-    EXPECT_TRUE(e::safe_div(INT64_MIN, 1, &result));
-    EXPECT_EQ(INT64_MIN, result);
-    EXPECT_TRUE(e::safe_div(INT64_MAX, 1, &result));
-    EXPECT_EQ(INT64_MAX, result);
-    EXPECT_TRUE(e::safe_div(INT64_MAX, -1, &result));
-    EXPECT_EQ(INT64_MIN + 1, result);
+    ASSERT_TRUE(e::safe_div(INT64_MIN, 1, &result));
+    ASSERT_EQ(INT64_MIN, result);
+    ASSERT_TRUE(e::safe_div(INT64_MAX, 1, &result));
+    ASSERT_EQ(INT64_MAX, result);
+    ASSERT_TRUE(e::safe_div(INT64_MAX, -1, &result));
+    ASSERT_EQ(INT64_MIN + 1, result);
 
-    EXPECT_TRUE(e::safe_div(-5, 2, &result));
-    EXPECT_EQ(-3, result);
+    ASSERT_TRUE(e::safe_div(-5, 2, &result));
+    ASSERT_EQ(-3, result);
 
-    EXPECT_TRUE(e::safe_div(-5, 3, &result));
-    EXPECT_EQ(-2, result);
+    ASSERT_TRUE(e::safe_div(-5, 3, &result));
+    ASSERT_EQ(-2, result);
 
-    EXPECT_TRUE(e::safe_div(5, -2, &result));
-    EXPECT_EQ(-3, result);
+    ASSERT_TRUE(e::safe_div(5, -2, &result));
+    ASSERT_EQ(-3, result);
 
-    EXPECT_TRUE(e::safe_div(5, -3, &result));
-    EXPECT_EQ(-2, result);
+    ASSERT_TRUE(e::safe_div(5, -3, &result));
+    ASSERT_EQ(-2, result);
 }
 
 TEST(SafeMath, Mod)
 {
     int64_t result;
 
-    EXPECT_FALSE(e::safe_mod(INT64_MAX, 0, &result));
+    ASSERT_FALSE(e::safe_mod(INT64_MAX, 0, &result));
 
-    EXPECT_TRUE(e::safe_mod(INT64_MAX, INT64_MAX, &result));
-    EXPECT_EQ(0, result);
-    EXPECT_TRUE(e::safe_mod(INT64_MAX, INT64_MIN, &result));
-    EXPECT_EQ(-1, result);
-    EXPECT_TRUE(e::safe_mod(INT64_MIN, INT64_MAX, &result));
-    EXPECT_EQ(INT64_MAX - 1, result);
-    EXPECT_TRUE(e::safe_mod(INT64_MIN, INT64_MIN, &result));
-    EXPECT_EQ(0, result);
+    ASSERT_TRUE(e::safe_mod(INT64_MAX, INT64_MAX, &result));
+    ASSERT_EQ(0, result);
+    ASSERT_TRUE(e::safe_mod(INT64_MAX, INT64_MIN, &result));
+    ASSERT_EQ(-1, result);
+    ASSERT_TRUE(e::safe_mod(INT64_MIN, INT64_MAX, &result));
+    ASSERT_EQ(INT64_MAX - 1, result);
+    ASSERT_TRUE(e::safe_mod(INT64_MIN, INT64_MIN, &result));
+    ASSERT_EQ(0, result);
 
-    EXPECT_TRUE(e::safe_mod(-5, 2, &result));
-    EXPECT_EQ(1, result);
+    ASSERT_TRUE(e::safe_mod(-5, 2, &result));
+    ASSERT_EQ(1, result);
 
-    EXPECT_TRUE(e::safe_mod(-5, 3, &result));
-    EXPECT_EQ(1, result);
+    ASSERT_TRUE(e::safe_mod(-5, 3, &result));
+    ASSERT_EQ(1, result);
 
-    EXPECT_TRUE(e::safe_mod(5, -2, &result));
-    EXPECT_EQ(-1, result);
+    ASSERT_TRUE(e::safe_mod(5, -2, &result));
+    ASSERT_EQ(-1, result);
 
-    EXPECT_TRUE(e::safe_mod(5, -3, &result));
-    EXPECT_EQ(-1, result);
+    ASSERT_TRUE(e::safe_mod(5, -3, &result));
+    ASSERT_EQ(-1, result);
 }
 
 } // namespace

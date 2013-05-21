@@ -31,14 +31,11 @@
 // C++
 #include <memory>
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
+#include "th.h"
 #include "e/buffer.h"
 
-#define EXPECT_MEMCMP(X, Y, S) EXPECT_EQ(0, memcmp(X, Y, S))
-#pragma GCC diagnostic ignored "-Wswitch-default"
+#define ASSERT_MEMCMP(X, Y, S) ASSERT_EQ(0, memcmp(X, Y, S))
 
 namespace
 {
@@ -47,16 +44,16 @@ TEST(BufferTest, CtorAndDtor)
 {
     // Create a buffer without any size
     std::auto_ptr<e::buffer> a(e::buffer::create(0));
-    EXPECT_EQ(0, a->size());
-    EXPECT_EQ(0, a->capacity());
+    ASSERT_EQ(0, a->size());
+    ASSERT_EQ(0, a->capacity());
     // Create a buffer which can pack 2 bytes
     std::auto_ptr<e::buffer> b(e::buffer::create(2));
-    EXPECT_EQ(0, b->size());
-    EXPECT_EQ(2, b->capacity());
+    ASSERT_EQ(0, b->size());
+    ASSERT_EQ(2, b->capacity());
     // Create a buffer with the three bytes "XYZ"
     std::auto_ptr<e::buffer> c(e::buffer::create("xyz", 3));
-    EXPECT_EQ(3, c->size());
-    EXPECT_EQ(3, c->capacity());
+    ASSERT_EQ(3, c->size());
+    ASSERT_EQ(3, c->capacity());
 }
 
 TEST(BufferTest, PackBuffer)
@@ -69,8 +66,8 @@ TEST(BufferTest, PackBuffer)
     std::auto_ptr<e::buffer> packed(e::buffer::create(34));
 
     *packed << a << b << c << d << buf->as_slice();
-    EXPECT_EQ(29, packed->size());
-    EXPECT_MEMCMP(packed->data(),
+    ASSERT_EQ(29, packed->size());
+    ASSERT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                   "\x8b\xad\xf0\x0d"
                   "\xfa\xce"
@@ -79,8 +76,8 @@ TEST(BufferTest, PackBuffer)
                   29);
 
     packed->pack_at(12) << d << c << buf->as_slice();
-    EXPECT_EQ(29, packed->size());
-    EXPECT_MEMCMP(packed->data(),
+    ASSERT_EQ(29, packed->size());
+    ASSERT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                   "\x8b\xad\xf0\x0d"
                   "!"
@@ -104,12 +101,12 @@ TEST(BufferTest, UnpackBuffer)
                 "\x00\x00\x00\x0athe buffer", 29));
 
     *packed >> a >> b >> c >> d >> sl;
-    EXPECT_EQ(0xdeadbeefcafebabeULL, a);
-    EXPECT_EQ(0x8badf00dUL, b);
-    EXPECT_EQ(0xface, c);
-    EXPECT_EQ('!', d);
-    EXPECT_EQ(10, sl.size());
-    EXPECT_MEMCMP("the buffer", sl.data(), 10);
+    ASSERT_EQ(0xdeadbeefcafebabeULL, a);
+    ASSERT_EQ(0x8badf00dUL, b);
+    ASSERT_EQ(0xface, c);
+    ASSERT_EQ('!', d);
+    ASSERT_EQ(10, sl.size());
+    ASSERT_MEMCMP("the buffer", sl.data(), 10);
 }
 
 TEST(BufferTest, UnpackErrors)
@@ -117,139 +114,139 @@ TEST(BufferTest, UnpackErrors)
     std::auto_ptr<e::buffer> buf(e::buffer::create("\x8b\xad\xf0\x0d" "\xfa\xce", 6));
     uint32_t a;
     e::unpacker up = *buf >> a;
-    EXPECT_EQ(0x8badf00d, a);
-    EXPECT_EQ(2, up.remain());
-    EXPECT_FALSE(up.error());
+    ASSERT_EQ(0x8badf00d, a);
+    ASSERT_EQ(2, up.remain());
+    ASSERT_FALSE(up.error());
 
     // "a" should not change even if nup fails
     e::unpacker nup = up >> a;
-    EXPECT_EQ(0x8badf00d, a);
-    EXPECT_EQ(2, up.remain());
-    EXPECT_FALSE(up.error());
-    EXPECT_TRUE(nup.error());
+    ASSERT_EQ(0x8badf00d, a);
+    ASSERT_EQ(2, up.remain());
+    ASSERT_FALSE(up.error());
+    ASSERT_TRUE(nup.error());
 
     // Getting the next value should succeed
     uint16_t b;
     up = up >> b;
-    EXPECT_EQ(0xface, b);
-    EXPECT_EQ(0, up.remain());
-    EXPECT_FALSE(up.error());
+    ASSERT_EQ(0xface, b);
+    ASSERT_EQ(0, up.remain());
+    ASSERT_FALSE(up.error());
 }
 
 TEST(BufferTest, Shift)
 {
     // Create a buffer of four characters
     std::auto_ptr<e::buffer> buf(e::buffer::create("\xde\xad\xbe\xef", 4));
-    EXPECT_EQ(4, buf->size());
-    EXPECT_EQ(4, buf->capacity());
-    EXPECT_TRUE(buf->cmp("\xde\xad\xbe\xef", 4));
+    ASSERT_EQ(4, buf->size());
+    ASSERT_EQ(4, buf->capacity());
+    ASSERT_TRUE(buf->cmp("\xde\xad\xbe\xef", 4));
 
     // Shift once
     buf->shift(2);
-    EXPECT_EQ(2, buf->size());
-    EXPECT_EQ(4, buf->capacity());
-    EXPECT_TRUE(buf->cmp("\xbe\xef", 2));
+    ASSERT_EQ(2, buf->size());
+    ASSERT_EQ(4, buf->capacity());
+    ASSERT_TRUE(buf->cmp("\xbe\xef", 2));
 
     // Shift again
     buf->shift(2);
-    EXPECT_EQ(0, buf->size());
-    EXPECT_EQ(4, buf->capacity());
-    EXPECT_TRUE(buf->cmp("", 0));
+    ASSERT_EQ(0, buf->size());
+    ASSERT_EQ(4, buf->capacity());
+    ASSERT_TRUE(buf->cmp("", 0));
 }
 
 TEST(BufferTest, ShiftExcess)
 {
     // Create a buffer of four characters
     std::auto_ptr<e::buffer> buf(e::buffer::create("\xde\xad\xbe\xef", 4));
-    EXPECT_EQ(4, buf->size());
-    EXPECT_EQ(4, buf->capacity());
-    EXPECT_TRUE(buf->cmp("\xde\xad\xbe\xef", 4));
+    ASSERT_EQ(4, buf->size());
+    ASSERT_EQ(4, buf->capacity());
+    ASSERT_TRUE(buf->cmp("\xde\xad\xbe\xef", 4));
 
     // Shift once
     buf->shift(6);
-    EXPECT_EQ(0, buf->size());
-    EXPECT_EQ(4, buf->capacity());
-    EXPECT_TRUE(buf->cmp("", 0));
+    ASSERT_EQ(0, buf->size());
+    ASSERT_EQ(4, buf->capacity());
+    ASSERT_TRUE(buf->cmp("", 0));
 }
 
 TEST(BufferTest, IndexMem)
 {
     std::auto_ptr<e::buffer> buf(e::buffer::create("0123456789", 10));
-    EXPECT_EQ(0, buf->index("", 0)); // Test for bad glibc
-    EXPECT_EQ(0, buf->index("0", 1));
-    EXPECT_EQ(1, buf->index("1", 1));
-    EXPECT_EQ(2, buf->index("2", 1));
-    EXPECT_EQ(3, buf->index("3", 1));
-    EXPECT_EQ(4, buf->index("4", 1));
-    EXPECT_EQ(5, buf->index("5", 1));
-    EXPECT_EQ(6, buf->index("6", 1));
-    EXPECT_EQ(7, buf->index("7", 1));
-    EXPECT_EQ(8, buf->index("8", 1));
-    EXPECT_EQ(9, buf->index("9", 1));
-    EXPECT_EQ(0, buf->index("01", 2));
-    EXPECT_EQ(1, buf->index("12", 2));
-    EXPECT_EQ(2, buf->index("23", 2));
-    EXPECT_EQ(3, buf->index("34", 2));
-    EXPECT_EQ(4, buf->index("45", 2));
-    EXPECT_EQ(5, buf->index("56", 2));
-    EXPECT_EQ(6, buf->index("67", 2));
-    EXPECT_EQ(7, buf->index("78", 2));
-    EXPECT_EQ(8, buf->index("89", 2));
-    EXPECT_EQ(0, buf->index("012", 3));
-    EXPECT_EQ(1, buf->index("123", 3));
-    EXPECT_EQ(2, buf->index("234", 3));
-    EXPECT_EQ(3, buf->index("345", 3));
-    EXPECT_EQ(4, buf->index("456", 3));
-    EXPECT_EQ(5, buf->index("567", 3));
-    EXPECT_EQ(6, buf->index("678", 3));
-    EXPECT_EQ(7, buf->index("789", 3));
-    EXPECT_EQ(0, buf->index("0123", 4));
-    EXPECT_EQ(1, buf->index("1234", 4));
-    EXPECT_EQ(2, buf->index("2345", 4));
-    EXPECT_EQ(3, buf->index("3456", 4));
-    EXPECT_EQ(4, buf->index("4567", 4));
-    EXPECT_EQ(5, buf->index("5678", 4));
-    EXPECT_EQ(6, buf->index("6789", 4));
-    EXPECT_EQ(0, buf->index("01234", 5));
-    EXPECT_EQ(1, buf->index("12345", 5));
-    EXPECT_EQ(2, buf->index("23456", 5));
-    EXPECT_EQ(3, buf->index("34567", 5));
-    EXPECT_EQ(4, buf->index("45678", 5));
-    EXPECT_EQ(5, buf->index("56789", 5));
-    EXPECT_EQ(0, buf->index("012345", 6));
-    EXPECT_EQ(1, buf->index("123456", 6));
-    EXPECT_EQ(2, buf->index("234567", 6));
-    EXPECT_EQ(3, buf->index("345678", 6));
-    EXPECT_EQ(4, buf->index("456789", 6));
-    EXPECT_EQ(0, buf->index("0123456", 7));
-    EXPECT_EQ(1, buf->index("1234567", 7));
-    EXPECT_EQ(2, buf->index("2345678", 7));
-    EXPECT_EQ(3, buf->index("3456789", 7));
-    EXPECT_EQ(0, buf->index("01234567", 8));
-    EXPECT_EQ(1, buf->index("12345678", 8));
-    EXPECT_EQ(2, buf->index("23456789", 8));
-    EXPECT_EQ(0, buf->index("012345678", 9));
-    EXPECT_EQ(1, buf->index("123456789", 9));
-    EXPECT_EQ(0, buf->index("0123456789", 10));
-    EXPECT_EQ(buf->capacity(), buf->index("A", 1)); // It's not there.
-    EXPECT_EQ(buf->capacity(), buf->index("B", 1)); // It's not there.
+    ASSERT_EQ(0, buf->index("", 0)); // Test for bad glibc
+    ASSERT_EQ(0, buf->index("0", 1));
+    ASSERT_EQ(1, buf->index("1", 1));
+    ASSERT_EQ(2, buf->index("2", 1));
+    ASSERT_EQ(3, buf->index("3", 1));
+    ASSERT_EQ(4, buf->index("4", 1));
+    ASSERT_EQ(5, buf->index("5", 1));
+    ASSERT_EQ(6, buf->index("6", 1));
+    ASSERT_EQ(7, buf->index("7", 1));
+    ASSERT_EQ(8, buf->index("8", 1));
+    ASSERT_EQ(9, buf->index("9", 1));
+    ASSERT_EQ(0, buf->index("01", 2));
+    ASSERT_EQ(1, buf->index("12", 2));
+    ASSERT_EQ(2, buf->index("23", 2));
+    ASSERT_EQ(3, buf->index("34", 2));
+    ASSERT_EQ(4, buf->index("45", 2));
+    ASSERT_EQ(5, buf->index("56", 2));
+    ASSERT_EQ(6, buf->index("67", 2));
+    ASSERT_EQ(7, buf->index("78", 2));
+    ASSERT_EQ(8, buf->index("89", 2));
+    ASSERT_EQ(0, buf->index("012", 3));
+    ASSERT_EQ(1, buf->index("123", 3));
+    ASSERT_EQ(2, buf->index("234", 3));
+    ASSERT_EQ(3, buf->index("345", 3));
+    ASSERT_EQ(4, buf->index("456", 3));
+    ASSERT_EQ(5, buf->index("567", 3));
+    ASSERT_EQ(6, buf->index("678", 3));
+    ASSERT_EQ(7, buf->index("789", 3));
+    ASSERT_EQ(0, buf->index("0123", 4));
+    ASSERT_EQ(1, buf->index("1234", 4));
+    ASSERT_EQ(2, buf->index("2345", 4));
+    ASSERT_EQ(3, buf->index("3456", 4));
+    ASSERT_EQ(4, buf->index("4567", 4));
+    ASSERT_EQ(5, buf->index("5678", 4));
+    ASSERT_EQ(6, buf->index("6789", 4));
+    ASSERT_EQ(0, buf->index("01234", 5));
+    ASSERT_EQ(1, buf->index("12345", 5));
+    ASSERT_EQ(2, buf->index("23456", 5));
+    ASSERT_EQ(3, buf->index("34567", 5));
+    ASSERT_EQ(4, buf->index("45678", 5));
+    ASSERT_EQ(5, buf->index("56789", 5));
+    ASSERT_EQ(0, buf->index("012345", 6));
+    ASSERT_EQ(1, buf->index("123456", 6));
+    ASSERT_EQ(2, buf->index("234567", 6));
+    ASSERT_EQ(3, buf->index("345678", 6));
+    ASSERT_EQ(4, buf->index("456789", 6));
+    ASSERT_EQ(0, buf->index("0123456", 7));
+    ASSERT_EQ(1, buf->index("1234567", 7));
+    ASSERT_EQ(2, buf->index("2345678", 7));
+    ASSERT_EQ(3, buf->index("3456789", 7));
+    ASSERT_EQ(0, buf->index("01234567", 8));
+    ASSERT_EQ(1, buf->index("12345678", 8));
+    ASSERT_EQ(2, buf->index("23456789", 8));
+    ASSERT_EQ(0, buf->index("012345678", 9));
+    ASSERT_EQ(1, buf->index("123456789", 9));
+    ASSERT_EQ(0, buf->index("0123456789", 10));
+    ASSERT_EQ(buf->capacity(), buf->index("A", 1)); // It's not there.
+    ASSERT_EQ(buf->capacity(), buf->index("B", 1)); // It's not there.
 }
 
 TEST(BufferTest, IndexChr)
 {
     std::auto_ptr<e::buffer> buf(e::buffer::create("0123456789", 10));
-    EXPECT_EQ(0, buf->index('0'));
-    EXPECT_EQ(1, buf->index('1'));
-    EXPECT_EQ(2, buf->index('2'));
-    EXPECT_EQ(3, buf->index('3'));
-    EXPECT_EQ(4, buf->index('4'));
-    EXPECT_EQ(5, buf->index('5'));
-    EXPECT_EQ(6, buf->index('6'));
-    EXPECT_EQ(7, buf->index('7'));
-    EXPECT_EQ(8, buf->index('8'));
-    EXPECT_EQ(9, buf->index('9'));
-    EXPECT_EQ(buf->capacity(), buf->index('A')); // It's not there.
-    EXPECT_EQ(buf->capacity(), buf->index('B')); // It's not there.
+    ASSERT_EQ(0, buf->index('0'));
+    ASSERT_EQ(1, buf->index('1'));
+    ASSERT_EQ(2, buf->index('2'));
+    ASSERT_EQ(3, buf->index('3'));
+    ASSERT_EQ(4, buf->index('4'));
+    ASSERT_EQ(5, buf->index('5'));
+    ASSERT_EQ(6, buf->index('6'));
+    ASSERT_EQ(7, buf->index('7'));
+    ASSERT_EQ(8, buf->index('8'));
+    ASSERT_EQ(9, buf->index('9'));
+    ASSERT_EQ(buf->capacity(), buf->index('A')); // It's not there.
+    ASSERT_EQ(buf->capacity(), buf->index('B')); // It's not there.
 }
 
 TEST(BufferTest, Hex)
@@ -257,8 +254,8 @@ TEST(BufferTest, Hex)
     std::auto_ptr<e::buffer> buf1(e::buffer::create("\xde\xad\xbe\xef", 4));
     std::auto_ptr<e::buffer> buf2(e::buffer::create("\x00\xff\x0f\xf0", 4));
 
-    EXPECT_EQ("deadbeef", buf1->hex());
-    EXPECT_EQ("00ff0ff0", buf2->hex());
+    ASSERT_EQ("deadbeef", buf1->hex());
+    ASSERT_EQ("00ff0ff0", buf2->hex());
 }
 
 TEST(BufferTest, VectorPack)
@@ -270,7 +267,7 @@ TEST(BufferTest, VectorPack)
     vector.push_back(0xcafe);
     vector.push_back(0xbabe);
     e::buffer::packer p = *buf << vector;
-    EXPECT_TRUE(buf->cmp("\x00\x00\x00\x04"
+    ASSERT_TRUE(buf->cmp("\x00\x00\x00\x04"
                          "\xde\xad\xbe\xef"
                          "\xca\xfe\xba\xbe", 12));
 }
@@ -282,11 +279,11 @@ TEST(BufferTest, VectorUnpack)
                                                    "\xca\xfe\xba\xbe", 12));
     std::vector<uint16_t> vector;
     *buf >> vector;
-    EXPECT_EQ(4, vector.size());
-    EXPECT_EQ(0xdead, vector[0]);
-    EXPECT_EQ(0xbeef, vector[1]);
-    EXPECT_EQ(0xcafe, vector[2]);
-    EXPECT_EQ(0xbabe, vector[3]);
+    ASSERT_EQ(4, vector.size());
+    ASSERT_EQ(0xdead, vector[0]);
+    ASSERT_EQ(0xbeef, vector[1]);
+    ASSERT_EQ(0xcafe, vector[2]);
+    ASSERT_EQ(0xbabe, vector[3]);
 }
 
 TEST(BufferTest, VectorUnpackFail)
@@ -298,13 +295,13 @@ TEST(BufferTest, VectorUnpackFail)
     std::vector<uint16_t> vector_good;
     e::unpacker bad = *buf >> vector_bad;
     e::unpacker good = *buf >> vector_good;
-    EXPECT_TRUE(bad.error());
-    EXPECT_FALSE(good.error());
-    EXPECT_EQ(4, vector_good.size());
-    EXPECT_EQ(0xdead, vector_good[0]);
-    EXPECT_EQ(0xbeef, vector_good[1]);
-    EXPECT_EQ(0xcafe, vector_good[2]);
-    EXPECT_EQ(0xbabe, vector_good[3]);
+    ASSERT_TRUE(bad.error());
+    ASSERT_FALSE(good.error());
+    ASSERT_EQ(4, vector_good.size());
+    ASSERT_EQ(0xdead, vector_good[0]);
+    ASSERT_EQ(0xbeef, vector_good[1]);
+    ASSERT_EQ(0xcafe, vector_good[2]);
+    ASSERT_EQ(0xbabe, vector_good[3]);
 }
 
 } // namespace

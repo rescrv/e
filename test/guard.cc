@@ -25,13 +25,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
-#include <e/guard.h>
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
+#include "th.h"
+#include "e/guard.h"
 
 namespace
 {
@@ -68,10 +64,10 @@ TEST(GuardTest, Function0)
 
     {
         e::guard g = e::makeguard(&func0);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
     }
 
-    EXPECT_EQ(0, check);
+    ASSERT_EQ(0, check);
 }
 
 TEST(GuardTest, Function1)
@@ -80,10 +76,10 @@ TEST(GuardTest, Function1)
 
     {
         e::guard g = e::makeguard(func1, 1);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
     }
 
-    EXPECT_EQ(1, check);
+    ASSERT_EQ(1, check);
 }
 
 TEST(GuardTest, Function2)
@@ -92,10 +88,10 @@ TEST(GuardTest, Function2)
 
     {
         e::guard g = e::makeguard(func2, 1, 2);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
     }
 
-    EXPECT_EQ(3, check);
+    ASSERT_EQ(3, check);
 }
 
 TEST(GuardTest, Function3)
@@ -104,10 +100,10 @@ TEST(GuardTest, Function3)
 
     {
         e::guard g = e::makeguard(func3, 1, 2, 3);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
     }
 
-    EXPECT_EQ(6, check);
+    ASSERT_EQ(6, check);
 }
 
 TEST(GuardTest, Function0Dismiss)
@@ -116,11 +112,11 @@ TEST(GuardTest, Function0Dismiss)
 
     {
         e::guard g = e::makeguard(func0);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, check);
+    ASSERT_EQ(-1, check);
 }
 
 TEST(GuardTest, Function1Dismiss)
@@ -129,11 +125,11 @@ TEST(GuardTest, Function1Dismiss)
 
     {
         e::guard g = e::makeguard(func1, 1);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, check);
+    ASSERT_EQ(-1, check);
 }
 
 TEST(GuardTest, Function2Dismiss)
@@ -142,11 +138,11 @@ TEST(GuardTest, Function2Dismiss)
 
     {
         e::guard g = e::makeguard(func2, 1, 2);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, check);
+    ASSERT_EQ(-1, check);
 }
 
 TEST(GuardTest, Function3Dismiss)
@@ -155,11 +151,11 @@ TEST(GuardTest, Function3Dismiss)
 
     {
         e::guard g = e::makeguard(func3, 1, 2, 3);
-        EXPECT_EQ(-1, check);
+        ASSERT_EQ(-1, check);
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, check);
+    ASSERT_EQ(-1, check);
 }
 
 class object
@@ -184,10 +180,10 @@ TEST(GuardTest, Object0)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func0);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
     }
 
-    EXPECT_EQ(0, obj.count());
+    ASSERT_EQ(0, obj.count());
 }
 
 TEST(GuardTest, Object1)
@@ -196,10 +192,10 @@ TEST(GuardTest, Object1)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func1, 1);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
     }
 
-    EXPECT_EQ(1, obj.count());
+    ASSERT_EQ(1, obj.count());
 }
 
 TEST(GuardTest, Object2)
@@ -208,10 +204,10 @@ TEST(GuardTest, Object2)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func2, 1, 2);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
     }
 
-    EXPECT_EQ(3, obj.count());
+    ASSERT_EQ(3, obj.count());
 }
 
 TEST(GuardTest, Object3)
@@ -220,10 +216,10 @@ TEST(GuardTest, Object3)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func3, 1, 2, 3);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
     }
 
-    EXPECT_EQ(6, obj.count());
+    ASSERT_EQ(6, obj.count());
 }
 
 TEST(GuardTest, Object0Dismiss)
@@ -232,11 +228,11 @@ TEST(GuardTest, Object0Dismiss)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func0);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, obj.count());
+    ASSERT_EQ(-1, obj.count());
 }
 
 TEST(GuardTest, Object1Dismiss)
@@ -245,11 +241,11 @@ TEST(GuardTest, Object1Dismiss)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func1, 1);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, obj.count());
+    ASSERT_EQ(-1, obj.count());
 }
 
 TEST(GuardTest, Object2Dismiss)
@@ -258,11 +254,11 @@ TEST(GuardTest, Object2Dismiss)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func2, 1, 2);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, obj.count());
+    ASSERT_EQ(-1, obj.count());
 }
 
 TEST(GuardTest, Object3Dismiss)
@@ -271,11 +267,11 @@ TEST(GuardTest, Object3Dismiss)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func3, 1, 2, 3);
-        EXPECT_EQ(-1, obj.count());
+        ASSERT_EQ(-1, obj.count());
         g.dismiss();
     }
 
-    EXPECT_EQ(-1, obj.count());
+    ASSERT_EQ(-1, obj.count());
 }
 
 } // namespace

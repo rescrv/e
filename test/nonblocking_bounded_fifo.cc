@@ -25,13 +25,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
-
-// HyperDisk
+// e
+#include "th.h"
 #include "e/nonblocking_bounded_fifo.h"
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
 
 namespace
 {

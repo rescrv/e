@@ -25,34 +25,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
-#include <e/convert.h>
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
+#include "th.h"
+#include "e/convert.h"
 
 namespace
 {
 
 TEST(ConvertTest, Uint64NormalCases)
 {
-    EXPECT_GE(sizeof(unsigned long int), sizeof(uint32_t));
+    ASSERT_GE(sizeof(unsigned long int), sizeof(uint32_t));
 
     try
     {
-        EXPECT_EQ(0, e::convert::to_uint64_t("0"));
-        EXPECT_EQ(0, e::convert::to_uint64_t("0x0"));
-        EXPECT_EQ(0, e::convert::to_uint64_t("0x0", 16));
-        EXPECT_EQ(0, e::convert::to_uint64_t("00"));
-        EXPECT_EQ(0, e::convert::to_uint64_t("00", 8));
+        ASSERT_EQ(0, e::convert::to_uint64_t("0"));
+        ASSERT_EQ(0, e::convert::to_uint64_t("0x0"));
+        ASSERT_EQ(0, e::convert::to_uint64_t("0x0", 16));
+        ASSERT_EQ(0, e::convert::to_uint64_t("00"));
+        ASSERT_EQ(0, e::convert::to_uint64_t("00", 8));
 
-        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("18446744073709551615"));
-        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff"));
-        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff", 16));
-        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("01777777777777777777777"));
-        EXPECT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("01777777777777777777777", 8));
+        ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("18446744073709551615"));
+        ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff"));
+        ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff", 16));
+        ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("01777777777777777777777"));
+        ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("01777777777777777777777", 8));
     }
     catch (...)
     {
@@ -62,21 +58,21 @@ TEST(ConvertTest, Uint64NormalCases)
 
 TEST(ConvertTest, Uint32NormalCases)
 {
-    EXPECT_GE(sizeof(unsigned long int), sizeof(uint32_t));
+    ASSERT_GE(sizeof(unsigned long int), sizeof(uint32_t));
 
     try
     {
-        EXPECT_EQ(0, e::convert::to_uint32_t("0"));
-        EXPECT_EQ(0, e::convert::to_uint32_t("0x0"));
-        EXPECT_EQ(0, e::convert::to_uint32_t("0x0", 16));
-        EXPECT_EQ(0, e::convert::to_uint32_t("00"));
-        EXPECT_EQ(0, e::convert::to_uint32_t("00", 8));
+        ASSERT_EQ(0, e::convert::to_uint32_t("0"));
+        ASSERT_EQ(0, e::convert::to_uint32_t("0x0"));
+        ASSERT_EQ(0, e::convert::to_uint32_t("0x0", 16));
+        ASSERT_EQ(0, e::convert::to_uint32_t("00"));
+        ASSERT_EQ(0, e::convert::to_uint32_t("00", 8));
 
-        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("4294967295"));
-        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff"));
-        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff", 16));
-        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("037777777777"));
-        EXPECT_EQ(4294967295UL, e::convert::to_uint32_t("037777777777", 8));
+        ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("4294967295"));
+        ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff"));
+        ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff", 16));
+        ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("037777777777"));
+        ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("037777777777", 8));
     }
     catch (...)
     {
@@ -86,21 +82,21 @@ TEST(ConvertTest, Uint32NormalCases)
 
 TEST(ConvertTest, Uint16NormalCases)
 {
-    EXPECT_GE(sizeof(unsigned long int), sizeof(uint16_t));
+    ASSERT_GE(sizeof(unsigned long int), sizeof(uint16_t));
 
     try
     {
-        EXPECT_EQ(0, e::convert::to_uint16_t("0"));
-        EXPECT_EQ(0, e::convert::to_uint16_t("0x0"));
-        EXPECT_EQ(0, e::convert::to_uint16_t("0x0", 16));
-        EXPECT_EQ(0, e::convert::to_uint16_t("00"));
-        EXPECT_EQ(0, e::convert::to_uint16_t("00", 8));
+        ASSERT_EQ(0, e::convert::to_uint16_t("0"));
+        ASSERT_EQ(0, e::convert::to_uint16_t("0x0"));
+        ASSERT_EQ(0, e::convert::to_uint16_t("0x0", 16));
+        ASSERT_EQ(0, e::convert::to_uint16_t("00"));
+        ASSERT_EQ(0, e::convert::to_uint16_t("00", 8));
 
-        EXPECT_EQ(65535, e::convert::to_uint16_t("65535"));
-        EXPECT_EQ(65535, e::convert::to_uint16_t("0xffff"));
-        EXPECT_EQ(65535, e::convert::to_uint16_t("0xffff", 16));
-        EXPECT_EQ(65535, e::convert::to_uint16_t("0177777"));
-        EXPECT_EQ(65535, e::convert::to_uint16_t("0177777", 8));
+        ASSERT_EQ(65535, e::convert::to_uint16_t("65535"));
+        ASSERT_EQ(65535, e::convert::to_uint16_t("0xffff"));
+        ASSERT_EQ(65535, e::convert::to_uint16_t("0xffff", 16));
+        ASSERT_EQ(65535, e::convert::to_uint16_t("0177777"));
+        ASSERT_EQ(65535, e::convert::to_uint16_t("0177777", 8));
     }
     catch (...)
     {
@@ -110,21 +106,21 @@ TEST(ConvertTest, Uint16NormalCases)
 
 TEST(ConvertTest, Uint8NormalCases)
 {
-    EXPECT_GE(sizeof(unsigned long int), sizeof(uint8_t));
+    ASSERT_GE(sizeof(unsigned long int), sizeof(uint8_t));
 
     try
     {
-        EXPECT_EQ(0, e::convert::to_uint8_t("0"));
-        EXPECT_EQ(0, e::convert::to_uint8_t("0x0"));
-        EXPECT_EQ(0, e::convert::to_uint8_t("0x0", 16));
-        EXPECT_EQ(0, e::convert::to_uint8_t("00"));
-        EXPECT_EQ(0, e::convert::to_uint8_t("00", 8));
+        ASSERT_EQ(0, e::convert::to_uint8_t("0"));
+        ASSERT_EQ(0, e::convert::to_uint8_t("0x0"));
+        ASSERT_EQ(0, e::convert::to_uint8_t("0x0", 16));
+        ASSERT_EQ(0, e::convert::to_uint8_t("00"));
+        ASSERT_EQ(0, e::convert::to_uint8_t("00", 8));
 
-        EXPECT_EQ(255, e::convert::to_uint8_t("255"));
-        EXPECT_EQ(255, e::convert::to_uint8_t("0xff"));
-        EXPECT_EQ(255, e::convert::to_uint8_t("0xff", 16));
-        EXPECT_EQ(255, e::convert::to_uint8_t("0377"));
-        EXPECT_EQ(255, e::convert::to_uint8_t("0377", 8));
+        ASSERT_EQ(255, e::convert::to_uint8_t("255"));
+        ASSERT_EQ(255, e::convert::to_uint8_t("0xff"));
+        ASSERT_EQ(255, e::convert::to_uint8_t("0xff", 16));
+        ASSERT_EQ(255, e::convert::to_uint8_t("0377"));
+        ASSERT_EQ(255, e::convert::to_uint8_t("0377", 8));
     }
     catch (...)
     {

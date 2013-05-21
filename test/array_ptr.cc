@@ -25,13 +25,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
-#include <e/array_ptr.h>
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
+#include "th.h"
+#include "e/array_ptr.h"
 
 namespace
 {
@@ -46,9 +42,9 @@ TEST(ArrayPtr, CtorAndDtor)
 TEST(ArrayPtr, BoolOperator)
 {
     e::array_ptr<int> x;
-    EXPECT_FALSE(x);
+    ASSERT_FALSE(x);
     x = new int[5];
-    EXPECT_TRUE(x);
+    ASSERT_TRUE(x);
 }
 
 TEST(ArrayPtr, BracketOperator)
@@ -59,18 +55,18 @@ TEST(ArrayPtr, BracketOperator)
     x[2] = 2;
     x[3] = 3;
     x[4] = 4;
-    EXPECT_EQ(0, x[0]);
-    EXPECT_EQ(1, x[1]);
-    EXPECT_EQ(2, x[2]);
-    EXPECT_EQ(3, x[3]);
-    EXPECT_EQ(4, x[4]);
+    ASSERT_EQ(0, x[0]);
+    ASSERT_EQ(1, x[1]);
+    ASSERT_EQ(2, x[2]);
+    ASSERT_EQ(3, x[3]);
+    ASSERT_EQ(4, x[4]);
 
     const e::array_ptr<int> y(x);
-    EXPECT_EQ(0, y[0]);
-    EXPECT_EQ(1, y[1]);
-    EXPECT_EQ(2, y[2]);
-    EXPECT_EQ(3, y[3]);
-    EXPECT_EQ(4, y[4]);
+    ASSERT_EQ(0, y[0]);
+    ASSERT_EQ(1, y[1]);
+    ASSERT_EQ(2, y[2]);
+    ASSERT_EQ(3, y[3]);
+    ASSERT_EQ(4, y[4]);
 }
 
 }

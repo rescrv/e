@@ -25,13 +25,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
-
 // e
-#include <e/intrusive_ptr.h>
-
-#pragma GCC diagnostic ignored "-Wswitch-default"
+#include "th.h"
+#include "e/intrusive_ptr.h"
 
 namespace
 {
@@ -102,44 +98,44 @@ TEST(IntrusivePtr, Nesting)
 {
     bool ctor = false;
     bool dtor = false;
-    EXPECT_FALSE(ctor);
-    EXPECT_FALSE(dtor);
+    ASSERT_FALSE(ctor);
+    ASSERT_FALSE(dtor);
 
     {
         e::intrusive_ptr<ctordtor> a(new ctordtor(ctor, dtor));
-        EXPECT_TRUE(ctor);
-        EXPECT_FALSE(dtor);
+        ASSERT_TRUE(ctor);
+        ASSERT_FALSE(dtor);
 
         {
             e::intrusive_ptr<ctordtor> b(a);
-            EXPECT_TRUE(ctor);
-            EXPECT_FALSE(dtor);
+            ASSERT_TRUE(ctor);
+            ASSERT_FALSE(dtor);
 
             {
                 e::intrusive_ptr<ctordtor> c(b);
-                EXPECT_TRUE(ctor);
-                EXPECT_FALSE(dtor);
+                ASSERT_TRUE(ctor);
+                ASSERT_FALSE(dtor);
 
                 {
                     e::intrusive_ptr<ctordtor> d(c);
-                    EXPECT_TRUE(ctor);
-                    EXPECT_FALSE(dtor);
+                    ASSERT_TRUE(ctor);
+                    ASSERT_FALSE(dtor);
                 }
 
-                EXPECT_TRUE(ctor);
-                EXPECT_FALSE(dtor);
+                ASSERT_TRUE(ctor);
+                ASSERT_FALSE(dtor);
             }
 
-            EXPECT_TRUE(ctor);
-            EXPECT_FALSE(dtor);
+            ASSERT_TRUE(ctor);
+            ASSERT_FALSE(dtor);
         }
 
-        EXPECT_TRUE(ctor);
-        EXPECT_FALSE(dtor);
+        ASSERT_TRUE(ctor);
+        ASSERT_FALSE(dtor);
     }
 
-    EXPECT_TRUE(ctor);
-    EXPECT_TRUE(dtor);
+    ASSERT_TRUE(ctor);
+    ASSERT_TRUE(dtor);
 }
 
 class accessing
@@ -166,12 +162,12 @@ class accessing
 TEST(IntrusivePtr, Accessing)
 {
     e::intrusive_ptr<accessing> ptr(new accessing(42, 3.1415, 'A'));
-    EXPECT_EQ(42, (*ptr).a);
-    EXPECT_EQ(42, ptr->a);
-    EXPECT_EQ(3.1415, (*ptr).b);
-    EXPECT_EQ(3.1415, ptr->b);
-    EXPECT_EQ('A', (*ptr).c);
-    EXPECT_EQ('A', ptr->c);
+    ASSERT_EQ(42, (*ptr).a);
+    ASSERT_EQ(42, ptr->a);
+    ASSERT_EQ(3.1415, (*ptr).b);
+    ASSERT_EQ(3.1415, ptr->b);
+    ASSERT_EQ('A', (*ptr).c);
+    ASSERT_EQ('A', ptr->c);
 }
 
 class assignment
@@ -197,13 +193,13 @@ TEST(IntrusivePtr, Assignment)
     e::intrusive_ptr<assignment> p(new assignment());
     e::intrusive_ptr<assignment> q;
     e::intrusive_ptr<assignment> r;
-    EXPECT_EQ(1, p->m_ref);
+    ASSERT_EQ(1, p->m_ref);
     q = p;
-    EXPECT_EQ(2, p->m_ref);
+    ASSERT_EQ(2, p->m_ref);
     r = p;
-    EXPECT_EQ(3, p->m_ref);
+    ASSERT_EQ(3, p->m_ref);
     r = q;
-    EXPECT_EQ(3, p->m_ref);
+    ASSERT_EQ(3, p->m_ref);
 }
 
 TEST(IntrusivePtr, Booleans)
@@ -227,14 +223,14 @@ TEST(IntrusivePtr, Compare)
     e::intrusive_ptr<assignment> p(new assignment());
     e::intrusive_ptr<assignment> q;
 
-    EXPECT_GT(p, q);
-    EXPECT_GE(p, q);
-    EXPECT_NE(p, q);
-    EXPECT_LE(q, p);
-    EXPECT_LT(q, p);
+    ASSERT_GT(p, q);
+    ASSERT_GE(p, q);
+    ASSERT_NE(p, q);
+    ASSERT_LE(q, p);
+    ASSERT_LT(q, p);
 
     p = q;
-    EXPECT_EQ(p, q);
+    ASSERT_EQ(p, q);
 }
 
 struct node

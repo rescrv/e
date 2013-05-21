@@ -25,14 +25,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Google Test
-#include <gtest/gtest.h>
+// C
+#include <cstring>
 
 // e
+#include "th.h"
 #include "e/endian.h"
 
-#define EXPECT_MEMCMP(X, Y, S) EXPECT_EQ(0, memcmp(X, Y, S))
-#pragma GCC diagnostic ignored "-Wswitch-default"
+#define ASSERT_MEMCMP(X, Y, S) ASSERT_EQ(0, memcmp(X, Y, S))
 
 namespace
 {
@@ -42,52 +42,52 @@ TEST(EndianTest, Pack)
     uint8_t buffer[sizeof(int64_t)];
 
     e::pack8be(uint8_t(0xde), buffer);
-    EXPECT_MEMCMP(buffer, "\xde", 1);
+    ASSERT_MEMCMP(buffer, "\xde", 1);
     e::pack8le(uint8_t(0xde), buffer);
-    EXPECT_MEMCMP(buffer, "\xde", 1);
+    ASSERT_MEMCMP(buffer, "\xde", 1);
     e::pack8be(int8_t(0xde), buffer);
-    EXPECT_MEMCMP(buffer, "\xde", 1);
+    ASSERT_MEMCMP(buffer, "\xde", 1);
     e::pack8le(int8_t(0xde), buffer);
-    EXPECT_MEMCMP(buffer, "\xde", 1);
+    ASSERT_MEMCMP(buffer, "\xde", 1);
 
     e::pack16be(uint16_t(0xdead), buffer);
-    EXPECT_MEMCMP(buffer, "\xde\xad", 2);
+    ASSERT_MEMCMP(buffer, "\xde\xad", 2);
     e::pack16le(uint16_t(0xdead), buffer);
-    EXPECT_MEMCMP(buffer, "\xad\xde", 2);
+    ASSERT_MEMCMP(buffer, "\xad\xde", 2);
     e::pack16be(int16_t(0xdead), buffer);
-    EXPECT_MEMCMP(buffer, "\xde\xad", 2);
+    ASSERT_MEMCMP(buffer, "\xde\xad", 2);
     e::pack16le(int16_t(0xdead), buffer);
-    EXPECT_MEMCMP(buffer, "\xad\xde", 2);
+    ASSERT_MEMCMP(buffer, "\xad\xde", 2);
 
     e::pack32be(uint32_t(0xdeadbeefUL), buffer);
-    EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef", 4);
+    ASSERT_MEMCMP(buffer, "\xde\xad\xbe\xef", 4);
     e::pack32le(uint32_t(0xdeadbeefUL), buffer);
-    EXPECT_MEMCMP(buffer, "\xef\xbe\xad\xde", 4);
+    ASSERT_MEMCMP(buffer, "\xef\xbe\xad\xde", 4);
     e::pack32be(int32_t(0xdeadbeefUL), buffer);
-    EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef", 4);
+    ASSERT_MEMCMP(buffer, "\xde\xad\xbe\xef", 4);
     e::pack32le(int32_t(0xdeadbeefUL), buffer);
-    EXPECT_MEMCMP(buffer, "\xef\xbe\xad\xde", 4);
+    ASSERT_MEMCMP(buffer, "\xef\xbe\xad\xde", 4);
 
     e::pack64be(uint64_t(0xdeadbeefcafebabeULL), buffer);
-    EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
+    ASSERT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
     e::pack64le(uint64_t(0xdeadbeefcafebabeULL), buffer);
-    EXPECT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
+    ASSERT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
     e::pack64be(int64_t(0xdeadbeefcafebabeULL), buffer);
-    EXPECT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
+    ASSERT_MEMCMP(buffer, "\xde\xad\xbe\xef\xca\xfe\xba\xbe", 8);
     e::pack64le(int64_t(0xdeadbeefcafebabeULL), buffer);
-    EXPECT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
+    ASSERT_MEMCMP(buffer, "\xbe\xba\xfe\xca\xef\xbe\xad\xde", 8);
 
     float f = 16711938.0;
     e::packfloatbe(f, buffer);
-    EXPECT_MEMCMP(buffer, "\x4b\x7f\x01\x02", 4);
+    ASSERT_MEMCMP(buffer, "\x4b\x7f\x01\x02", 4);
     e::packfloatle(f, buffer);
-    EXPECT_MEMCMP(buffer, "\x02\x01\x7f\x4b", 4);
+    ASSERT_MEMCMP(buffer, "\x02\x01\x7f\x4b", 4);
 
     double d = 9006104071832581.0;
     e::packdoublebe(d, buffer);
-    EXPECT_MEMCMP(buffer, "\x43\x3f\xff\x01\x02\x03\x04\x05", 8);
+    ASSERT_MEMCMP(buffer, "\x43\x3f\xff\x01\x02\x03\x04\x05", 8);
     e::packdoublele(d, buffer);
-    EXPECT_MEMCMP(buffer, "\x05\x04\x03\x02\x01\xff\x3f\x43", 8);
+    ASSERT_MEMCMP(buffer, "\x05\x04\x03\x02\x01\xff\x3f\x43", 8);
 }
 
 TEST(EndianTest, Unpack)
@@ -113,50 +113,50 @@ TEST(EndianTest, Unpack)
     double d;
 
     e::unpack8be(buffer8, &unsigned8);
-    EXPECT_EQ(0xde, unsigned8);
+    ASSERT_EQ(0xde, unsigned8);
     e::unpack8le(buffer8, &unsigned8);
-    EXPECT_EQ(0xde, unsigned8);
+    ASSERT_EQ(0xde, unsigned8);
     e::unpack8be(buffer8, &signed8);
-    EXPECT_EQ(int8_t(0xde), signed8);
+    ASSERT_EQ(int8_t(0xde), signed8);
     e::unpack8le(buffer8, &signed8);
-    EXPECT_EQ(int8_t(0xde), signed8);
+    ASSERT_EQ(int8_t(0xde), signed8);
 
     e::unpack16be(buffer16, &unsigned16);
-    EXPECT_EQ(0xdead, unsigned16);
+    ASSERT_EQ(0xdead, unsigned16);
     e::unpack16le(buffer16, &unsigned16);
-    EXPECT_EQ(0xadde, unsigned16);
+    ASSERT_EQ(0xadde, unsigned16);
     e::unpack16be(buffer16, &signed16);
-    EXPECT_EQ(int16_t(0xdead), signed16);
+    ASSERT_EQ(int16_t(0xdead), signed16);
     e::unpack16le(buffer16, &signed16);
-    EXPECT_EQ(int16_t(0xadde), signed16);
+    ASSERT_EQ(int16_t(0xadde), signed16);
 
     e::unpack32be(buffer32, &unsigned32);
-    EXPECT_EQ(0xdeadbeefUL, unsigned32);
+    ASSERT_EQ(0xdeadbeefUL, unsigned32);
     e::unpack32le(buffer32, &unsigned32);
-    EXPECT_EQ(0xefbeaddeUL, unsigned32);
+    ASSERT_EQ(0xefbeaddeUL, unsigned32);
     e::unpack32be(buffer32, &signed32);
-    EXPECT_EQ(int32_t(0xdeadbeefUL), signed32);
+    ASSERT_EQ(int32_t(0xdeadbeefUL), signed32);
     e::unpack32le(buffer32, &signed32);
-    EXPECT_EQ(int32_t(0xefbeaddeUL), signed32);
+    ASSERT_EQ(int32_t(0xefbeaddeUL), signed32);
 
     e::unpack64be(buffer64, &unsigned64);
-    EXPECT_EQ(0xdeadbeefcafebabeULL, unsigned64);
+    ASSERT_EQ(0xdeadbeefcafebabeULL, unsigned64);
     e::unpack64le(buffer64, &unsigned64);
-    EXPECT_EQ(0xbebafecaefbeaddeULL, unsigned64);
+    ASSERT_EQ(0xbebafecaefbeaddeULL, unsigned64);
     e::unpack64be(buffer64, &signed64);
-    EXPECT_EQ(int64_t(0xdeadbeefcafebabeULL), signed64);
+    ASSERT_EQ(int64_t(0xdeadbeefcafebabeULL), signed64);
     e::unpack64le(buffer64, &signed64);
-    EXPECT_EQ(int64_t(0xbebafecaefbeaddeULL), signed64);
+    ASSERT_EQ(int64_t(0xbebafecaefbeaddeULL), signed64);
 
     e::unpackfloatbe(bufferfloatbe, &f);
-    EXPECT_EQ(16711938.0, f);
+    ASSERT_EQ(16711938.0, f);
     e::unpackfloatle(bufferfloatle, &f);
-    EXPECT_EQ(16711938.0, f);
+    ASSERT_EQ(16711938.0, f);
 
     e::unpackdoublebe(bufferdoublebe, &d);
-    EXPECT_EQ(9006104071832581.0, d);
+    ASSERT_EQ(9006104071832581.0, d);
     e::unpackdoublele(bufferdoublele, &d);
-    EXPECT_EQ(9006104071832581.0, d);
+    ASSERT_EQ(9006104071832581.0, d);
 }
 
 } // namespace

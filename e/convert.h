@@ -58,9 +58,9 @@ to_uint64_t(const std::string& s, int base = 0)
 
     errno = 0;
 #ifdef _MSC_VER
-    ret = strtoull(s.c_str(), &endptr, base);
-#else
     ret = _strtoui64(s.c_str(), &endptr, base);
+#else
+    ret = strtoull(s.c_str(), &endptr, base);
 #endif
     newerrno = errno;
     errno = olderrno;
