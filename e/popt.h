@@ -56,6 +56,7 @@ class argparser
         ~argparser() throw ();
 
     public:
+        void usage();
         bool parse(int argc, const char* argv[]);
         const char** args();
         size_t args_sz();
@@ -155,6 +156,12 @@ argparser :: ~argparser() throw ()
     {
         poptFreeContext(m_ctx);
     }
+}
+
+inline void
+argparser :: usage()
+{
+    poptPrintUsage(m_ctx, stderr, 0);
 }
 
 inline bool
