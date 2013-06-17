@@ -15,7 +15,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AC_PROG_CC
 
-ANAL_WARNINGS_CXX
+ANAL_WARNINGS
 
 # Checks for libraries.
 AC_CHECK_LIB([rt], [clock_gettime], [needs_lrt=yes], [needs_lrt=no])
