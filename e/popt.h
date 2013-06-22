@@ -56,6 +56,7 @@ class argparser
         ~argparser() throw ();
 
     public:
+        void help();
         void usage();
         bool parse(int argc, const char* argv[]);
         const char** args();
@@ -106,6 +107,7 @@ class argument
         argument& as_long(long* v);
         argument& set_true(bool* b);
         argument& set_false(bool* b);
+        argument& hidden();
 
     public:
         argument& operator = (const argument& rhs);
@@ -159,9 +161,15 @@ argparser :: ~argparser() throw ()
 }
 
 inline void
+argparser :: help()
+{
+    poptPrintHelp(m_ctx, stdout, 0);
+}
+
+inline void
 argparser :: usage()
 {
-    poptPrintUsage(m_ctx, stderr, 0);
+    poptPrintUsage(m_ctx, stdout, 0);
 }
 
 inline bool
@@ -230,6 +238,12 @@ inline size_t
 argparser :: args_sz()
 {
     return m_args_sz;
+}
+
+inline void
+argparser :: option_string(const char* optstr)
+{
+    m_optstr = optstr;
 }
 
 inline void
@@ -368,6 +382,7 @@ argument :: argument(const argument& other)
     , m_true(other.m_true)
     , m_false(other.m_false)
 {
+    m_opt.argInfo = POPT_ARG_NONE;
 }
 
 inline
@@ -439,6 +454,13 @@ argument&
 argument :: set_false(bool* b)
 {
     m_false = b;
+    return *this;
+}
+
+argument&
+argument :: hidden()
+{
+    m_opt.argInfo = POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN;
     return *this;
 }
 
