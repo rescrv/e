@@ -46,6 +46,7 @@ class slice
 {
     public:
         slice();
+        slice(const char* data);
         slice(const uint8_t* data, size_t sz);
         slice(const std::string& str);
         slice(const std::vector<uint8_t>& buf);
@@ -83,6 +84,13 @@ inline
 slice :: slice()
     : m_data(NULL)
     , m_sz(0)
+{
+}
+
+inline
+slice :: slice(const char* d)
+    : m_data(reinterpret_cast<const uint8_t*>(d))
+    , m_sz(strlen(d))
 {
 }
 
