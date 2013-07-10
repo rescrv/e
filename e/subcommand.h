@@ -190,6 +190,31 @@ dispatch_to_subcommands(int arg, const char* argv[],
         return EXIT_FAILURE;
     }
 
+    if (strcmp(ap.args()[0], "help") == 0)
+    {
+        if (ap.args_sz() > 1)
+        {
+            std::string exec(prefix);
+            exec += ap.args()[1];
+            std::vector<const char*> args;
+            args.push_back("man");
+            args.push_back(exec.c_str());
+            args.push_back(NULL);
+
+            if (execvp(args[0], const_cast<char* const*>(&args.front())) < 0)
+            {
+                std::cerr << "failed to exec \"man\" to show help: " << strerror(errno) << std::endl;
+                return EXIT_FAILURE;
+            }
+
+            abort();
+        }
+        else
+        {
+            return subcommands::help(cmd, &ap, commands, commands_sz);
+        }
+    }
+
     for (size_t i = 0; i < commands_sz; ++i)
     {
         subcommand* s = commands + i;
@@ -219,7 +244,8 @@ dispatch_to_subcommands(int arg, const char* argv[],
         }
     }
 
-    std::cerr << "\"" << ap.args()[0] << "\" is not a " << name << " command\n" << std::endl;
+    std::cerr << "\"" << ap.args()[0] << "\" is not a " << name
+              << " command.  See \"" << cmd << " --help\"\n" << std::endl;
     return subcommands::help(cmd, &ap, commands, commands_sz);
 }
 
