@@ -371,6 +371,7 @@ argument :: argument()
     , m_true(NULL)
     , m_false(NULL)
 {
+    m_opt.argInfo = POPT_ARG_NONE;
 }
 
 inline
@@ -383,7 +384,6 @@ argument :: argument(const argument& other)
     , m_true(other.m_true)
     , m_false(other.m_false)
 {
-    m_opt.argInfo = POPT_ARG_NONE;
 }
 
 inline
