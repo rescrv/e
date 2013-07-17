@@ -105,6 +105,7 @@ class argument
         argument& metavar(const char* meta);
         argument& as_string(const char** v);
         argument& as_long(long* v);
+        argument& as_double(double* v);
         argument& set_true(bool* b);
         argument& set_false(bool* b);
         argument& hidden();
@@ -439,6 +440,14 @@ argument&
 argument :: as_long(long* v)
 {
     m_opt.argInfo = POPT_ARG_LONG;
+    m_opt.arg = v;
+    return *this;
+}
+
+argument&
+argument :: as_double(double* v)
+{
+    m_opt.argInfo = POPT_ARG_DOUBLE;
     m_opt.arg = v;
     return *this;
 }
