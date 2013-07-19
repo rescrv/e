@@ -31,6 +31,9 @@
 // C
 #include <cassert>
 
+// Popt
+#include <popt.h>
+
 // C++
 #include <iostream>
 
@@ -39,8 +42,8 @@
 #include <utility>
 #include <vector>
 
-// Popt
-#include <popt.h>
+// po6
+#include <po6/pathname.h>
 
 namespace e
 {
@@ -176,6 +179,16 @@ argparser :: usage()
 inline bool
 argparser :: parse(int argc, const char* argv[])
 {
+    assert(argc > 0);
+    po6::pathname pretty(argv[0]);
+    pretty = pretty.basename();
+    argv[0] = pretty.get();
+
+    if (strncmp(argv[0], "lt-", 3) == 0)
+    {
+        argv[0] += 3;
+    }
+
     assert(m_ctx == NULL);
     int rc;
     layout(1);
