@@ -482,7 +482,7 @@ argument :: set_false(bool* b)
 argument&
 argument :: hidden()
 {
-    m_opt.argInfo = POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN;
+    m_opt.argInfo |= POPT_ARGFLAG_DOC_HIDDEN;
     return *this;
 }
 
