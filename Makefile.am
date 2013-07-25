@@ -39,12 +39,13 @@ nobase_include_HEADERS += e/subcommand.h
 nobase_include_HEADERS += e/time.h
 nobase_include_HEADERS += e/tuple_compare.h
 nobase_include_HEADERS += e/unpacker.h
+nobase_include_HEADERS += e/varint.h
 nobase_include_HEADERS += e/worker_barrier.h
 
 #################################### Source ####################################
 
 lib_LTLIBRARIES = libe.la
-libe_la_SOURCES = atomic.cc buffer.cc slice.cc time.cc unpacker.cc
+libe_la_SOURCES = atomic.cc buffer.cc slice.cc time.cc unpacker.cc varint.cc
 libe_la_LDFLAGS = $(LRT_LDFLAGS)
 
 ##################################### Tests ####################################
@@ -64,6 +65,7 @@ check_PROGRAMS += test/intrusive_ptr
 check_PROGRAMS += test/locking_iterable_fifo
 check_PROGRAMS += test/nonblocking_bounded_fifo
 check_PROGRAMS += test/safe_math
+check_PROGRAMS += test/varint
 
 test_array_ptr_SOURCES = test/array_ptr.cc $(th_sources)
 test_bitfield_SOURCES = test/bitfield.cc $(th_sources)
@@ -79,3 +81,5 @@ test_locking_iterable_fifo_SOURCES = test/locking_iterable_fifo.cc $(th_sources)
 test_locking_iterable_fifo_LDADD = -lpthread
 test_nonblocking_bounded_fifo_SOURCES = test/nonblocking_bounded_fifo.cc $(th_sources)
 test_safe_math_SOURCES = test/safe_math.cc $(th_sources)
+test_varint_SOURCES = test/varint.cc $(th_sources)
+test_varint_LDADD = libe.la
