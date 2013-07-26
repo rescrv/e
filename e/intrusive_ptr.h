@@ -108,7 +108,7 @@ class intrusive_ptr
 
     public:
         T*
-        get() throw ()
+        get() const throw ()
         {
             return m_ptr;
         }
