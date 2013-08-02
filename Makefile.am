@@ -34,6 +34,7 @@ nobase_include_HEADERS += e/popt.h
 nobase_include_HEADERS += e/pow2.h
 nobase_include_HEADERS += e/safe_math.h
 nobase_include_HEADERS += e/slice.h
+nobase_include_HEADERS += e/strescape.h
 nobase_include_HEADERS += e/striped_lock.h
 nobase_include_HEADERS += e/subcommand.h
 nobase_include_HEADERS += e/time.h
