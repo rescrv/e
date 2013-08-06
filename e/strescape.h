@@ -38,7 +38,7 @@
 namespace e
 {
 
-std::string
+inline std::string
 strescape(const std::string& input)
 {
     const char* data = input.c_str();
