@@ -20,6 +20,7 @@ nobase_include_HEADERS += e/buffer.h
 nobase_include_HEADERS += e/convert.h
 nobase_include_HEADERS += e/endian.h
 nobase_include_HEADERS += e/envconfig.h
+nobase_include_HEADERS += e/error.h
 nobase_include_HEADERS += e/guard.h
 nobase_include_HEADERS += e/hazard_ptrs.h
 nobase_include_HEADERS += e/intrusive_ptr.h
