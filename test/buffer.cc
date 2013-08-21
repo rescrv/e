@@ -44,16 +44,16 @@ TEST(BufferTest, CtorAndDtor)
 {
     // Create a buffer without any size
     std::auto_ptr<e::buffer> a(e::buffer::create(0));
-    ASSERT_EQ(0, a->size());
-    ASSERT_EQ(0, a->capacity());
+    ASSERT_EQ(0U, a->size());
+    ASSERT_EQ(0U, a->capacity());
     // Create a buffer which can pack 2 bytes
     std::auto_ptr<e::buffer> b(e::buffer::create(2));
-    ASSERT_EQ(0, b->size());
-    ASSERT_EQ(2, b->capacity());
+    ASSERT_EQ(0U, b->size());
+    ASSERT_EQ(2U, b->capacity());
     // Create a buffer with the three bytes "XYZ"
     std::auto_ptr<e::buffer> c(e::buffer::create("xyz", 3));
-    ASSERT_EQ(3, c->size());
-    ASSERT_EQ(3, c->capacity());
+    ASSERT_EQ(3U, c->size());
+    ASSERT_EQ(3U, c->capacity());
 }
 
 TEST(BufferTest, PackBuffer)
@@ -66,7 +66,7 @@ TEST(BufferTest, PackBuffer)
     std::auto_ptr<e::buffer> packed(e::buffer::create(34));
 
     *packed << a << b << c << d << buf->as_slice();
-    ASSERT_EQ(29, packed->size());
+    ASSERT_EQ(29U, packed->size());
     ASSERT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                   "\x8b\xad\xf0\x0d"
@@ -76,7 +76,7 @@ TEST(BufferTest, PackBuffer)
                   29);
 
     packed->pack_at(12) << d << c << buf->as_slice();
-    ASSERT_EQ(29, packed->size());
+    ASSERT_EQ(29U, packed->size());
     ASSERT_MEMCMP(packed->data(),
                   "\xde\xad\xbe\xef\xca\xfe\xba\xbe"
                   "\x8b\xad\xf0\x0d"
@@ -105,7 +105,7 @@ TEST(BufferTest, UnpackBuffer)
     ASSERT_EQ(0x8badf00dUL, b);
     ASSERT_EQ(0xface, c);
     ASSERT_EQ('!', d);
-    ASSERT_EQ(10, sl.size());
+    ASSERT_EQ(10U, sl.size());
     ASSERT_MEMCMP("the buffer", sl.data(), 10);
 }
 
@@ -115,13 +115,13 @@ TEST(BufferTest, UnpackErrors)
     uint32_t a;
     e::unpacker up = *buf >> a;
     ASSERT_EQ(0x8badf00d, a);
-    ASSERT_EQ(2, up.remain());
+    ASSERT_EQ(2U, up.remain());
     ASSERT_FALSE(up.error());
 
     // "a" should not change even if nup fails
     e::unpacker nup = up >> a;
     ASSERT_EQ(0x8badf00d, a);
-    ASSERT_EQ(2, up.remain());
+    ASSERT_EQ(2U, up.remain());
     ASSERT_FALSE(up.error());
     ASSERT_TRUE(nup.error());
 
@@ -129,7 +129,7 @@ TEST(BufferTest, UnpackErrors)
     uint16_t b;
     up = up >> b;
     ASSERT_EQ(0xface, b);
-    ASSERT_EQ(0, up.remain());
+    ASSERT_EQ(0U, up.remain());
     ASSERT_FALSE(up.error());
 }
 
@@ -137,20 +137,20 @@ TEST(BufferTest, Shift)
 {
     // Create a buffer of four characters
     std::auto_ptr<e::buffer> buf(e::buffer::create("\xde\xad\xbe\xef", 4));
-    ASSERT_EQ(4, buf->size());
-    ASSERT_EQ(4, buf->capacity());
+    ASSERT_EQ(4U, buf->size());
+    ASSERT_EQ(4U, buf->capacity());
     ASSERT_TRUE(buf->cmp("\xde\xad\xbe\xef", 4));
 
     // Shift once
     buf->shift(2);
-    ASSERT_EQ(2, buf->size());
-    ASSERT_EQ(4, buf->capacity());
+    ASSERT_EQ(2U, buf->size());
+    ASSERT_EQ(4U, buf->capacity());
     ASSERT_TRUE(buf->cmp("\xbe\xef", 2));
 
     // Shift again
     buf->shift(2);
-    ASSERT_EQ(0, buf->size());
-    ASSERT_EQ(4, buf->capacity());
+    ASSERT_EQ(0U, buf->size());
+    ASSERT_EQ(4U, buf->capacity());
     ASSERT_TRUE(buf->cmp("", 0));
 }
 
@@ -158,76 +158,76 @@ TEST(BufferTest, ShiftExcess)
 {
     // Create a buffer of four characters
     std::auto_ptr<e::buffer> buf(e::buffer::create("\xde\xad\xbe\xef", 4));
-    ASSERT_EQ(4, buf->size());
-    ASSERT_EQ(4, buf->capacity());
+    ASSERT_EQ(4U, buf->size());
+    ASSERT_EQ(4U, buf->capacity());
     ASSERT_TRUE(buf->cmp("\xde\xad\xbe\xef", 4));
 
     // Shift once
     buf->shift(6);
-    ASSERT_EQ(0, buf->size());
-    ASSERT_EQ(4, buf->capacity());
+    ASSERT_EQ(0U, buf->size());
+    ASSERT_EQ(4U, buf->capacity());
     ASSERT_TRUE(buf->cmp("", 0));
 }
 
 TEST(BufferTest, IndexMem)
 {
     std::auto_ptr<e::buffer> buf(e::buffer::create("0123456789", 10));
-    ASSERT_EQ(0, buf->index("", 0)); // Test for bad glibc
-    ASSERT_EQ(0, buf->index("0", 1));
-    ASSERT_EQ(1, buf->index("1", 1));
-    ASSERT_EQ(2, buf->index("2", 1));
-    ASSERT_EQ(3, buf->index("3", 1));
-    ASSERT_EQ(4, buf->index("4", 1));
-    ASSERT_EQ(5, buf->index("5", 1));
-    ASSERT_EQ(6, buf->index("6", 1));
-    ASSERT_EQ(7, buf->index("7", 1));
-    ASSERT_EQ(8, buf->index("8", 1));
-    ASSERT_EQ(9, buf->index("9", 1));
-    ASSERT_EQ(0, buf->index("01", 2));
-    ASSERT_EQ(1, buf->index("12", 2));
-    ASSERT_EQ(2, buf->index("23", 2));
-    ASSERT_EQ(3, buf->index("34", 2));
-    ASSERT_EQ(4, buf->index("45", 2));
-    ASSERT_EQ(5, buf->index("56", 2));
-    ASSERT_EQ(6, buf->index("67", 2));
-    ASSERT_EQ(7, buf->index("78", 2));
-    ASSERT_EQ(8, buf->index("89", 2));
-    ASSERT_EQ(0, buf->index("012", 3));
-    ASSERT_EQ(1, buf->index("123", 3));
-    ASSERT_EQ(2, buf->index("234", 3));
-    ASSERT_EQ(3, buf->index("345", 3));
-    ASSERT_EQ(4, buf->index("456", 3));
-    ASSERT_EQ(5, buf->index("567", 3));
-    ASSERT_EQ(6, buf->index("678", 3));
-    ASSERT_EQ(7, buf->index("789", 3));
-    ASSERT_EQ(0, buf->index("0123", 4));
-    ASSERT_EQ(1, buf->index("1234", 4));
-    ASSERT_EQ(2, buf->index("2345", 4));
-    ASSERT_EQ(3, buf->index("3456", 4));
-    ASSERT_EQ(4, buf->index("4567", 4));
-    ASSERT_EQ(5, buf->index("5678", 4));
-    ASSERT_EQ(6, buf->index("6789", 4));
-    ASSERT_EQ(0, buf->index("01234", 5));
-    ASSERT_EQ(1, buf->index("12345", 5));
-    ASSERT_EQ(2, buf->index("23456", 5));
-    ASSERT_EQ(3, buf->index("34567", 5));
-    ASSERT_EQ(4, buf->index("45678", 5));
-    ASSERT_EQ(5, buf->index("56789", 5));
-    ASSERT_EQ(0, buf->index("012345", 6));
-    ASSERT_EQ(1, buf->index("123456", 6));
-    ASSERT_EQ(2, buf->index("234567", 6));
-    ASSERT_EQ(3, buf->index("345678", 6));
-    ASSERT_EQ(4, buf->index("456789", 6));
-    ASSERT_EQ(0, buf->index("0123456", 7));
-    ASSERT_EQ(1, buf->index("1234567", 7));
-    ASSERT_EQ(2, buf->index("2345678", 7));
-    ASSERT_EQ(3, buf->index("3456789", 7));
-    ASSERT_EQ(0, buf->index("01234567", 8));
-    ASSERT_EQ(1, buf->index("12345678", 8));
-    ASSERT_EQ(2, buf->index("23456789", 8));
-    ASSERT_EQ(0, buf->index("012345678", 9));
-    ASSERT_EQ(1, buf->index("123456789", 9));
-    ASSERT_EQ(0, buf->index("0123456789", 10));
+    ASSERT_EQ(0U, buf->index("", 0)); // Test for bad glibc
+    ASSERT_EQ(0U, buf->index("0", 1));
+    ASSERT_EQ(1U, buf->index("1", 1));
+    ASSERT_EQ(2U, buf->index("2", 1));
+    ASSERT_EQ(3U, buf->index("3", 1));
+    ASSERT_EQ(4U, buf->index("4", 1));
+    ASSERT_EQ(5U, buf->index("5", 1));
+    ASSERT_EQ(6U, buf->index("6", 1));
+    ASSERT_EQ(7U, buf->index("7", 1));
+    ASSERT_EQ(8U, buf->index("8", 1));
+    ASSERT_EQ(9U, buf->index("9", 1));
+    ASSERT_EQ(0U, buf->index("01", 2));
+    ASSERT_EQ(1U, buf->index("12", 2));
+    ASSERT_EQ(2U, buf->index("23", 2));
+    ASSERT_EQ(3U, buf->index("34", 2));
+    ASSERT_EQ(4U, buf->index("45", 2));
+    ASSERT_EQ(5U, buf->index("56", 2));
+    ASSERT_EQ(6U, buf->index("67", 2));
+    ASSERT_EQ(7U, buf->index("78", 2));
+    ASSERT_EQ(8U, buf->index("89", 2));
+    ASSERT_EQ(0U, buf->index("012", 3));
+    ASSERT_EQ(1U, buf->index("123", 3));
+    ASSERT_EQ(2U, buf->index("234", 3));
+    ASSERT_EQ(3U, buf->index("345", 3));
+    ASSERT_EQ(4U, buf->index("456", 3));
+    ASSERT_EQ(5U, buf->index("567", 3));
+    ASSERT_EQ(6U, buf->index("678", 3));
+    ASSERT_EQ(7U, buf->index("789", 3));
+    ASSERT_EQ(0U, buf->index("0123", 4));
+    ASSERT_EQ(1U, buf->index("1234", 4));
+    ASSERT_EQ(2U, buf->index("2345", 4));
+    ASSERT_EQ(3U, buf->index("3456", 4));
+    ASSERT_EQ(4U, buf->index("4567", 4));
+    ASSERT_EQ(5U, buf->index("5678", 4));
+    ASSERT_EQ(6U, buf->index("6789", 4));
+    ASSERT_EQ(0U, buf->index("01234", 5));
+    ASSERT_EQ(1U, buf->index("12345", 5));
+    ASSERT_EQ(2U, buf->index("23456", 5));
+    ASSERT_EQ(3U, buf->index("34567", 5));
+    ASSERT_EQ(4U, buf->index("45678", 5));
+    ASSERT_EQ(5U, buf->index("56789", 5));
+    ASSERT_EQ(0U, buf->index("012345", 6));
+    ASSERT_EQ(1U, buf->index("123456", 6));
+    ASSERT_EQ(2U, buf->index("234567", 6));
+    ASSERT_EQ(3U, buf->index("345678", 6));
+    ASSERT_EQ(4U, buf->index("456789", 6));
+    ASSERT_EQ(0U, buf->index("0123456", 7));
+    ASSERT_EQ(1U, buf->index("1234567", 7));
+    ASSERT_EQ(2U, buf->index("2345678", 7));
+    ASSERT_EQ(3U, buf->index("3456789", 7));
+    ASSERT_EQ(0U, buf->index("01234567", 8));
+    ASSERT_EQ(1U, buf->index("12345678", 8));
+    ASSERT_EQ(2U, buf->index("23456789", 8));
+    ASSERT_EQ(0U, buf->index("012345678", 9));
+    ASSERT_EQ(1U, buf->index("123456789", 9));
+    ASSERT_EQ(0U, buf->index("0123456789", 10));
     ASSERT_EQ(buf->capacity(), buf->index("A", 1)); // It's not there.
     ASSERT_EQ(buf->capacity(), buf->index("B", 1)); // It's not there.
 }
@@ -235,16 +235,16 @@ TEST(BufferTest, IndexMem)
 TEST(BufferTest, IndexChr)
 {
     std::auto_ptr<e::buffer> buf(e::buffer::create("0123456789", 10));
-    ASSERT_EQ(0, buf->index('0'));
-    ASSERT_EQ(1, buf->index('1'));
-    ASSERT_EQ(2, buf->index('2'));
-    ASSERT_EQ(3, buf->index('3'));
-    ASSERT_EQ(4, buf->index('4'));
-    ASSERT_EQ(5, buf->index('5'));
-    ASSERT_EQ(6, buf->index('6'));
-    ASSERT_EQ(7, buf->index('7'));
-    ASSERT_EQ(8, buf->index('8'));
-    ASSERT_EQ(9, buf->index('9'));
+    ASSERT_EQ(0U, buf->index('0'));
+    ASSERT_EQ(1U, buf->index('1'));
+    ASSERT_EQ(2U, buf->index('2'));
+    ASSERT_EQ(3U, buf->index('3'));
+    ASSERT_EQ(4U, buf->index('4'));
+    ASSERT_EQ(5U, buf->index('5'));
+    ASSERT_EQ(6U, buf->index('6'));
+    ASSERT_EQ(7U, buf->index('7'));
+    ASSERT_EQ(8U, buf->index('8'));
+    ASSERT_EQ(9U, buf->index('9'));
     ASSERT_EQ(buf->capacity(), buf->index('A')); // It's not there.
     ASSERT_EQ(buf->capacity(), buf->index('B')); // It's not there.
 }
@@ -266,7 +266,8 @@ TEST(BufferTest, VectorPack)
     vector.push_back(0xbeef);
     vector.push_back(0xcafe);
     vector.push_back(0xbabe);
-    e::buffer::packer p = *buf << vector;
+    e::buffer::packer p = buf->pack_at(0);
+    p = p << vector;
     ASSERT_TRUE(buf->cmp("\x00\x00\x00\x04"
                          "\xde\xad\xbe\xef"
                          "\xca\xfe\xba\xbe", 12));
@@ -279,7 +280,7 @@ TEST(BufferTest, VectorUnpack)
                                                    "\xca\xfe\xba\xbe", 12));
     std::vector<uint16_t> vector;
     *buf >> vector;
-    ASSERT_EQ(4, vector.size());
+    ASSERT_EQ(4U, vector.size());
     ASSERT_EQ(0xdead, vector[0]);
     ASSERT_EQ(0xbeef, vector[1]);
     ASSERT_EQ(0xcafe, vector[2]);
@@ -297,7 +298,7 @@ TEST(BufferTest, VectorUnpackFail)
     e::unpacker good = *buf >> vector_good;
     ASSERT_TRUE(bad.error());
     ASSERT_FALSE(good.error());
-    ASSERT_EQ(4, vector_good.size());
+    ASSERT_EQ(4U, vector_good.size());
     ASSERT_EQ(0xdead, vector_good[0]);
     ASSERT_EQ(0xbeef, vector_good[1]);
     ASSERT_EQ(0xcafe, vector_good[2]);

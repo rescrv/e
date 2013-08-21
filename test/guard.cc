@@ -64,6 +64,7 @@ TEST(GuardTest, Function0)
 
     {
         e::guard g = e::makeguard(&func0);
+        g.use_variable();
         ASSERT_EQ(-1, check);
     }
 
@@ -76,6 +77,7 @@ TEST(GuardTest, Function1)
 
     {
         e::guard g = e::makeguard(func1, 1);
+        g.use_variable();
         ASSERT_EQ(-1, check);
     }
 
@@ -88,6 +90,7 @@ TEST(GuardTest, Function2)
 
     {
         e::guard g = e::makeguard(func2, 1, 2);
+        g.use_variable();
         ASSERT_EQ(-1, check);
     }
 
@@ -100,6 +103,7 @@ TEST(GuardTest, Function3)
 
     {
         e::guard g = e::makeguard(func3, 1, 2, 3);
+        g.use_variable();
         ASSERT_EQ(-1, check);
     }
 
@@ -180,6 +184,7 @@ TEST(GuardTest, Object0)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func0);
+        g.use_variable();
         ASSERT_EQ(-1, obj.count());
     }
 
@@ -192,6 +197,7 @@ TEST(GuardTest, Object1)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func1, 1);
+        g.use_variable();
         ASSERT_EQ(-1, obj.count());
     }
 
@@ -204,6 +210,7 @@ TEST(GuardTest, Object2)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func2, 1, 2);
+        g.use_variable();
         ASSERT_EQ(-1, obj.count());
     }
 
@@ -216,6 +223,7 @@ TEST(GuardTest, Object3)
 
     {
         e::guard g = e::makeobjguard(obj, &object::func3, 1, 2, 3);
+        g.use_variable();
         ASSERT_EQ(-1, obj.count());
     }
 

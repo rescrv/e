@@ -39,14 +39,14 @@ namespace
 TEST(BitfieldTest, CtorAndDtor)
 {
     e::bitfield b1(8);
-    ASSERT_EQ(8, b1.bits());
-    ASSERT_EQ(1, b1.bytes());
+    ASSERT_EQ(8U, b1.bits());
+    ASSERT_EQ(1U, b1.bytes());
     e::bitfield b2(16);
-    ASSERT_EQ(16, b2.bits());
-    ASSERT_EQ(2, b2.bytes());
+    ASSERT_EQ(16U, b2.bits());
+    ASSERT_EQ(2U, b2.bytes());
     e::bitfield b3(75);
-    ASSERT_EQ(75, b3.bits());
-    ASSERT_EQ(10, b3.bytes());
+    ASSERT_EQ(75U, b3.bits());
+    ASSERT_EQ(10U, b3.bytes());
 }
 
 static void

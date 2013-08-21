@@ -60,7 +60,7 @@ class guard_base
             other.dismiss();
         }
 
-        ~guard_base() {}
+        virtual ~guard_base() {}
 
     protected:
         mutable bool m_dismissed;
@@ -85,6 +85,10 @@ class guard_func0 : public guard_base
                 m_func();
             }
         }
+
+    public:
+        guard_func0(const guard_func0& other);
+        guard_func0& operator = (const guard_func0& rhs);
 
     private:
         F m_func;
@@ -114,6 +118,10 @@ class guard_func1 : public guard_base
                 m_func(m_p1);
             }
         }
+
+    public:
+        guard_func1(const guard_func1& other);
+        guard_func1& operator = (const guard_func1& rhs);
 
     private:
         F m_func;
@@ -145,6 +153,10 @@ class guard_func2 : public guard_base
                 m_func(m_p1, m_p2);
             }
         }
+
+    public:
+        guard_func2(const guard_func2& other);
+        guard_func2& operator = (const guard_func2& rhs);
 
     private:
         F m_func;
@@ -179,6 +191,10 @@ class guard_func3 : public guard_base
             }
         }
 
+    public:
+        guard_func3(const guard_func3& other);
+        guard_func3& operator = (const guard_func3& rhs);
+
     private:
         F m_func;
         const P1 m_p1;
@@ -211,6 +227,10 @@ class guard_obj0 : public guard_base
             }
         }
 
+    public:
+        guard_obj0(const guard_obj0& other);
+        guard_obj0& operator = (const guard_obj0& rhs);
+
     private:
         O& m_obj;
         F m_func;
@@ -241,6 +261,10 @@ class guard_obj1 : public guard_base
                 (m_obj.*m_func)(m_p1);
             }
         }
+
+    public:
+        guard_obj1(const guard_obj1& other);
+        guard_obj1& operator = (const guard_obj1& rhs);
 
     private:
         O& m_obj;
@@ -274,6 +298,10 @@ class guard_obj2 : public guard_base
                 (m_obj.*m_func)(m_p1, m_p2);
             }
         }
+
+    public:
+        guard_obj2(const guard_obj2& other);
+        guard_obj2& operator = (const guard_obj2& rhs);
 
     private:
         O& m_obj;
@@ -309,6 +337,10 @@ class guard_obj3 : public guard_base
                 (m_obj.*m_func)(m_p1, m_p2, m_p3);
             }
         }
+
+    public:
+        guard_obj3(const guard_obj3& other);
+        guard_obj3& operator = (const guard_obj3& rhs);
 
     private:
         O& m_obj;
@@ -346,6 +378,10 @@ class guard_obj4 : public guard_base
                 (m_obj.*m_func)(m_p1, m_p2, m_p3, m_p4);
             }
         }
+
+    public:
+        guard_obj4(const guard_obj4& other);
+        guard_obj4& operator = (const guard_obj4& rhs);
 
     private:
         O& m_obj;
@@ -385,6 +421,10 @@ class guard_obj5 : public guard_base
                 (m_obj.*m_func)(m_p1, m_p2, m_p3, m_p4, m_p5);
             }
         }
+
+    public:
+        guard_obj5(const guard_obj5& other);
+        guard_obj5& operator = (const guard_obj5& rhs);
 
     private:
         O& m_obj;

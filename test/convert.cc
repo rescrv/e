@@ -38,11 +38,11 @@ TEST(ConvertTest, Uint64NormalCases)
 
     try
     {
-        ASSERT_EQ(0, e::convert::to_uint64_t("0"));
-        ASSERT_EQ(0, e::convert::to_uint64_t("0x0"));
-        ASSERT_EQ(0, e::convert::to_uint64_t("0x0", 16));
-        ASSERT_EQ(0, e::convert::to_uint64_t("00"));
-        ASSERT_EQ(0, e::convert::to_uint64_t("00", 8));
+        ASSERT_EQ(0U, e::convert::to_uint64_t("0"));
+        ASSERT_EQ(0U, e::convert::to_uint64_t("0x0"));
+        ASSERT_EQ(0U, e::convert::to_uint64_t("0x0", 16));
+        ASSERT_EQ(0U, e::convert::to_uint64_t("00"));
+        ASSERT_EQ(0U, e::convert::to_uint64_t("00", 8));
 
         ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("18446744073709551615"));
         ASSERT_EQ(18446744073709551615ULL, e::convert::to_uint64_t("0xffffffffffffffff"));
@@ -62,11 +62,11 @@ TEST(ConvertTest, Uint32NormalCases)
 
     try
     {
-        ASSERT_EQ(0, e::convert::to_uint32_t("0"));
-        ASSERT_EQ(0, e::convert::to_uint32_t("0x0"));
-        ASSERT_EQ(0, e::convert::to_uint32_t("0x0", 16));
-        ASSERT_EQ(0, e::convert::to_uint32_t("00"));
-        ASSERT_EQ(0, e::convert::to_uint32_t("00", 8));
+        ASSERT_EQ(0U, e::convert::to_uint32_t("0"));
+        ASSERT_EQ(0U, e::convert::to_uint32_t("0x0"));
+        ASSERT_EQ(0U, e::convert::to_uint32_t("0x0", 16));
+        ASSERT_EQ(0U, e::convert::to_uint32_t("00"));
+        ASSERT_EQ(0U, e::convert::to_uint32_t("00", 8));
 
         ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("4294967295"));
         ASSERT_EQ(4294967295UL, e::convert::to_uint32_t("0xffffffff"));
@@ -86,11 +86,11 @@ TEST(ConvertTest, Uint16NormalCases)
 
     try
     {
-        ASSERT_EQ(0, e::convert::to_uint16_t("0"));
-        ASSERT_EQ(0, e::convert::to_uint16_t("0x0"));
-        ASSERT_EQ(0, e::convert::to_uint16_t("0x0", 16));
-        ASSERT_EQ(0, e::convert::to_uint16_t("00"));
-        ASSERT_EQ(0, e::convert::to_uint16_t("00", 8));
+        ASSERT_EQ(0U, e::convert::to_uint16_t("0"));
+        ASSERT_EQ(0U, e::convert::to_uint16_t("0x0"));
+        ASSERT_EQ(0U, e::convert::to_uint16_t("0x0", 16));
+        ASSERT_EQ(0U, e::convert::to_uint16_t("00"));
+        ASSERT_EQ(0U, e::convert::to_uint16_t("00", 8));
 
         ASSERT_EQ(65535, e::convert::to_uint16_t("65535"));
         ASSERT_EQ(65535, e::convert::to_uint16_t("0xffff"));
@@ -110,11 +110,11 @@ TEST(ConvertTest, Uint8NormalCases)
 
     try
     {
-        ASSERT_EQ(0, e::convert::to_uint8_t("0"));
-        ASSERT_EQ(0, e::convert::to_uint8_t("0x0"));
-        ASSERT_EQ(0, e::convert::to_uint8_t("0x0", 16));
-        ASSERT_EQ(0, e::convert::to_uint8_t("00"));
-        ASSERT_EQ(0, e::convert::to_uint8_t("00", 8));
+        ASSERT_EQ(0U, e::convert::to_uint8_t("0"));
+        ASSERT_EQ(0U, e::convert::to_uint8_t("0x0"));
+        ASSERT_EQ(0U, e::convert::to_uint8_t("0x0", 16));
+        ASSERT_EQ(0U, e::convert::to_uint8_t("00"));
+        ASSERT_EQ(0U, e::convert::to_uint8_t("00", 8));
 
         ASSERT_EQ(255, e::convert::to_uint8_t("255"));
         ASSERT_EQ(255, e::convert::to_uint8_t("0xff"));

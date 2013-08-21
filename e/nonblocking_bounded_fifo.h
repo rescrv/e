@@ -79,10 +79,10 @@ class nonblocking_bounded_fifo
 
 template <typename T>
 nonblocking_bounded_fifo<T> :: nonblocking_bounded_fifo(size_t sz)
-    : m_sz(sz)
-    , m_elems(NULL)
-    , m_push(0)
+    : m_push(0)
     , m_pop(0)
+    , m_sz(sz)
+    , m_elems(NULL)
 {
     using namespace e::atomic;
     assert(m_sz >= 2);
@@ -189,7 +189,7 @@ nonblocking_bounded_fifo<T> :: pop(T* t)
     }
 
     *t = elem->t;
-    T fresh;
+    T fresh = T();
     elem->t = fresh;
     store_64_release(&elem->count, po + m_sz);
     return true;

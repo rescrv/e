@@ -130,7 +130,7 @@ TEST(LockingIterableFifoTest, IterateFlushIterate)
     }
 
     // Iterate the rest of the way.
-    for (size_t i = 11; i <= 20; ++i)
+    for (int i = 11; i <= 20; ++i)
     {
         ASSERT_TRUE(it.valid());
         ASSERT_EQ(i, *it);
@@ -181,18 +181,18 @@ TEST(LockingIterableFifoTest, BatchAppend)
     // Add batches of various sizes, iterating to verify presence.
     e::locking_iterable_fifo<int>::iterator it = l.iterate();
 
-    for (size_t i = 0; i < 1000; ++i)
+    for (int i = 0; i < 1000; ++i)
     {
         std::vector<int> values(i);
 
-        for (size_t j = 0; j < i; ++j)
+        for (int j = 0; j < i; ++j)
         {
             values[j] = j;
         }
 
         l.batch_append(values);
 
-        for (size_t j = 0; j < i; ++j)
+        for (int j = 0; j < i; ++j)
         {
             ASSERT_TRUE(it.valid());
             ASSERT_EQ(j, *it);

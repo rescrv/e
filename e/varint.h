@@ -36,7 +36,7 @@ char*
 varint64_encode(char* dst, uint64_t value);
 
 // Returns the length of the varint32 or varint64 encoding of "v"
-int
+inline int
 varint_length(uint64_t v)
 {
     int len = 1;

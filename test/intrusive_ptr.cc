@@ -25,6 +25,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 // e
 #include "th.h"
 #include "e/intrusive_ptr.h"
@@ -193,13 +195,13 @@ TEST(IntrusivePtr, Assignment)
     e::intrusive_ptr<assignment> p(new assignment());
     e::intrusive_ptr<assignment> q;
     e::intrusive_ptr<assignment> r;
-    ASSERT_EQ(1, p->m_ref);
+    ASSERT_EQ(1U, p->m_ref);
     q = p;
-    ASSERT_EQ(2, p->m_ref);
+    ASSERT_EQ(2U, p->m_ref);
     r = p;
-    ASSERT_EQ(3, p->m_ref);
+    ASSERT_EQ(3U, p->m_ref);
     r = q;
-    ASSERT_EQ(3, p->m_ref);
+    ASSERT_EQ(3U, p->m_ref);
 }
 
 TEST(IntrusivePtr, Booleans)
