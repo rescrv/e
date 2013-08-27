@@ -207,8 +207,6 @@ th :: run_tests()
     return failures;
 }
 
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
-
 void
 th :: fail()
 {
