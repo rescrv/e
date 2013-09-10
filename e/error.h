@@ -71,6 +71,7 @@ inline std::string
 error :: strerror(int err)
 {
     char buf[1024];
+    memset(buf, 0, sizeof(buf));
     strerror_r(err, buf, 1024);
     buf[1023] = '\0';
     return std::string(buf);
