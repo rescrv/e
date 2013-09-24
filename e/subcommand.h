@@ -101,6 +101,7 @@ dispatch_to_subcommands(int arg, const char* argv[],
     bool flag_version = false;
     bool flag_completion = false;
     const char* arg_path = NULL;
+    const char* orig_argv0 = argv[0];
 
     e::argparser help_ap;
     help_ap.option_string("[COMMAND] [ARGS]");
@@ -161,6 +162,8 @@ dispatch_to_subcommands(int arg, const char* argv[],
         return subcommands::help(cmd, &ap, commands, commands_sz);
     }
 
+    // add the path where the binaries should be, preferring cmd-line over
+    // environment over default.
     std::string path;
     char* env_path = getenv(env_var);
 
@@ -177,6 +180,10 @@ dispatch_to_subcommands(int arg, const char* argv[],
         path = default_path;
     }
 
+    // add the dir where "hyperdex" resides
+    path += ":" + std::string(po6::pathname(orig_argv0).dirname().get());
+
+    // add the existing PATH
     char* old_path = getenv("PATH");
 
     if (old_path)
@@ -184,12 +191,14 @@ dispatch_to_subcommands(int arg, const char* argv[],
         path += ":" + std::string(old_path);
     }
 
+    // set the path
     if (setenv("PATH", path.c_str(), 1) < 0)
     {
         std::cerr << "could not set path: " << strerror(errno) << std::endl;
         return EXIT_FAILURE;
     }
 
+    // dispatch the command
     if (strcmp(ap.args()[0], "help") == 0)
     {
         if (ap.args_sz() > 1)
