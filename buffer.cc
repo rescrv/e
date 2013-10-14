@@ -44,7 +44,6 @@
 #include <iostream>
 
 // e
-#include "e/assert.h"
 #include "e/buffer.h"
 #include "e/endian.h"
 
@@ -111,7 +110,7 @@ e :: buffer :: pack_at(uint32_t off)
 void
 e :: buffer :: resize(uint32_t sz) throw ()
 {
-    EASSERT(sz <= m_cap);
+    assert(sz <= m_cap);
     m_size = sz;
 }
 
@@ -175,7 +174,7 @@ e :: buffer :: packer :: packer(buffer* buf, uint32_t off)
     : m_buf(buf)
     , m_off(off)
 {
-    EASSERT(off <= m_buf->m_cap);
+    assert(off <= m_buf->m_cap);
 }
 
 e :: buffer :: packer :: packer(const packer& p)
@@ -188,7 +187,7 @@ e::buffer::packer
 e :: buffer :: packer :: copy(const slice& from)
 {
     uint64_t newsize = m_off + from.size();
-    EASSERT(newsize <= m_buf->m_cap);
+    assert(newsize <= m_buf->m_cap);
     memmove(m_buf->m_data + m_off, from.data(), from.size());
     m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
     return packer(m_buf, newsize);
@@ -226,7 +225,7 @@ e::buffer::packer
 e :: buffer :: packer :: operator << (uint8_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint8_t);
-    EASSERT(newsize <= m_buf->m_cap);
+    assert(newsize <= m_buf->m_cap);
     e::pack8be(rhs, m_buf->m_data + m_off);
     m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
     return packer(m_buf, newsize);
@@ -236,7 +235,7 @@ e::buffer::packer
 e :: buffer :: packer :: operator << (uint16_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint16_t);
-    EASSERT(newsize <= m_buf->m_cap);
+    assert(newsize <= m_buf->m_cap);
     e::pack16be(rhs, m_buf->m_data + m_off);
     m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
     return packer(m_buf, newsize);
@@ -246,7 +245,7 @@ e::buffer::packer
 e :: buffer :: packer :: operator << (uint32_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t);
-    EASSERT(newsize <= m_buf->m_cap);
+    assert(newsize <= m_buf->m_cap);
     e::pack32be(rhs, m_buf->m_data + m_off);
     m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
     return packer(m_buf, newsize);
@@ -256,7 +255,7 @@ e::buffer::packer
 e :: buffer :: packer :: operator << (uint64_t rhs)
 {
     uint64_t newsize = m_off + sizeof(uint64_t);
-    EASSERT(newsize <= m_buf->m_cap);
+    assert(newsize <= m_buf->m_cap);
     e::pack64be(rhs, m_buf->m_data + m_off);
     m_buf->m_size = std::max(m_buf->m_size, static_cast<uint32_t>(newsize));
     return packer(m_buf, newsize);
@@ -266,8 +265,8 @@ e::buffer::packer
 e :: buffer :: packer :: operator << (const slice& rhs)
 {
     uint64_t newsize = m_off + sizeof(uint32_t) + rhs.size();
-    EASSERT(newsize <= m_buf->m_cap);
-    EASSERT(rhs.size() <= UINT32_MAX);
+    assert(newsize <= m_buf->m_cap);
+    assert(rhs.size() <= UINT32_MAX);
     uint32_t sz = rhs.size();
     e::pack32be(sz, m_buf->m_data + m_off);
     memmove(m_buf->m_data + m_off + sizeof(uint32_t), rhs.data(), sz);

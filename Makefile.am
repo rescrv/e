@@ -12,7 +12,6 @@ pkgconfig_DATA = libe.pc
 
 nobase_include_HEADERS =
 nobase_include_HEADERS += e/array_ptr.h
-nobase_include_HEADERS += e/assert.h
 nobase_include_HEADERS += e/atomic.h
 nobase_include_HEADERS += e/bitfield.h
 nobase_include_HEADERS += e/bitsteal.h
