@@ -12,8 +12,8 @@ package libe
 | debian build-requires="pkg-config, libpo6-dev"
 | fedora build-requires="pkg-config libpo6-devel"
 | summary="Utilities that help build systems"
-+ {libdir}/libe.so.0
-+ {libdir}/libe.so.0.0.0
++ {libdir}/libe.so.1
++ {libdir}/libe.so.1.0.0
 '''Utilities that help build systems'''
 
 subpackage libe-devel
