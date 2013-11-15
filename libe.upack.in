@@ -18,8 +18,8 @@ package libe
 
 subpackage libe-devel
 | debian name="libe-dev"
-| debian requires="libpo6-dev"
-| fedora requires="libpo6-devel"
+| debian requires="libpo6-dev, libe1 {self}"
+| fedora requires="libpo6-devel, libe {self}"
 + {includedir}/e/array_ptr.h
 + {includedir}/e/atomic.h
 + {includedir}/e/bitfield.h
