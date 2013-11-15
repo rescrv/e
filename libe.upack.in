@@ -1,6 +1,6 @@
 package libe
+| source="libe"
 | debian name="libe1"
-| debian source="libe"
 | version="@VERSION@"
 | release="1"
 | license="BSD"
