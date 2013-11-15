@@ -53,3 +53,5 @@ subpackage libe-devel
 + {includedir}/e/worker_barrier.h
 + {libdir}/pkgconfig/libe.pc
 + {libdir}/libe.so
+
+exclude {libdir}/libe.la
