@@ -9,6 +9,8 @@ package libe
 | tarball="http://hyperdex.org/src/libe-{version}.tar.gz"
 | debian section="libs"
 | configure="--disable-static"
+| debian build-requires="pkg-config, libpo6-dev"
+| fedora build-requires="pkg-config libpo6-devel"
 | summary="Utilities that help build systems"
 + {libdir}/libe.so.0
 + {libdir}/libe.so.0.0.0
@@ -16,6 +18,8 @@ package libe
 
 subpackage libe-devel
 | debian name="libe-dev"
+| debian requires="libpo6-dev"
+| fedora requires="libpo6-devel"
 + {includedir}/e/array_ptr.h
 + {includedir}/e/atomic.h
 + {includedir}/e/bitfield.h
