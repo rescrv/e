@@ -10,7 +10,7 @@ package libe
 | debian section="libs"
 | configure="--disable-static"
 | debian build-requires="pkg-config, libpo6-dev"
-| fedora build-requires="pkg-config libpo6-devel"
+| fedora build-requires="pkgconfig libpo6-devel"
 | summary="Utilities that help build systems"
 + {libdir}/libe.so.1
 + {libdir}/libe.so.1.0.0
