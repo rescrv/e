@@ -73,7 +73,11 @@ e :: buffer :: index(const uint8_t* mem, size_t sz) const throw ()
 {
     const uint8_t* loc = static_cast<const uint8_t*>(memmem(m_data, m_size, mem, sz));
 
-    if (loc == NULL)
+    if (sz == 0)
+    {
+        return 0;
+    }
+    else if (loc == NULL)
     {
         return m_cap;
     }
