@@ -44,6 +44,5 @@ AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull mach_absolute_time])
 
 AC_CONFIG_FILES([Makefile
-                 libe.pc
-                 libe.upack])
+                 libe.pc])
 AC_OUTPUT
