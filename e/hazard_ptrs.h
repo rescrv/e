@@ -311,7 +311,7 @@ hazard_ptrs<T, P, S> :: hazard_rec :: hazard_rec(hazard_ptrs& parent)
     using namespace e::atomic;
     store_32_nobarrier(&taslock, 0);
     store_ptr_nobarrier(&next, static_cast<hazard_rec*>(NULL));
-    store_64_nobarrier(&rcount, NULL);
+    store_64_nobarrier(&rcount, 0);
 
     for (size_t i = 0; i < P; ++i)
     {
