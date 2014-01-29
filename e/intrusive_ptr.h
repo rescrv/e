@@ -131,8 +131,6 @@ class intrusive_ptr
                 {
                     tmp->dec();
                 }
-
-                this->m_ptr = rhs.m_ptr;
             }
 
             return *this;

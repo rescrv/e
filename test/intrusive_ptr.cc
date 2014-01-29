@@ -237,7 +237,7 @@ TEST(IntrusivePtr, Compare)
 
 struct node
 {
-    node() : ref(0), next() {}
+    node() : ref(0), next(NULL) {}
 #ifdef _MSC_VER
 	void inc() { System::Threading::Interlocked::Increment(ref); }
 	void dec() { if(System::Threading::Interlocked::Decrement(ref) == 0) delete this; }
@@ -253,7 +253,7 @@ TEST(IntrusivePtr, HandOverHand)
 {
     e::intrusive_ptr<node> head(new node());
 
-    for (size_t i = 0; i < 10000000; ++i)
+    for (size_t i = 0; i < 100000; ++i)
     {
         e::intrusive_ptr<node> tmp(new node());
         tmp->next = head;
