@@ -16,6 +16,7 @@ nobase_include_HEADERS += e/atomic.h
 nobase_include_HEADERS += e/bitfield.h
 nobase_include_HEADERS += e/bitsteal.h
 nobase_include_HEADERS += e/buffer.h
+nobase_include_HEADERS += e/compat.h
 nobase_include_HEADERS += e/convert.h
 nobase_include_HEADERS += e/endian.h
 nobase_include_HEADERS += e/envconfig.h
