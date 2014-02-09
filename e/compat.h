@@ -42,8 +42,12 @@ namespace e
 {
 
 #ifdef _LIBCPP_VERSION
+#define BEGIN_E_COMPAT_NAMESPACE namespace std {
+#define END_E_COMPAT_NAMESPACE }
 namespace compat = ::std;
 #else
+#define BEGIN_E_COMPAT_NAMESPACE namespace std { namespace tr1 {
+#define END_E_COMPAT_NAMESPACE }}
 namespace compat = ::std::tr1;
 #endif
 
