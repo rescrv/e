@@ -120,6 +120,9 @@ class argument
         friend class argparser;
 
     private:
+        void reset_opt();
+
+    private:
         poptOption m_opt;
         char m_shortn;
         std::string m_longn;
@@ -384,7 +387,13 @@ argument :: argument()
     , m_true(NULL)
     , m_false(NULL)
 {
+    m_opt.longName = NULL;
+    m_opt.shortName = '\0';
     m_opt.argInfo = POPT_ARG_NONE;
+    m_opt.arg = NULL;
+    m_opt.val = 0;
+    m_opt.descrip = NULL;
+    m_opt.argDescrip = NULL;
 }
 
 inline
@@ -397,6 +406,7 @@ argument :: argument(const argument& other)
     , m_true(other.m_true)
     , m_false(other.m_false)
 {
+    reset_opt();
 }
 
 inline
@@ -421,6 +431,7 @@ argument :: long_name(const char* n)
 argument&
 argument :: short_name(char n)
 {
+    m_shortn = n;
     m_opt.shortName = n;
     return *this;
 }
@@ -498,9 +509,19 @@ argument :: operator = (const argument& rhs)
         m_meta = rhs.m_meta;
         m_true = rhs.m_true;
         m_false = rhs.m_false;
+        reset_opt();
     }
 
     return *this;
+}
+
+void
+argument :: reset_opt()
+{
+    m_opt.longName = m_longn.c_str();
+    m_opt.shortName = m_shortn;
+    m_opt.descrip = m_desc.c_str();
+    m_opt.argDescrip = m_meta.c_str();
 }
 
 } // namespace e
