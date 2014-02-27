@@ -269,14 +269,14 @@ argparser :: autohelp()
     m_autohelp = true;
 }
 
-argument&
+inline argument&
 argparser :: arg()
 {
     m_arguments.push_back(argument());
     return m_arguments.back();
 }
 
-void
+inline void
 argparser :: add(const char* name, const argparser& ap)
 {
     m_subparsers.push_back(std::make_pair(name, ap));
@@ -414,13 +414,13 @@ argument :: ~argument() throw ()
 {
 }
 
-argument&
+inline argument&
 argument :: name(char sn, const char* ln)
 {
     return short_name(sn).long_name(ln);
 }
 
-argument&
+inline argument&
 argument :: long_name(const char* n)
 {
     m_longn = n;
@@ -428,7 +428,7 @@ argument :: long_name(const char* n)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: short_name(char n)
 {
     m_shortn = n;
@@ -436,7 +436,7 @@ argument :: short_name(char n)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: description(const char* desc)
 {
     m_desc = desc;
@@ -444,7 +444,7 @@ argument :: description(const char* desc)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: metavar(const char* meta)
 {
     m_meta = meta;
@@ -452,7 +452,7 @@ argument :: metavar(const char* meta)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: as_string(const char** v)
 {
     m_opt.argInfo = POPT_ARG_STRING;
@@ -460,7 +460,7 @@ argument :: as_string(const char** v)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: as_long(long* v)
 {
     m_opt.argInfo = POPT_ARG_LONG;
@@ -468,7 +468,7 @@ argument :: as_long(long* v)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: as_double(double* v)
 {
     m_opt.argInfo = POPT_ARG_DOUBLE;
@@ -476,28 +476,28 @@ argument :: as_double(double* v)
     return *this;
 }
 
-argument&
+inline argument&
 argument :: set_true(bool* b)
 {
     m_true = b;
     return *this;
 }
 
-argument&
+inline argument&
 argument :: set_false(bool* b)
 {
     m_false = b;
     return *this;
 }
 
-argument&
+inline argument&
 argument :: hidden()
 {
     m_opt.argInfo |= POPT_ARGFLAG_DOC_HIDDEN;
     return *this;
 }
 
-argument&
+inline argument&
 argument :: operator = (const argument& rhs)
 {
     if (this != &rhs)
@@ -515,7 +515,7 @@ argument :: operator = (const argument& rhs)
     return *this;
 }
 
-void
+inline void
 argument :: reset_opt()
 {
     m_opt.longName = m_longn.c_str();
