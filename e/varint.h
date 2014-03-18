@@ -52,28 +52,16 @@ varint_length(uint64_t v)
 
 // Helpful wrappers to match conventions from elsewhwere
 
-char*
+inline char*
 packvarint64(uint64_t value, char* ptr)
 {
     return varint64_encode(ptr, value);
 }
 
-char*
+inline char*
 packvarint32(uint32_t value, char* ptr)
 {
     return varint32_encode(ptr, value);
-}
-
-const char*
-unpackvarint64(const char* ptr, uint64_t* value)
-{
-    return varint64_decode(ptr, ptr + 10, value);
-}
-
-const char*
-unpackvarint32(const char* ptr, uint32_t* value)
-{
-    return varint32_decode(ptr, ptr + 5, value);
 }
 
 }  // namespace e
