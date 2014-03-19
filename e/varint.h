@@ -19,6 +19,9 @@
 namespace e
 {
 
+#define VARINT_32_MAX_SIZE 5
+#define VARINT_64_MAX_SIZE 10
+
 // These either store a value in *v and return a pointer just past the parsed
 // value, or return NULL on error.  These routines only look at bytes in the
 // range [p..limit-1]
