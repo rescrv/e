@@ -46,3 +46,10 @@ e:: slice :: hex() const
 
     return ostr.str();
 }
+
+bool
+e :: slice :: starts_with(const e::slice& prefix) const
+{
+    return size() >= prefix.size() &&
+           memcmp(data(), prefix.data(), prefix.size()) == 0;
+}

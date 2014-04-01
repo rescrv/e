@@ -57,9 +57,11 @@ class slice
     public:
         int compare(const slice& rhs) const;
         const uint8_t* data() const { return m_data; }
+        const char* c_str() const { return reinterpret_cast<const char*>(m_data); }
         bool empty() const { return m_sz == 0; }
         std::string hex() const;
         size_t size() const { return m_sz; }
+        bool starts_with(const e::slice& other) const;
 
     public:
         void advance(size_t sz);
