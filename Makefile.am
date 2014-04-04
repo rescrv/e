@@ -48,7 +48,7 @@ nobase_include_HEADERS += e/worker_barrier.h
 
 lib_LTLIBRARIES = libe.la
 libe_la_SOURCES = atomic.cc buffer.cc slice.cc time.cc unpacker.cc varint.cc
-libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 1:0:0
+libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 2:0:1
 
 ##################################### Tests ####################################
 
