@@ -41,7 +41,6 @@ nobase_include_HEADERS += e/time.h
 nobase_include_HEADERS += e/tuple_compare.h
 nobase_include_HEADERS += e/unpacker.h
 nobase_include_HEADERS += e/varint.h
-nobase_include_HEADERS += e/worker_barrier.h
 
 #################################### Source ####################################
 
