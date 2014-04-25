@@ -50,6 +50,7 @@ class garbage_collector
 {
     public:
         class thread_state;
+        template<typename T> static void free_ptr(void* ptr) { delete static_cast<T*>(ptr); }
 
     public:
         garbage_collector();
@@ -102,7 +103,6 @@ class garbage_collector::thread_state_node
         ~thread_state_node() throw () {}
 
     public:
-        static void free_tsn(void* ptr) { delete static_cast<thread_state_node*>(ptr); }
         thread_state_node* next;
         uint64_t quiescent_timestamp;
 
@@ -203,7 +203,7 @@ garbage_collector :: deregister_thread(thread_state* ts)
     e::atomic::store_ptr_release(ptr, node->next);
 
     // now destroy the unlinked tsn
-    collect(node, thread_state_node::free_tsn);
+    collect(node, garbage_collector::free_ptr<thread_state_node>);
 }
 
 inline void
@@ -266,13 +266,14 @@ garbage_collector :: quiescent_state(thread_state* ts)
         {
             if (it->timestamp < min_timestamp)
             {
-                to_collect.push_back(*it);
-                it = m_garbage.erase(it);
+                std::list<garbage>::iterator old = it;
+                ++it;
+                to_collect.splice(to_collect.begin(), m_garbage, old);
             }
             else
             {
-                ++it;
                 smallest_garbage = std::min(it->timestamp, smallest_garbage);
+                ++it;
             }
         }
 
@@ -307,7 +308,7 @@ garbage_collector :: collect(void* ptr, void(*func)(void* ptr))
             std::min(e::atomic::load_64_nobarrier(&m_smallest_garbage), timestamp));
 }
 
-uint64_t
+inline uint64_t
 garbage_collector :: read_timestamp()
 {
     return e::atomic::increment_64_fullbarrier(&m_timestamp, 1);
