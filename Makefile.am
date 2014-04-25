@@ -29,7 +29,6 @@ nobase_include_HEADERS += e/lockfree_hash_map.h
 nobase_include_HEADERS += e/lockfree_hash_set.h
 nobase_include_HEADERS += e/locking_fifo.h
 nobase_include_HEADERS += e/locking_iterable_fifo.h
-nobase_include_HEADERS += e/microbench.h
 nobase_include_HEADERS += e/nonblocking_bounded_fifo.h
 nobase_include_HEADERS += e/popt.h
 nobase_include_HEADERS += e/pow2.h
