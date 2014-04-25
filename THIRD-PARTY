@@ -1,7 +1,16 @@
-include/e/atomic.h:
+e/atomic.h:
     Copyright:  2006, Google Inc.
     License:    3-clause BSD
 
 src/atomic.cc:
     Copyright:  2007, Google Inc.
     License:    3-clause BSD
+
+e/varint.h:
+varint.cc:
+    Copyright:  2011, Google Inc.
+    License:    3-clause BSD
+
+lookup3.c:
+    Copyright:  2006, Bob Jenkins
+    License:    Public Domain
