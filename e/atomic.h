@@ -373,6 +373,20 @@ compare_and_swap_ptr_release(P* volatile* ptr, P* old_value, P* new_value)
 #endif
 }
 
+template <typename P>
+inline P*
+compare_and_swap_ptr_fullbarrier(P* volatile* ptr, P* old_value, P* new_value)
+{
+    P* x = compare_and_swap_ptr_nobarrier(ptr, old_value, new_value);
+
+    if (AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug)
+    {
+        __asm__ __volatile__("lfence" : : : "memory");
+    }
+
+    return x;
+}
+
 //////////////////////////////// Atomic Exchange ///////////////////////////////
 
 inline uint32_t
