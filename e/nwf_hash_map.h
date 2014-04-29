@@ -213,7 +213,6 @@ class nwf_hash_map<K, V, H>::iterator
 
     public:
         iterator& operator ++ ();
-        iterator operator ++ (int);
         const std::pair<K, V>& operator * () { return m_cached; }
         const std::pair<K, V>* operator -> () { return &m_cached; }
         bool operator == (const iterator& rhs);
@@ -712,7 +711,7 @@ nwf_hash_map<K, V, H> :: table :: table(size_t cap)
     for (size_t i = 0; i < capacity; ++i)
     {
         nodes[i].key = wrapper<K>::NULLVALUE();
-        nodes[i].val = wrapper<K>::NULLVALUE();
+        nodes[i].val = wrapper<V>::NULLVALUE();
     }
 }
 
@@ -857,7 +856,7 @@ nwf_hash_map<K, V, H> :: table :: help_copy(nwf_hash_map* top_map, bool copy_all
     bool panic = false;
     size_t idx = 0;
 
-    while (load_64_acquire(&copy_done), capacity)
+    while (load_64_acquire(&copy_done) < capacity)
     {
         if (!panic)
         {
@@ -989,17 +988,19 @@ nwf_hash_map<K, V, H> :: table :: copy_slot(nwf_hash_map* top_map, size_t idx, t
         return false;
     }
 
-    typename wrapper<V>::type key = wrapper<K>::load(&nodes[idx].key);
+    typename wrapper<K>::type key = wrapper<K>::load(&nodes[idx].key);
     typename wrapper<V>::type old_unboxed = wrapper<V>::deprime(old_val);
     assert(old_unboxed != wrapper<V>::TOMBSTONE());
     new_table->inc_size();
-    bool copied = top_map->put_if_match(new_table, key,
-                                        wrapper<V>::NULLVALUE(),
-                                        old_unboxed) == wrapper<V>::NULLVALUE();
+    top_map->put_if_match(new_table, key,
+                          wrapper<V>::NULLVALUE(),
+                          old_unboxed);
     typename wrapper<V>::type witness;
 
     while ((witness = wrapper<V>::cas(&nodes[idx].val, old_val, wrapper<V>::TOMBPRIME())) != old_val)
+    {
         old_val = witness;
+    }
 
     // I would love for this to be "if (copied) new_table->inc_size()"
     //
@@ -1010,12 +1011,19 @@ nwf_hash_map<K, V, H> :: table :: copy_slot(nwf_hash_map* top_map, size_t idx, t
     // elems negative.  We inc_size above and dec_size in the (less likely) case
     // that the copy failed.
 
-    if (!copied)
+    // There's something wrong with the Java implementation's accounting for
+    // size because it measures null->not null in the new table.  Unfortunately,
+    // put_if_match doesn't track null->not null in the new table, allowing
+    // copy_done to fall short of the work done.  Count transitions to TOMBPRIME
+    // instead, as this is the only spot we stomp down a TOMBPRIME
+
+    if (wrapper<V>::is_tombprime(old_val))
     {
         new_table->dec_size();
+        return false;
     }
 
-    return copied;
+    return true;
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -1053,15 +1061,6 @@ nwf_hash_map<K, V, H> :: iterator :: operator ++ ()
 {
     advance();
     return *this;
-}
-
-template <typename K, typename V, uint64_t (*H)(const K&)>
-inline typename nwf_hash_map<K, V, H>::iterator
-nwf_hash_map<K, V, H> :: iterator :: operator ++ (int)
-{
-    iterator it = *this;
-    advance();
-    return it;
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
