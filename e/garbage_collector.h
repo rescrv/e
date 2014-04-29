@@ -60,6 +60,8 @@ class garbage_collector
         void register_thread(thread_state* ts);
         void deregister_thread(thread_state* ts);
         void quiescent_state(thread_state* ts);
+        void offline(thread_state* ts);
+        void online(thread_state* ts);
         void collect(void* ptr, void(*func)(void* ptr));
 
     private:
@@ -99,12 +101,13 @@ class garbage_collector::thread_state
 class garbage_collector::thread_state_node
 {
     public:
-        thread_state_node() : next(NULL), quiescent_timestamp(0) {}
+        thread_state_node() : next(NULL), quiescent_timestamp(1), offline_timestamp(0) {}
         ~thread_state_node() throw () {}
 
     public:
         thread_state_node* next;
         uint64_t quiescent_timestamp;
+        uint64_t offline_timestamp;
 
     private:
         thread_state_node(const thread_state_node&);
@@ -143,7 +146,7 @@ class garbage_collector::garbage
 
 inline
 garbage_collector :: garbage_collector()
-    : m_timestamp(1)
+    : m_timestamp(2)
     , m_smallest_garbage(UINT64_MAX)
     , m_protect_registration()
     , m_registered(NULL)
@@ -209,6 +212,7 @@ garbage_collector :: deregister_thread(thread_state* ts)
 inline void
 garbage_collector :: quiescent_state(thread_state* ts)
 {
+    using namespace e::atomic;
     thread_state_node* const tsn = ts->m_tsn;
     // read the timestamp here
     uint64_t timestamp = read_timestamp();
@@ -219,17 +223,24 @@ garbage_collector :: quiescent_state(thread_state* ts)
     // advertise in their thread_state_node.  For this thread, use the value we
     // just read above in the counter.
     uint64_t min_timestamp = timestamp;
-    thread_state_node* node = e::atomic::load_ptr_acquire(&m_registered);
+    thread_state_node* node = load_ptr_acquire(&m_registered);
 
     while (node &&
-           e::atomic::load_64_acquire(&m_smallest_garbage) < min_timestamp)
+           load_64_acquire(&m_smallest_garbage) < min_timestamp)
     {
         if (node != tsn)
         {
-            min_timestamp = std::min(node->quiescent_timestamp, min_timestamp);
+            uint64_t qst = load_64_acquire(&node->quiescent_timestamp);
+            uint64_t oft = load_64_acquire(&node->offline_timestamp);
+
+            if (qst > oft)
+            {
+                min_timestamp = std::min(qst, min_timestamp);
+            }
         }
 
-        node = e::atomic::load_ptr_acquire(&node->next);
+        node = load_ptr_acquire(&node->next);
+        e::atomic::memory_barrier();
     }
 
     // At this point, min_timestamp is the smallest quiescent_timestamp across
@@ -256,7 +267,7 @@ garbage_collector :: quiescent_state(thread_state* ts)
     // quiescent timestamp.
     std::list<garbage> to_collect;
 
-    if (e::atomic::load_64_acquire(&m_smallest_garbage) < min_timestamp)
+    if (load_64_acquire(&m_smallest_garbage) < min_timestamp)
     {
         uint64_t smallest_garbage = UINT64_MAX;
         po6::threads::mutex::hold hold(&m_protect_garbage);
@@ -277,11 +288,11 @@ garbage_collector :: quiescent_state(thread_state* ts)
             }
         }
 
-        e::atomic::store_64_release(&m_smallest_garbage, smallest_garbage);
+        store_64_release(&m_smallest_garbage, smallest_garbage);
     }
 
     // expose our timestamp to the world
-    e::atomic::store_64_release(&tsn->quiescent_timestamp, timestamp);
+    store_64_release(&tsn->quiescent_timestamp, timestamp);
 
     // cleanup the garbage we're to collect
     for (std::list<garbage>::iterator it = to_collect.begin();
@@ -289,6 +300,30 @@ garbage_collector :: quiescent_state(thread_state* ts)
     {
         it->func(it->ptr);
     }
+}
+
+inline void
+garbage_collector :: offline(thread_state* ts)
+{
+    using namespace e::atomic;
+    thread_state_node* const tsn = ts->m_tsn;
+    uint64_t timestamp = read_timestamp();
+    assert(tsn->quiescent_timestamp < timestamp);
+    assert(tsn->offline_timestamp < timestamp);
+    store_64_release(&tsn->offline_timestamp, timestamp);
+    store_64_release(&tsn->quiescent_timestamp, timestamp);
+}
+
+inline void
+garbage_collector :: online(thread_state* ts)
+{
+    using namespace e::atomic;
+    thread_state_node* const tsn = ts->m_tsn;
+    uint64_t timestamp = read_timestamp();
+    assert(tsn->quiescent_timestamp < timestamp);
+    assert(tsn->offline_timestamp < timestamp);
+    store_64_release(&tsn->quiescent_timestamp, timestamp);
+    e::atomic::memory_barrier();
 }
 
 inline void
