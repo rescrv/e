@@ -160,13 +160,19 @@ garbage_collector :: ~garbage_collector() throw ()
 {
     po6::threads::mutex::hold hold1(&m_protect_registration);
     po6::threads::mutex::hold hold2(&m_protect_garbage);
-    assert(m_registered == NULL);
     std::list<garbage>::iterator it = m_garbage.begin();
 
     while (it != m_garbage.end())
     {
         it->func(it->ptr);
         it = m_garbage.erase(it);
+    }
+
+    while (m_registered)
+    {
+        thread_state_node* tmp = m_registered;
+        m_registered = tmp->next;
+        delete tmp;
     }
 }
 
