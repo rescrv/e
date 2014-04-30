@@ -87,6 +87,9 @@ class nwf_hash_map
             static inline type TOMBSTONE()    { return reinterpret_cast<T*>(8); }
             // this is a dead value we copied
             static inline type TOMBPRIME()    { return reinterpret_cast<T*>(9); }
+            // we recursed too far, and the top table is ahead of our current
+            // table.  retry from the top
+            static inline type RETRY()        { return reinterpret_cast<T*>(11); }
             // has the prime bit been set?
             static inline bool is_primed(type t) { return reinterpret_cast<uintptr_t>(t) & 1; }
             static inline bool is_null(type t) { return t == NULLVALUE(); }
@@ -95,8 +98,9 @@ class nwf_hash_map
             static inline bool is_tombstone(type t) { return t == TOMBSTONE() ||
                                                              t == TOMBPRIME(); }
             static inline bool is_tombprime(type t) { return t == TOMBPRIME(); }
+            static inline bool is_retry(type t) { return t == RETRY(); }
             static inline bool is_empty(type t) { return is_tombstone(t) || is_null(t); }
-            static inline bool is_special(type t) { return reinterpret_cast<uintptr_t>(t) <= 9; }
+            static inline bool is_special(type t) { return reinterpret_cast<uintptr_t>(t) <= 11; }
             // compare values
             static inline bool equal(T t1, type t2)
             { return equal(reference(t1), t2); }
@@ -125,7 +129,7 @@ class nwf_hash_map
             // do a compare-and-swap full-barrier on the wrapped value
             static inline type cas(type* t, type old_val, type _new_val)
             { type new_val = _new_val;
-              if (reinterpret_cast<uintptr_t>(new_val) > 9 &&
+              if (reinterpret_cast<uintptr_t>(new_val) > 11 &&
                   deprime(old_val) != deprime(new_val)) { new_val = new T(unwrap(new_val)); }
               return e::atomic::compare_and_swap_ptr_fullbarrier(t, old_val, new_val); }
         };
@@ -142,7 +146,7 @@ class nwf_hash_map
         struct table
         {
             static void collect(void*);
-            static table* create(size_t cap) { return new (cap) table(cap); }
+            static table* create(size_t cap, size_t depth) { return new (cap) table(cap, depth); }
             ~table() throw ();
 
             void inc_slots() { e::atomic::increment_64_nobarrier(&slots,  1); }
@@ -161,6 +165,7 @@ class nwf_hash_map
             void operator delete (void* mem);
 
             const size_t capacity;
+            size_t depth;
             uint64_t slots;
             uint64_t elems;
             uint64_t copy_idx;
@@ -169,7 +174,7 @@ class nwf_hash_map
             node nodes[1];
 
             private:
-                table(size_t cap);
+                table(size_t cap, size_t depth);
                 table(const table&);
                 table& operator = (const table&);
                 void* operator new (size_t sz, size_t cap);
@@ -239,7 +244,7 @@ nwf_hash_map<K, V, H> :: nwf_hash_map(garbage_collector* gc)
     , m_last_resize_millis(0/*XXX*/)
 
 {
-    e::atomic::store_ptr_fullbarrier(&m_table, table::create(MIN_SIZE));
+    e::atomic::store_ptr_fullbarrier(&m_table, table::create(MIN_SIZE, 0));
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -342,12 +347,13 @@ void
 nwf_hash_map<K, V, H> :: reset()
 {
     using namespace e::atomic;
-    table* new_table = table::create(MIN_SIZE);
     table* old_table = load_ptr_acquire(&m_table);
+    table* new_table = table::create(MIN_SIZE, old_table->depth + 1);
 
     while (compare_and_swap_ptr_release(&m_table, old_table, new_table) != old_table)
     {
         old_table = load_ptr_acquire(&m_table);
+        new_table->depth = old_table->depth + 1;
     }
 
     m_gc->collect(old_table, table::collect);
@@ -470,7 +476,8 @@ nwf_hash_map<K, V, H> :: get(table* t, typename wrapper<K>::type key, const uint
         {
             if (!wrapper<V>::is_primed(v))
             {
-                if (wrapper<V>::is_tombstone(v))
+                if (wrapper<V>::is_tombstone(v) ||
+                    wrapper<V>::is_null(v))
                 {
                     return false;
                 }
@@ -507,10 +514,18 @@ nwf_hash_map<K, V, H> :: put_if_match(typename wrapper<K>::type key,
                                       typename wrapper<V>::type exp_val,
                                       typename wrapper<V>::type put_val)
 {
+    assert(!wrapper<K>::is_null(key));
     assert(!wrapper<V>::is_null(exp_val));
     assert(!wrapper<V>::is_null(put_val));
-    table* t = e::atomic::load_ptr_acquire(&m_table);
-    return put_if_match(t, key, exp_val, put_val);
+    typename wrapper<V>::type ret(wrapper<V>::RETRY());
+
+    while (wrapper<V>::is_retry(ret))
+    {
+        table* t = e::atomic::load_ptr_acquire(&m_table);
+        ret = put_if_match(t, key, exp_val, put_val);
+    }
+
+    return ret;
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -527,6 +542,12 @@ nwf_hash_map<K, V, H> :: put_if_match(table* t,
     const size_t mask = t->capacity - 1;
     size_t idx = hash & mask;
     size_t reprobes = 0;
+
+    // protect against infinite recursion
+    if (e::atomic::load_ptr_acquire(&m_table)->depth > t->depth)
+    {
+        return wrapper<V>::RETRY();
+    }
 
     typename wrapper<K>::type k = wrapper<K>::NULLVALUE();
     typename wrapper<V>::type v = wrapper<V>::NULLVALUE();
@@ -691,8 +712,9 @@ nwf_hash_map<K, V, H> :: table :: ~table() throw ()
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
-nwf_hash_map<K, V, H> :: table :: table(size_t cap)
+nwf_hash_map<K, V, H> :: table :: table(size_t cap, size_t dep)
     : capacity(cap)
+    , depth(dep)
     , slots(0)
     , elems(0)
     , copy_idx(0)
@@ -814,7 +836,7 @@ nwf_hash_map<K, V, H> :: table :: resize(nwf_hash_map* top_map)
         return nested;
     }
 
-    table* new_table = table::create(1ULL << log2);
+    table* new_table = table::create(1ULL << log2, depth + 1);
     nested = load_ptr_acquire(&next);
 
     if (nested)
@@ -940,11 +962,30 @@ template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
 nwf_hash_map<K, V, H> :: table :: copy_slot(nwf_hash_map* top_map, size_t idx, table* new_table)
 {
-    while (wrapper<K>::is_null(wrapper<K>::load(&nodes[idx].key)))
+    typename wrapper<K>::type kwitness(wrapper<K>::load(&nodes[idx].key));
+
+    while (wrapper<K>::is_null(kwitness))
     {
-        wrapper<K>::cas(&nodes[idx].key,
-                        wrapper<K>::NULLVALUE(),
-                        wrapper<K>::TOMBSTONE());
+        kwitness = wrapper<K>::cas(&nodes[idx].key,
+                                   wrapper<K>::NULLVALUE(),
+                                   wrapper<K>::TOMBSTONE());
+
+        if (wrapper<K>::is_null(kwitness))
+        {
+            typename wrapper<V>::type tmp(wrapper<V>::load(&nodes[idx].val));
+
+            while (wrapper<V>::cas(&nodes[idx].val, tmp, wrapper<V>::TOMBPRIME()) != tmp)
+            {
+                tmp = wrapper<V>::load(&nodes[idx].val);
+            }
+
+            return true;
+        }
+    }
+
+    if (wrapper<K>::is_tombstone(kwitness))
+    {
+        return false;
     }
 
     typename wrapper<V>::type old_val(wrapper<V>::load(&nodes[idx].val));
