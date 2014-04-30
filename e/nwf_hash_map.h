@@ -1060,7 +1060,8 @@ template <typename K, typename V, uint64_t (*H)(const K&)>
 inline bool
 nwf_hash_map<K, V, H> :: iterator :: operator == (const iterator& rhs)
 {
-    return this->m_table == rhs.m_table && this->m_index == rhs.m_index;
+    return this->m_table == rhs.m_table &&
+           (this->m_table == NULL || this->m_index == rhs.m_index);
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
