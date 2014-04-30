@@ -62,13 +62,13 @@ class nwf_hash_map
     public:
         size_t size();
         bool empty();
-        bool put(K k, V v);
-        bool put_ine(K k, V v);
-        bool cas(K k, V o, V n);
-        bool del(K k);
-        bool del_if(K k, V v);
-        bool has(K k);
-        bool get(K k, V* v);
+        bool put(const K& k, const V& v);
+        bool put_ine(const K& k, const V& v);
+        bool cas(const K& k, const V& o, const V& n);
+        bool del(const K& k);
+        bool del_if(const K& k, const V& v);
+        bool has(const K& k);
+        bool get(const K& k, V* v);
         void reset();
         iterator begin();
         iterator end();
@@ -179,12 +179,11 @@ class nwf_hash_map
         const static size_t MIN_SIZE_LOG = 3;
         const static size_t MIN_SIZE = (1ULL << MIN_SIZE_LOG);
         const static size_t REPROBE_LIMIT = 10;
-        uint64_t hash_key(K k);
         uint64_t hash_key(typename wrapper<K>::type k);
         size_t reprobe_limit(size_t capacity);
         bool key_compare(K k1, typename wrapper<K>::type k2);
         bool key_compare(typename wrapper<K>::type k1, typename wrapper<K>::type k2);
-        bool get(table* t, K key, const uint64_t hash, V* val);
+        bool get(table* t, typename wrapper<K>::type key, const uint64_t hash, V* val);
         typename wrapper<V>::type put_if_match(typename wrapper<K>::type key,
                                                typename wrapper<V>::type exp_val,
                                                typename wrapper<V>::type put_val);
@@ -267,7 +266,7 @@ nwf_hash_map<K, V, H> :: empty()
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: put(K k, V v)
+nwf_hash_map<K, V, H> :: put(const K& k, const V& v)
 {
     typename wrapper<V>::type c;
     c = put_if_match(wrapper<K>::reference(k),
@@ -278,7 +277,7 @@ nwf_hash_map<K, V, H> :: put(K k, V v)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: put_ine(K k, V v)
+nwf_hash_map<K, V, H> :: put_ine(const K& k, const V& v)
 {
     typename wrapper<V>::type c;
     c = put_if_match(wrapper<K>::reference(k),
@@ -289,7 +288,7 @@ nwf_hash_map<K, V, H> :: put_ine(K k, V v)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: cas(K k, V o, V n)
+nwf_hash_map<K, V, H> :: cas(const K& k, const V& o, const V& n)
 {
     typename wrapper<V>::type c;
     c =  put_if_match(wrapper<K>::reference(k),
@@ -300,7 +299,7 @@ nwf_hash_map<K, V, H> :: cas(K k, V o, V n)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: del(K k)
+nwf_hash_map<K, V, H> :: del(const K& k)
 {
     typename wrapper<V>::type c;
     c = put_if_match(wrapper<K>::reference(k),
@@ -311,7 +310,7 @@ nwf_hash_map<K, V, H> :: del(K k)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: del_if(K k, V v)
+nwf_hash_map<K, V, H> :: del_if(const K& k, const V& v)
 {
     typename wrapper<V>::type c;
     c = put_if_match(wrapper<K>::reference(k),
@@ -322,7 +321,7 @@ nwf_hash_map<K, V, H> :: del_if(K k, V v)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: has(K k)
+nwf_hash_map<K, V, H> :: has(const K& k)
 {
     V v;
     return get(k, &v);
@@ -330,8 +329,9 @@ nwf_hash_map<K, V, H> :: has(K k)
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: get(K k, V* v)
+nwf_hash_map<K, V, H> :: get(const K& _k, V* v)
 {
+    typename wrapper<K>::type k(wrapper<K>::reference(_k));
     const uint64_t hash = hash_key(k);
     table* t = e::atomic::load_ptr_acquire(&m_table);
     return get(t, k, hash, v);
@@ -419,16 +419,9 @@ nwf_hash_map<K, V, H> :: dump()
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 uint64_t
-nwf_hash_map<K, V, H> :: hash_key(K k)
-{
-    return e::lookup3_64(H(k));
-}
-
-template <typename K, typename V, uint64_t (*H)(const K&)>
-uint64_t
 nwf_hash_map<K, V, H> :: hash_key(typename wrapper<K>::type k)
 {
-    return hash_key(wrapper<K>::unwrap(k));
+    return e::lookup3_64(H(wrapper<K>::unwrap(k)));
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -455,7 +448,7 @@ nwf_hash_map<K, V, H> :: key_compare(typename wrapper<K>::type k1,
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
 bool
-nwf_hash_map<K, V, H> :: get(table* t, K key, const uint64_t hash, V* val)
+nwf_hash_map<K, V, H> :: get(table* t, typename wrapper<K>::type key, const uint64_t hash, V* val)
 {
     const size_t mask = t->capacity - 1;
     size_t idx = hash & mask;
