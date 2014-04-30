@@ -968,7 +968,6 @@ nwf_hash_map<K, V, H> :: table :: copy_slot(nwf_hash_map* top_map, size_t idx, t
                 return true;
             }
 
-            wrapper<V>::collect(top_map->m_gc, old_val);
             old_val = box;
             break;
         }
@@ -1016,6 +1015,7 @@ nwf_hash_map<K, V, H> :: table :: copy_slot(nwf_hash_map* top_map, size_t idx, t
         return false;
     }
 
+    wrapper<V>::collect(top_map->m_gc, old_val);
     return true;
 }
 
