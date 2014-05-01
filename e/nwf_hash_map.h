@@ -338,6 +338,7 @@ nwf_hash_map<K, V, H> :: get(const K& _k, V* v)
 {
     typename wrapper<K>::type k(wrapper<K>::reference(_k));
     const uint64_t hash = hash_key(k);
+    e::atomic::memory_barrier();
     table* t = e::atomic::load_ptr_acquire(&m_table);
     return get(t, k, hash, v);
 }
@@ -525,6 +526,7 @@ nwf_hash_map<K, V, H> :: put_if_match(typename wrapper<K>::type key,
         ret = put_if_match(t, key, exp_val, put_val);
     }
 
+    e::atomic::memory_barrier();
     return ret;
 }
 
