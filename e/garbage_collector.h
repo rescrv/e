@@ -34,9 +34,6 @@
 #include <cassert>
 #include <stdint.h>
 
-// STL
-#include <list>
-
 // po6
 #include <po6/threads/mutex.h>
 
@@ -67,16 +64,17 @@ class garbage_collector
     private:
         class thread_state_node;
         class garbage;
+        // collect a whole linked list of garbage
+        static void collect_list(void*);
         // read_timestamp is a full-barrier operation
         uint64_t read_timestamp();
 
     private:
         uint64_t m_timestamp;
-        uint64_t m_smallest_garbage;
-        po6::threads::mutex m_protect_registration;
+        uint64_t m_offline_transitions;
         thread_state_node* m_registered;
-        po6::threads::mutex m_protect_garbage;
-        std::list<garbage> m_garbage;
+        garbage* m_garbage;
+        po6::threads::mutex m_protect_registration;
 
     private:
         garbage_collector(const garbage_collector&);
@@ -101,7 +99,8 @@ class garbage_collector::thread_state
 class garbage_collector::thread_state_node
 {
     public:
-        thread_state_node() : next(NULL), quiescent_timestamp(1), offline_timestamp(0) {}
+        thread_state_node()
+            : next(NULL), quiescent_timestamp(1), offline_timestamp(0) {}
         ~thread_state_node() throw () {}
 
     public:
@@ -118,60 +117,48 @@ class garbage_collector::garbage
 {
     public:
         garbage()
-            : timestamp(0), ptr(NULL), func(NULL) {}
+            : next(NULL), timestamp(0), ptr(NULL), func(NULL) {}
         garbage(uint64_t t, void* p, void (*f)(void*))
-            : timestamp(t), ptr(p), func(f) {}
-        garbage(const garbage& other)
-            : timestamp(other.timestamp), ptr(other.ptr), func(other.func) {}
-        ~garbage() throw () {}
+            : next(NULL), timestamp(t), ptr(p), func(f) {}
 
     public:
-        garbage& operator = (const garbage& rhs)
-        {
-            if (this != &rhs)
-            {
-                timestamp = rhs.timestamp;
-                ptr = rhs.ptr;
-                func = rhs.func;
-            }
-
-            return *this;
-        }
-
-    public:
+        garbage* next;
         uint64_t timestamp;
         void* ptr;
         void (*func)(void* ptr);
+
+    private:
+        garbage(const garbage&);
+        garbage& operator = (const garbage&);
 };
 
 inline
 garbage_collector :: garbage_collector()
     : m_timestamp(2)
-    , m_smallest_garbage(UINT64_MAX)
-    , m_protect_registration()
+    , m_offline_transitions(0)
     , m_registered(NULL)
-    , m_protect_garbage()
     , m_garbage()
+    , m_protect_registration()
 {
 }
 
 inline
 garbage_collector :: ~garbage_collector() throw ()
 {
-    po6::threads::mutex::hold hold1(&m_protect_registration);
-    po6::threads::mutex::hold hold2(&m_protect_garbage);
-    std::list<garbage>::iterator it = m_garbage.begin();
-
-    while (it != m_garbage.end())
-    {
-        it->func(it->ptr);
-        it = m_garbage.erase(it);
-    }
+    po6::threads::mutex::hold hold(&m_protect_registration);
 
     while (m_registered)
     {
         thread_state_node* tmp = m_registered;
         m_registered = tmp->next;
+        delete tmp;
+    }
+
+    while (m_garbage)
+    {
+        garbage* tmp = m_garbage;
+        m_garbage = m_garbage->next;
+        tmp->func(tmp->ptr);
         delete tmp;
     }
 }
@@ -218,21 +205,33 @@ garbage_collector :: deregister_thread(thread_state* ts)
 inline void
 garbage_collector :: quiescent_state(thread_state* ts)
 {
+    // no need to memory barrier within this funciton when storking
+    // tsn->quiescent_timestamp because it's strictly increasing, and seeing a
+    // lower value only delays garbage collection, but cannot hurt safety.
     using namespace e::atomic;
     thread_state_node* const tsn = ts->m_tsn;
+
     // read the timestamp here
     uint64_t timestamp = read_timestamp();
     assert(tsn->quiescent_timestamp < timestamp);
+
+    // frequently expose our timestamp to the world
+    if ((timestamp & 127) != 0)
+    {
+        store_64_release(&tsn->quiescent_timestamp, timestamp);
+        return;
+    }
 
     // Find the largest timestamp that is less than each thread state's
     // quiescent_timestamp.  For every other thread, use the value that they
     // advertise in their thread_state_node.  For this thread, use the value we
     // just read above in the counter.
+    uint64_t transitions = load_64_acquire(&m_offline_transitions);
     uint64_t min_timestamp = timestamp;
+    uint64_t min_offline = timestamp;
     thread_state_node* node = load_ptr_acquire(&m_registered);
 
-    while (node &&
-           load_64_acquire(&m_smallest_garbage) < min_timestamp)
+    while (node)
     {
         if (node != tsn)
         {
@@ -243,10 +242,24 @@ garbage_collector :: quiescent_state(thread_state* ts)
             {
                 min_timestamp = std::min(qst, min_timestamp);
             }
+            else
+            {
+                min_offline = std::min(oft, min_offline);
+            }
         }
 
         node = load_ptr_acquire(&node->next);
-        e::atomic::memory_barrier();
+    }
+
+    if (min_offline < min_timestamp)
+    {
+        read_timestamp();
+        uint64_t second_transitions = load_64_acquire(&m_offline_transitions);
+
+        if (transitions < second_transitions)
+        {
+            min_timestamp = min_offline;
+        }
     }
 
     // At this point, min_timestamp is the smallest quiescent_timestamp across
@@ -271,41 +284,35 @@ garbage_collector :: quiescent_state(thread_state* ts)
     //
     // In all cases, the minimum timestamp is the smallest of every thread's
     // quiescent timestamp.
-    std::list<garbage> to_collect;
+    garbage* gc = load_ptr_nobarrier(&m_garbage);
+    garbage* new_list = NULL;
 
-    if (load_64_acquire(&m_smallest_garbage) < min_timestamp)
+    if (compare_and_swap_ptr_fullbarrier(&m_garbage, gc, static_cast<garbage*>(NULL)) == gc)
     {
-        uint64_t smallest_garbage = UINT64_MAX;
-        po6::threads::mutex::hold hold(&m_protect_garbage);
-
-        for (std::list<garbage>::iterator it = m_garbage.begin();
-                it != m_garbage.end(); )
+        while (gc)
         {
-            if (it->timestamp < min_timestamp)
+            garbage* next = load_ptr_acquire(&gc->next);
+
+            if (gc->timestamp < min_timestamp)
             {
-                std::list<garbage>::iterator old = it;
-                ++it;
-                to_collect.splice(to_collect.begin(), m_garbage, old);
+                gc->func(gc->ptr);
+                delete gc;
             }
             else
             {
-                smallest_garbage = std::min(it->timestamp, smallest_garbage);
-                ++it;
+                gc->next = new_list;
+                new_list = gc;
             }
-        }
 
-        store_64_release(&m_smallest_garbage, smallest_garbage);
+            gc = next;
+        }
     }
 
     // expose our timestamp to the world
     store_64_release(&tsn->quiescent_timestamp, timestamp);
 
-    // cleanup the garbage we're to collect
-    for (std::list<garbage>::iterator it = to_collect.begin();
-            it != to_collect.end(); ++it)
-    {
-        it->func(it->ptr);
-    }
+    // now collect the list we created
+    collect(new_list, collect_list);
 }
 
 inline void
@@ -318,6 +325,7 @@ garbage_collector :: offline(thread_state* ts)
     assert(tsn->offline_timestamp < timestamp);
     store_64_release(&tsn->offline_timestamp, timestamp);
     store_64_release(&tsn->quiescent_timestamp, timestamp);
+    read_timestamp();
 }
 
 inline void
@@ -329,24 +337,35 @@ garbage_collector :: online(thread_state* ts)
     assert(tsn->quiescent_timestamp < timestamp);
     assert(tsn->offline_timestamp < timestamp);
     store_64_release(&tsn->quiescent_timestamp, timestamp);
-    e::atomic::memory_barrier();
+    read_timestamp();
 }
 
 inline void
 garbage_collector :: collect(void* ptr, void(*func)(void* ptr))
 {
-    // create a list and create a new node on the list
     uint64_t timestamp = read_timestamp();
-    std::list<garbage> tmp;
-    tmp.push_back(garbage(timestamp, ptr, func));
+    garbage* g(new garbage(timestamp, ptr, func));
+    garbage* witness = e::atomic::load_ptr_nobarrier(&m_garbage);
+    g->next = witness;
 
-    // copy the temporary list's contents into the real garbage list
-    po6::threads::mutex::hold hold(&m_protect_garbage);
-    m_garbage.splice(m_garbage.end(), tmp);
-    // update the smallest garbage so that threads can detect it in quiescent
-    // state without contending on m_protect_garbage
-    e::atomic::store_64_release(&m_smallest_garbage,
-            std::min(e::atomic::load_64_nobarrier(&m_smallest_garbage), timestamp));
+    while ((witness = e::atomic::compare_and_swap_ptr_release(&m_garbage, g->next, g)) != g->next)
+    {
+        g->next = witness;
+    }
+}
+
+inline void
+garbage_collector :: collect_list(void* _g)
+{
+    garbage* g = static_cast<garbage*>(_g);
+
+    while (g)
+    {
+        g->func(g->ptr);
+        garbage* tmp = g;
+        g = g->next;
+        delete tmp;
+    }
 }
 
 inline uint64_t
