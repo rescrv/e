@@ -352,7 +352,7 @@ garbage_collector :: read_timestamp()
     return e::atomic::increment_64_fullbarrier(&m_timestamp, 1);
 }
 
-void
+inline void
 garbage_collector :: enqueue(garbage* volatile* list, garbage* g)
 {
     garbage* expect = e::atomic::load_ptr_acquire(list);
