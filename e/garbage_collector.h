@@ -310,7 +310,6 @@ garbage_collector :: quiescent_state(thread_state* ts)
     }
 }
 
-#if 0
 inline void
 garbage_collector :: offline(thread_state* ts)
 {
@@ -333,9 +332,12 @@ garbage_collector :: online(thread_state* ts)
     assert(tsn->quiescent_timestamp < timestamp);
     assert(tsn->offline_timestamp < timestamp);
     store_64_release(&tsn->quiescent_timestamp, timestamp);
+
+    while (compare_and_swap_64_nobarrier(&m_offline_transitions, e::atomic::load_64_nobarrier(&m_offline_transitions), timestamp) < timestamp)
+        ;
+
     read_timestamp();
 }
-#endif
 
 inline void
 garbage_collector :: collect(void* ptr, void(*func)(void* ptr))
