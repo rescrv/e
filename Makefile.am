@@ -47,7 +47,7 @@ nobase_include_HEADERS += e/varint.h
 #################################### Source ####################################
 
 lib_LTLIBRARIES = libe.la
-libe_la_SOURCES = atomic.cc buffer.cc lookup3.c lookup3-wrap.cc slice.cc time.cc unpacker.cc varint.cc
+libe_la_SOURCES = atomic.cc buffer.cc garbage_collector.cc lookup3.c lookup3-wrap.cc slice.cc time.cc unpacker.cc varint.cc
 libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 1:0:0
 
 ##################################### Tests ####################################
