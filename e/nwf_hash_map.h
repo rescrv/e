@@ -34,6 +34,7 @@
 // e
 #include <e/garbage_collector.h>
 #include <e/lookup3.h>
+#include <e/time.h>
 
 // This is a nearly-wait-free hash map.  Strictly-speaking, it's lock-free
 // because of resize operations, but operations that happen outside the resize
@@ -69,7 +70,6 @@ class nwf_hash_map
         bool del_if(const K& k, const V& v);
         bool has(const K& k);
         bool get(const K& k, V* v);
-        void reset();
         iterator begin();
         iterator end();
 
@@ -87,9 +87,6 @@ class nwf_hash_map
             static inline type TOMBSTONE()    { return reinterpret_cast<T*>(8); }
             // this is a dead value we copied
             static inline type TOMBPRIME()    { return reinterpret_cast<T*>(9); }
-            // we recursed too far, and the top table is ahead of our current
-            // table.  retry from the top
-            static inline type RETRY()        { return reinterpret_cast<T*>(11); }
             // has the prime bit been set?
             static inline bool is_primed(type t) { return reinterpret_cast<uintptr_t>(t) & 1; }
             static inline bool is_null(type t) { return t == NULLVALUE(); }
@@ -98,9 +95,8 @@ class nwf_hash_map
             static inline bool is_tombstone(type t) { return t == TOMBSTONE() ||
                                                              t == TOMBPRIME(); }
             static inline bool is_tombprime(type t) { return t == TOMBPRIME(); }
-            static inline bool is_retry(type t) { return t == RETRY(); }
             static inline bool is_empty(type t) { return is_tombstone(t) || is_null(t); }
-            static inline bool is_special(type t) { return reinterpret_cast<uintptr_t>(t) <= 11; }
+            static inline bool is_special(type t) { return reinterpret_cast<uintptr_t>(t) <= 9; }
             // compare values
             static inline bool equal(T t1, type t2)
             { return equal(reference(t1), t2); }
@@ -129,7 +125,7 @@ class nwf_hash_map
             // do a compare-and-swap full-barrier on the wrapped value
             static inline type cas(type* t, type old_val, type _new_val)
             { type new_val = _new_val;
-              if (reinterpret_cast<uintptr_t>(new_val) > 11 &&
+              if (reinterpret_cast<uintptr_t>(new_val) > 9 &&
                   deprime(old_val) != deprime(new_val)) { new_val = new T(unwrap(new_val)); }
               return e::atomic::compare_and_swap_ptr_fullbarrier(t, old_val, new_val); }
         };
@@ -189,6 +185,7 @@ class nwf_hash_map
         bool key_compare(K k1, typename wrapper<K>::type k2);
         bool key_compare(typename wrapper<K>::type k1, typename wrapper<K>::type k2);
         bool get(table* t, typename wrapper<K>::type key, const uint64_t hash, V* val);
+        uint64_t millis_now() { return e::time() / 1000000ULL; }
         typename wrapper<V>::type put_if_match(typename wrapper<K>::type key,
                                                typename wrapper<V>::type exp_val,
                                                typename wrapper<V>::type put_val);
@@ -241,7 +238,7 @@ template <typename K, typename V, uint64_t (*H)(const K&)>
 nwf_hash_map<K, V, H> :: nwf_hash_map(garbage_collector* gc)
     : m_gc(gc)
     , m_table(NULL)
-    , m_last_resize_millis(0/*XXX*/)
+    , m_last_resize_millis(millis_now())
 
 {
     e::atomic::store_ptr_fullbarrier(&m_table, table::create(MIN_SIZE, 0));
@@ -341,23 +338,6 @@ nwf_hash_map<K, V, H> :: get(const K& _k, V* v)
     e::atomic::memory_barrier();
     table* t = e::atomic::load_ptr_acquire(&m_table);
     return get(t, k, hash, v);
-}
-
-template <typename K, typename V, uint64_t (*H)(const K&)>
-void
-nwf_hash_map<K, V, H> :: reset()
-{
-    using namespace e::atomic;
-    table* old_table = load_ptr_acquire(&m_table);
-    table* new_table = table::create(MIN_SIZE, old_table->depth + 1);
-
-    while (compare_and_swap_ptr_release(&m_table, old_table, new_table) != old_table)
-    {
-        old_table = load_ptr_acquire(&m_table);
-        new_table->depth = old_table->depth + 1;
-    }
-
-    m_gc->collect(old_table, table::collect);
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -518,14 +498,8 @@ nwf_hash_map<K, V, H> :: put_if_match(typename wrapper<K>::type key,
     assert(!wrapper<K>::is_null(key));
     assert(!wrapper<V>::is_null(exp_val));
     assert(!wrapper<V>::is_null(put_val));
-    typename wrapper<V>::type ret(wrapper<V>::RETRY());
-
-    while (wrapper<V>::is_retry(ret))
-    {
-        table* t = e::atomic::load_ptr_acquire(&m_table);
-        ret = put_if_match(t, key, exp_val, put_val);
-    }
-
+    table* t = e::atomic::load_ptr_acquire(&m_table);
+    typename wrapper<V>::type ret = put_if_match(t, key, exp_val, put_val);
     e::atomic::memory_barrier();
     return ret;
 }
@@ -548,7 +522,7 @@ nwf_hash_map<K, V, H> :: put_if_match(table* t,
     // protect against infinite recursion
     if (e::atomic::load_ptr_acquire(&m_table)->depth > t->depth)
     {
-        return wrapper<V>::RETRY();
+        return put_if_match(e::atomic::load_ptr_acquire(&m_table), key, exp_val, put_val);
     }
 
     typename wrapper<K>::type k = wrapper<K>::NULLVALUE();
@@ -703,6 +677,10 @@ nwf_hash_map<K, V, H> :: table :: collect(void* _t)
         {
             wrapper<K>::collect_immediate(t->nodes[idx].key);
         }
+        if (!wrapper<V>::is_special(t->nodes[idx].val))
+        {
+            wrapper<V>::collect_immediate(t->nodes[idx].val);
+        }
     }
 
     delete t;
@@ -780,7 +758,7 @@ nwf_hash_map<K, V, H> :: table :: resize(nwf_hash_map* top_map)
         }
     }
 
-    uint64_t tm = 1001/*XXX*/;
+    uint64_t tm = top_map->millis_now();
 
     if (new_sz < capacity &&
         tm <= top_map->m_last_resize_millis + 1000 && 
@@ -789,7 +767,7 @@ nwf_hash_map<K, V, H> :: table :: resize(nwf_hash_map* top_map)
         new_sz = capacity << 1;
     }
 
-    if (new_sz < old_sz)
+    if (new_sz < capacity)
     {
         new_sz = capacity;
     }
@@ -832,6 +810,8 @@ nwf_hash_map<K, V, H> :: table :: resize(nwf_hash_map* top_map)
 #endif
 
     nested = load_ptr_acquire(&next);
+    assert(new_sz >= capacity);
+    assert((1ULL << log2) >= capacity);
 
     if (nested)
     {
@@ -955,7 +935,7 @@ nwf_hash_map<K, V, H> :: table :: copy_check_and_promote(nwf_hash_map* top_map, 
         top_map->m_table == this &&
         compare_and_swap_ptr_fullbarrier(&top_map->m_table, this, nested) == this)
     {
-        e::atomic::store_64_release(&top_map->m_last_resize_millis, 0/*XXX*/);
+        e::atomic::store_64_release(&top_map->m_last_resize_millis, top_map->millis_now());
         top_map->m_gc->collect(this, table::collect);
     }
 }
