@@ -125,9 +125,12 @@ class nwf_hash_map
             // do a compare-and-swap full-barrier on the wrapped value
             static inline type cas(type* t, type old_val, type _new_val)
             { type new_val = _new_val;
+              bool alloc = false;
               if (reinterpret_cast<uintptr_t>(new_val) > 9 &&
-                  deprime(old_val) != deprime(new_val)) { new_val = new T(unwrap(new_val)); }
-              return e::atomic::compare_and_swap_ptr_fullbarrier(t, old_val, new_val); }
+                  deprime(old_val) != deprime(new_val)) { alloc = true; new_val = new T(unwrap(new_val)); }
+              type witness = e::atomic::compare_and_swap_ptr_fullbarrier(t, old_val, new_val);
+              if (witness != old_val && alloc) { delete new_val; }
+              return witness; }
         };
         struct node
         {
