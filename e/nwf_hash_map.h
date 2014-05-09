@@ -92,8 +92,7 @@ class nwf_hash_map
             static inline bool is_null(type t) { return t == NULLVALUE(); }
             static inline bool is_no_match_old(type t) { return t == NO_MATCH_OLD(); }
             static inline bool is_match_any(type t) { return t == MATCH_ANY(); }
-            static inline bool is_tombstone(type t) { return t == TOMBSTONE() ||
-                                                             t == TOMBPRIME(); }
+            static inline bool is_tombstone(type t) { return t == TOMBSTONE(); }
             static inline bool is_tombprime(type t) { return t == TOMBPRIME(); }
             static inline bool is_empty(type t) { return is_tombstone(t) || is_null(t); }
             static inline bool is_special(type t) { return reinterpret_cast<uintptr_t>(t) <= 9; }
@@ -277,6 +276,7 @@ nwf_hash_map<K, V, H> :: put(const K& k, const V& v)
     c = put_if_match(wrapper<K>::reference(k),
                      wrapper<V>::NO_MATCH_OLD(),
                      wrapper<V>::reference(v));
+    assert(!wrapper<V>::is_primed(c));
     return true;
 }
 
@@ -288,7 +288,8 @@ nwf_hash_map<K, V, H> :: put_ine(const K& k, const V& v)
     c = put_if_match(wrapper<K>::reference(k),
                      wrapper<V>::TOMBSTONE(),
                      wrapper<V>::reference(v));
-    return true;
+    assert(!wrapper<V>::is_primed(c));
+    return wrapper<V>::is_tombstone(c);
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -299,6 +300,7 @@ nwf_hash_map<K, V, H> :: cas(const K& k, const V& o, const V& n)
     c =  put_if_match(wrapper<K>::reference(k),
                       wrapper<V>::reference(o),
                       wrapper<V>::reference(n));
+    assert(!wrapper<V>::is_primed(c));
     return wrapper<V>::equal(o, c);
 }
 
@@ -310,6 +312,7 @@ nwf_hash_map<K, V, H> :: del(const K& k)
     c = put_if_match(wrapper<K>::reference(k),
                      wrapper<V>::NO_MATCH_OLD(),
                      wrapper<V>::TOMBSTONE());
+    assert(!wrapper<V>::is_primed(c));
     return !wrapper<V>::is_empty(c);
 }
 
@@ -321,7 +324,8 @@ nwf_hash_map<K, V, H> :: del_if(const K& k, const V& v)
     c = put_if_match(wrapper<K>::reference(k),
                      wrapper<V>::reference(v),
                      wrapper<V>::TOMBSTONE());
-    return !wrapper<V>::is_empty(c);
+    assert(!wrapper<V>::is_primed(c));
+    return wrapper<V>::equal(v, c);
 }
 
 template <typename K, typename V, uint64_t (*H)(const K&)>
@@ -1018,6 +1022,11 @@ nwf_hash_map<K, V, H> :: table :: copy_slot(nwf_hash_map* top_map, size_t idx, t
     while ((witness = wrapper<V>::cas(&nodes[idx].val, old_val, wrapper<V>::TOMBPRIME())) != old_val)
     {
         old_val = witness;
+
+        if (wrapper<V>::is_tombprime(old_val))
+        {
+            break;
+        }
     }
 
     // I would love for this to be "if (copied) new_table->inc_size()"
