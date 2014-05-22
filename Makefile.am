@@ -35,6 +35,7 @@ nobase_include_HEADERS += e/nwf_hash_map.h
 nobase_include_HEADERS += e/popt.h
 nobase_include_HEADERS += e/pow2.h
 nobase_include_HEADERS += e/safe_math.h
+nobase_include_HEADERS += e/seqno_collector.h
 nobase_include_HEADERS += e/slice.h
 nobase_include_HEADERS += e/strescape.h
 nobase_include_HEADERS += e/striped_lock.h
@@ -47,7 +48,17 @@ nobase_include_HEADERS += e/varint.h
 #################################### Source ####################################
 
 lib_LTLIBRARIES = libe.la
-libe_la_SOURCES = atomic.cc buffer.cc garbage_collector.cc lookup3.c lookup3-wrap.cc slice.cc time.cc unpacker.cc varint.cc
+libe_la_SOURCES  =
+libe_la_SOURCES += atomic.cc
+libe_la_SOURCES += buffer.cc
+libe_la_SOURCES += garbage_collector.cc
+libe_la_SOURCES += lookup3.c
+libe_la_SOURCES += lookup3-wrap.cc
+libe_la_SOURCES += seqno_collector.cc
+libe_la_SOURCES += slice.cc
+libe_la_SOURCES += time.cc
+libe_la_SOURCES += unpacker.cc
+libe_la_SOURCES += varint.cc
 libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 2:0:1
 
 ##################################### Tests ####################################
@@ -65,6 +76,7 @@ check_PROGRAMS += test/guard
 check_PROGRAMS += test/intrusive_ptr
 check_PROGRAMS += test/nonblocking_bounded_fifo
 check_PROGRAMS += test/safe_math
+check_PROGRAMS += test/seqno_collector
 check_PROGRAMS += test/varint
 
 test_array_ptr_SOURCES = test/array_ptr.cc $(th_sources)
@@ -77,5 +89,7 @@ test_guard_SOURCES = test/guard.cc $(th_sources)
 test_intrusive_ptr_SOURCES = test/intrusive_ptr.cc $(th_sources)
 test_nonblocking_bounded_fifo_SOURCES = test/nonblocking_bounded_fifo.cc $(th_sources)
 test_safe_math_SOURCES = test/safe_math.cc $(th_sources)
+test_seqno_collector_SOURCES = test/seqno_collector.cc $(th_sources)
+test_seqno_collector_LDADD = libe.la
 test_varint_SOURCES = test/varint.cc $(th_sources)
 test_varint_LDADD = libe.la

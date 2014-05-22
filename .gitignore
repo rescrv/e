@@ -37,4 +37,5 @@
 /test/locking_iterable_fifo
 /test/nonblocking_bounded_fifo
 /test/safe_math
+/test/seqno_collector
 /test/varint
