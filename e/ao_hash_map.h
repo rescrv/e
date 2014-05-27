@@ -70,10 +70,11 @@ class ao_hash_map
 
     public:
         bool put(K k, V v);
-        bool get(K k, V* v);
+        bool get(K k, V* v) const;
         bool mod(K k, V** v);
         void reset();
         void swap(ao_hash_map* aohm);
+        void copy_from(const ao_hash_map& aohm);
 
     private:
         const static uint64_t BUCKET_SIZE = 4;
@@ -97,12 +98,12 @@ class ao_hash_map
 
     private:
         double load_factor();
-        uint64_t get_index1(K k, uint64_t table_size);
-        uint64_t get_index2(K k, uint64_t table_size);
-        typedef uint64_t (ao_hash_map::*index_func)(K k, uint64_t table_size);
-        bucket* get_bucket(bucket* table, uint64_t table_size, K k, index_func f);
+        uint64_t get_index1(K k, uint64_t table_size) const;
+        uint64_t get_index2(K k, uint64_t table_size) const;
+        typedef uint64_t (ao_hash_map::*index_func)(K k, uint64_t table_size) const;
+        bucket* get_bucket(bucket* table, uint64_t table_size, K k, index_func f) const;
         bool put(bucket* b, K k, V v);
-        bool mod(bucket* b, K k, V** v);
+        bool mod(bucket* b, K k, V** v) const;
         void cuckoo(bucket* b, K* k, V* v);
         void resize_table();
         void resize_table(bucket** table,
@@ -191,14 +192,26 @@ ao_hash_map<K, V, H, EMPTY> :: put(K k, V v)
 
 template <typename K, typename V, uint64_t (*H)(K), const K& E>
 bool
-ao_hash_map<K, V, H, E> :: get(K k, V* v)
+ao_hash_map<K, V, H, E> :: get(K k, V* v) const
 {
-    V* ptr;
+    bucket* b1 = get_bucket(m_table1, m_table_size, k, &ao_hash_map::get_index1);
+    bucket* b2 = get_bucket(m_table2, m_table_size, k, &ao_hash_map::get_index2);
+    V* tmp = NULL;
 
-    if (mod(k, &ptr))
+    if ((b1 && mod(b1, k, &tmp)) ||
+        (b2 && mod(b2, k, &tmp)))
     {
-        *v = *ptr;
+        *v = *tmp;
         return true;
+    }
+
+    for (uint64_t i = 0; i < m_array_size; ++i)
+    {
+        if (m_array[i].key == k)
+        {
+            *v = m_array[i].val;
+            return true;
+        }
     }
 
     return false;
@@ -262,6 +275,38 @@ ao_hash_map<K, V, H, E> :: swap(ao_hash_map* aohm)
     std::swap(m_array_size, aohm->m_array_size);
     std::swap(m_array, aohm->m_array);
     std::swap(m_elements, aohm->m_elements);
+}
+
+template <typename K, typename V, uint64_t (*H)(K), const K& E>
+void
+ao_hash_map<K, V, H, E> :: copy_from(const ao_hash_map& aohm)
+{
+    reset();
+    m_table_size = aohm.m_table_size;
+    m_table1 = new bucket[m_table_size];
+    m_table2 = new bucket[m_table_size];
+
+    for (size_t i = 0; i < m_table_size; ++i)
+    {
+        for (size_t b = 0; b < BUCKET_SIZE; ++b)
+        {
+            m_table1[i].nodes[b].key = aohm.m_table1[i].nodes[b].key;
+            m_table1[i].nodes[b].val = aohm.m_table1[i].nodes[b].val;
+            m_table2[i].nodes[b].key = aohm.m_table2[i].nodes[b].key;
+            m_table2[i].nodes[b].val = aohm.m_table2[i].nodes[b].val;
+        }
+    }
+
+    m_array_size = aohm.m_array_size;
+    m_array = new node[m_array_size];
+
+    for (size_t i = 0; i < m_array_size; ++i)
+    {
+        m_array[i].key = aohm.m_array[i].key;
+        m_array[i].val = aohm.m_array[i].val;
+    }
+
+    m_elements = aohm.m_elements;
 }
 
 #if 0
@@ -331,7 +376,7 @@ ao_hash_map<K, V, H, EMPTY> :: load_factor()
 
 template <typename K, typename V, uint64_t (*H)(K), const K& E>
 uint64_t
-ao_hash_map<K, V, H, E> :: get_index1(K k, uint64_t table_size)
+ao_hash_map<K, V, H, E> :: get_index1(K k, uint64_t table_size) const
 {
     uint64_t idx = e::lookup3_64(H(k)) & (table_size - 1);
     assert(idx < table_size);
@@ -340,7 +385,7 @@ ao_hash_map<K, V, H, E> :: get_index1(K k, uint64_t table_size)
 
 template <typename K, typename V, uint64_t (*H)(K), const K& E>
 uint64_t
-ao_hash_map<K, V, H, E> :: get_index2(K k, uint64_t table_size)
+ao_hash_map<K, V, H, E> :: get_index2(K k, uint64_t table_size) const
 {
     e::compat::hash<uint64_t> H2;
     uint64_t idx = e::lookup3_64(H2(H(k))) & (table_size - 1);
@@ -350,7 +395,7 @@ ao_hash_map<K, V, H, E> :: get_index2(K k, uint64_t table_size)
 
 template <typename K, typename V, uint64_t (*H)(K), const K& E>
 typename ao_hash_map<K, V, H, E>::bucket*
-ao_hash_map<K, V, H, E> :: get_bucket(bucket* table, uint64_t table_size, K k, index_func f)
+ao_hash_map<K, V, H, E> :: get_bucket(bucket* table, uint64_t table_size, K k, index_func f) const
 {
     if (table_size == 0)
     {
@@ -387,7 +432,7 @@ ao_hash_map<K, V, H, EMPTY> :: put(bucket* b, K k, V v)
 
 template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
 bool
-ao_hash_map<K, V, H, EMPTY> :: mod(bucket* b, K k, V** v)
+ao_hash_map<K, V, H, EMPTY> :: mod(bucket* b, K k, V** v) const
 {
     assert(b);
 
