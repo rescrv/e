@@ -27,6 +27,9 @@
 
 #define __STDC_LIMIT_MACROS
 
+// STL
+#include <algorithm>
+
 // e
 #include "e/garbage_collector.h"
 
