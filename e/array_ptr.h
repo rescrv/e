@@ -31,6 +31,9 @@
 // C
 #include <cstdlib>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 namespace e
 {
 
@@ -166,5 +169,7 @@ class array_ptr
 };
 
 } // namespace e
+
+#pragma GCC diagnostic pop
 
 #endif // e_buffer_h_

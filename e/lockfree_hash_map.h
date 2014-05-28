@@ -330,6 +330,10 @@ class lockfree_hash_map<K, V, H> :: node
         node* next;
         K key;
         V value;
+
+    private:
+        node(const node&);
+        node& operator = (const node&);
 };
 
 template <typename K, typename V, uint64_t (*H)(const K&)>

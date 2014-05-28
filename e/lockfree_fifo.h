@@ -204,6 +204,10 @@ class lockfree_fifo<T> :: node
     public:
         node* next;
         T data;
+
+    private:
+        node(const node&);
+        node& operator = (const node&);
 };
 
 } // namespace e

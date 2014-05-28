@@ -39,6 +39,10 @@
 #include <e/compat.h>
 #include <e/lookup3.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wabi"
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 namespace e
 {
 
@@ -543,5 +547,7 @@ ao_hash_map<K, V, H, EMPTY> :: make_room_at_array_head()
 }
 
 } // namespace e
+
+#pragma GCC diagnostic pop
 
 #endif // e_ao_hash_map_h_
