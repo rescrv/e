@@ -46,11 +46,21 @@
 // Inline cpuid instruction.  In PIC compilations, %ebx contains the address
 // of the global offset table.  To avoid breaking such executables, this code
 // must preserve that register's value across cpuid instructions.
+#if defined(__i386__)
+#define cpuid(a, b, c, d, inp) \
+  asm ("mov %%ebx, %%edi\n"    \
+       "cpuid\n"               \
+       "xchg %%edi, %%ebx\n"   \
+       : "=a" (a), "=D" (b), "=c" (c), "=d" (d) : "a" (inp))
+#elif defined (__x86_64__)
 #define cpuid(a, b, c, d, inp) \
   asm ("mov %%rbx, %%rdi\n"    \
        "cpuid\n"               \
        "xchg %%rdi, %%rbx\n"   \
        : "=a" (a), "=D" (b), "=c" (c), "=d" (d) : "a" (inp))
+#endif
+
+#if defined(cpuid)        // initialize the struct only on x86
 
 // Set the flags so that code will run correctly and conservatively
 // until InitGoogle() is called.
@@ -83,8 +93,8 @@ static void AtomicOps_Internalx86CPUFeaturesInit()
     int family = (eax >> 8) & 0xf;        // family and model fields
     int model = (eax >> 4) & 0xf;
 
+    // use extended family and model fields
     if (family == 0xf)
-        // use extended family and model fields
     {
         family += (eax >> 20) & 0xff;
         model += ((eax >> 16) & 0xf) << 4;
@@ -96,8 +106,8 @@ static void AtomicOps_Internalx86CPUFeaturesInit()
     // pre-release versions, but not in versions released to customers,
     // so we test only for Rev E, which is family 15, model 32..63 inclusive.
     if (strcmp(vendor, "AuthenticAMD") == 0 && // AMD
-            family == 15 &&
-            32 <= model && model <= 63)
+        family == 15 &&
+        32 <= model && model <= 63)
     {
         AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = true;
     }
@@ -120,3 +130,5 @@ class __attribute__ ((visibility ("hidden"))) initializer
 };
 
 static initializer init;
+
+#endif
