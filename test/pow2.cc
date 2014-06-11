@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Robert Escriva
+// Copyright (c) 2014, Robert Escriva
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,31 +25,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef e_pow2_h_
-#define e_pow2_h_
-
 // C
-#include <stdint.h>
+#include <cstring>
 
-namespace e
+// e
+#include "th.h"
+#include "e/pow2.h"
+
+namespace
 {
 
-// Compute the next highest power of two
-
-inline uint64_t
-next_pow2(uint64_t in)
+TEST(Pow2Test, Many)
 {
-    --in;
-    in = (in >> 1) | in;
-    in = (in >> 2) | in;
-    in = (in >> 4) | in;
-    in = (in >> 8) | in;
-    in = (in >> 16) | in;
-    in = (in >> 32) | in;
-    ++in;
-    return in;
+    ASSERT_EQ(0, e::next_pow2(0));
+    ASSERT_EQ(1, e::next_pow2(1));
+    ASSERT_EQ(2, e::next_pow2(2));
+    ASSERT_EQ(4, e::next_pow2(3));
+    ASSERT_EQ(4, e::next_pow2(4));
+    for (uint64_t i = 5; i <= 8; ++i) { ASSERT_EQ(8, e::next_pow2(i)); }
+    for (uint64_t i = 9; i <= 16; ++i) { ASSERT_EQ(16, e::next_pow2(i)); }
+    for (uint64_t i = 17; i <= 32; ++i) { ASSERT_EQ(32, e::next_pow2(i)); }
+    ASSERT_EQ(562949953421312ULL, e::next_pow2(281474976710657));
 }
 
-} // namespace e
-
-#endif // e_pow2_h_
+} // namespace

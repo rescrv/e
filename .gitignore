@@ -36,6 +36,7 @@
 /test/intrusive_ptr
 /test/locking_iterable_fifo
 /test/nonblocking_bounded_fifo
+/test/pow2
 /test/safe_math
 /test/seqno_collector
 /test/varint
