@@ -487,8 +487,8 @@ ao_hash_map<K, V, H, EMPTY> :: resize_table()
 template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
 void
 ao_hash_map<K, V, H, EMPTY> :: resize_table(bucket** table,
-                                            size_t old_table_size,
-                                            size_t new_table_size,
+                                            uint64_t old_table_size,
+                                            uint64_t new_table_size,
                                             index_func f)
 {
     bucket* old_table = *table;
