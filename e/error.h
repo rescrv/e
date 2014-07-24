@@ -72,7 +72,20 @@ error :: strerror(int err)
 {
     char buf[1024];
     memset(buf, 0, sizeof(buf));
-    strerror_r(err, buf, 1024);
+
+#ifdef _GNU_SOURCE
+    if (_GNU_SOURCE)
+    {
+        strncpy(buf, strerror_r(err, buf, 1024), 1024);
+    }
+    else
+    {
+#endif
+        strerror_r(err, buf, 1024);
+#ifdef _GNU_SOURCE
+    }
+#endif
+
     buf[1023] = '\0';
     return std::string(buf);
 }
