@@ -57,6 +57,7 @@ class slice
     public:
         int compare(const slice& rhs) const;
         const uint8_t* data() const { return m_data; }
+        const char* cdata() const { return reinterpret_cast<const char*>(m_data); }
         const char* c_str() const { return reinterpret_cast<const char*>(m_data); }
         bool empty() const { return m_sz == 0; }
         std::string hex() const;
