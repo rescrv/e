@@ -29,6 +29,7 @@
 
 // STL
 #include <algorithm>
+#include <vector>
 
 // e
 #include "e/garbage_collector.h"
@@ -38,6 +39,15 @@ using e::garbage_collector;
 class garbage_collector::thread_state_node
 {
     public:
+        static bool heap_cmp(const std::pair<uint64_t, garbage*>& lhs,
+                             const std::pair<uint64_t, garbage*>& rhs)
+        {
+            // not an accident; STL heap maximizes, so we need our "less than"
+            // operator to be inverted.
+            return lhs.first > rhs.first;
+        }
+
+    public:
         thread_state_node()
             : next(NULL), quiescent_timestamp(1), offline_timestamp(0) {}
         ~thread_state_node() throw () {}
@@ -46,6 +56,7 @@ class garbage_collector::thread_state_node
         thread_state_node* next;
         uint64_t quiescent_timestamp;
         uint64_t offline_timestamp;
+        std::vector<std::pair<uint64_t, garbage*> > heap;
 
     private:
         thread_state_node(const thread_state_node&);
@@ -141,6 +152,11 @@ garbage_collector :: deregister_thread(thread_state* ts)
     // unlink the node from the chain
     e::atomic::store_ptr_release(ptr, node->next);
 
+    for (size_t i = 0; i < node->heap.size(); ++i)
+    {
+        enqueue(&m_garbage, node->heap[i].second);
+    }
+
     // now destroy the unlinked tsn
     collect(node, garbage_collector::free_ptr<thread_state_node>);
 }
@@ -230,6 +246,16 @@ garbage_collector :: quiescent_state(thread_state* ts)
     // expose our timestamp to the world
     store_64_release(&tsn->quiescent_timestamp, timestamp);
 
+    // purge from the heap all items less than min_timestamp
+    while (!tsn->heap.empty() && tsn->heap[0].first < min_timestamp)
+    {
+        garbage* g = tsn->heap[0].second;
+        g->func(g->ptr);
+        delete g;
+        std::pop_heap(tsn->heap.begin(), tsn->heap.end(), thread_state_node::heap_cmp);
+        tsn->heap.pop_back();
+    }
+
     while (gc)
     {
         garbage* next = load_ptr_acquire(&gc->next);
@@ -241,7 +267,8 @@ garbage_collector :: quiescent_state(thread_state* ts)
         }
         else
         {
-            enqueue(&m_garbage, gc);
+            tsn->heap.push_back(std::make_pair(gc->timestamp, gc));
+            std::push_heap(tsn->heap.begin(), tsn->heap.end());
         }
 
         gc = next;
