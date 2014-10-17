@@ -59,7 +59,7 @@ libe_la_SOURCES += slice.cc
 libe_la_SOURCES += time.cc
 libe_la_SOURCES += unpacker.cc
 libe_la_SOURCES += varint.cc
-libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 3:0:2
+libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 3:1:2
 
 ##################################### Tests ####################################
 
