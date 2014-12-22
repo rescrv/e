@@ -30,6 +30,22 @@ varint32_decode(const char* p,const char* limit, uint32_t* v);
 const char*
 varint64_decode(const char* p,const char* limit, uint64_t* v);
 
+inline const unsigned char*
+varint32_decode(const unsigned char* p,const unsigned char* limit, uint32_t* v)
+{
+    return reinterpret_cast<const unsigned char*>(varint32_decode(
+                reinterpret_cast<const char*>(p),
+                reinterpret_cast<const char*>(limit), v));
+}
+
+inline const unsigned char*
+varint64_decode(const unsigned char* p,const unsigned char* limit, uint64_t* v)
+{
+    return reinterpret_cast<const unsigned char*>(varint64_decode(
+                reinterpret_cast<const char*>(p),
+                reinterpret_cast<const char*>(limit), v));
+}
+
 // Write directly into a character buffer and return a pointer just past the
 // last byte written.
 // REQUIRES: dst has enough space for the value being written
@@ -65,6 +81,18 @@ inline char*
 packvarint32(uint32_t value, char* ptr)
 {
     return varint32_encode(ptr, value);
+}
+
+inline unsigned char*
+packvarint64(uint64_t value, unsigned char* ptr)
+{
+    return reinterpret_cast<unsigned char*>(packvarint64(value, reinterpret_cast<char*>(ptr)));
+}
+
+inline unsigned char*
+packvarint32(uint32_t value, unsigned char* ptr)
+{
+    return reinterpret_cast<unsigned char*>(packvarint32(value, reinterpret_cast<char*>(ptr)));
 }
 
 }  // namespace e
