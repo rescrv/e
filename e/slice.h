@@ -48,6 +48,7 @@ class slice
         slice();
         slice(const char* data);
         slice(const uint8_t* data, size_t sz);
+        slice(const uint8_t* data, const uint8_t* limit);
         slice(const std::string& str);
         slice(const std::vector<uint8_t>& buf);
         template <typename T> slice(const T* data, size_t sz);
@@ -101,6 +102,13 @@ inline
 slice :: slice(const uint8_t* d, size_t sz)
     : m_data(d)
     , m_sz(sz)
+{
+}
+
+inline
+slice :: slice(const uint8_t* d, const uint8_t* limit)
+    : m_data(d)
+    , m_sz(limit - d)
 {
 }
 

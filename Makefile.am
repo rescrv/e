@@ -12,6 +12,7 @@ pkgconfig_DATA = libe.pc
 
 nobase_include_HEADERS =
 nobase_include_HEADERS += e/ao_hash_map.h
+nobase_include_HEADERS += e/arena.h
 nobase_include_HEADERS += e/array_ptr.h
 nobase_include_HEADERS += e/atomic.h
 nobase_include_HEADERS += e/bitsteal.h
@@ -49,6 +50,7 @@ nobase_include_HEADERS += e/varint.h
 
 lib_LTLIBRARIES = libe.la
 libe_la_SOURCES  =
+libe_la_SOURCES += arena.cc
 libe_la_SOURCES += atomic.cc
 libe_la_SOURCES += buffer.cc
 libe_la_SOURCES += garbage_collector.cc
