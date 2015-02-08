@@ -49,6 +49,7 @@ class error
     public:
         error();
         error(const error&);
+        virtual ~error() throw ();
 
     public:
         const char* loc();

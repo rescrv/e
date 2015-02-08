@@ -53,6 +53,7 @@ libe_la_SOURCES  =
 libe_la_SOURCES += arena.cc
 libe_la_SOURCES += atomic.cc
 libe_la_SOURCES += buffer.cc
+libe_la_SOURCES += error.cc
 libe_la_SOURCES += garbage_collector.cc
 libe_la_SOURCES += lookup3.c
 libe_la_SOURCES += lookup3-wrap.cc
