@@ -27,6 +27,7 @@ nobase_include_HEADERS += e/guard.h
 nobase_include_HEADERS += e/hazard_ptrs.h
 nobase_include_HEADERS += e/intrusive_ptr.h
 nobase_include_HEADERS += e/lockfree_fifo.h
+nobase_include_HEADERS += e/lockfree_mpsc_fifo.h
 nobase_include_HEADERS += e/lockfree_hash_map.h
 nobase_include_HEADERS += e/lockfree_hash_set.h
 nobase_include_HEADERS += e/locking_fifo.h
