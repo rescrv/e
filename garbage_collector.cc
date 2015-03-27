@@ -39,13 +39,7 @@ using e::garbage_collector;
 class garbage_collector::thread_state_node
 {
     public:
-        static bool heap_cmp(const std::pair<uint64_t, garbage*>& lhs,
-                             const std::pair<uint64_t, garbage*>& rhs)
-        {
-            // not an accident; STL heap maximizes, so we need our "less than"
-            // operator to be inverted.
-            return lhs.first > rhs.first;
-        }
+        static bool heap_cmp(const garbage& lhs, const garbage& rhs);
 
     public:
         thread_state_node()
@@ -56,7 +50,7 @@ class garbage_collector::thread_state_node
         thread_state_node* next;
         uint64_t quiescent_timestamp;
         uint64_t offline_timestamp;
-        std::vector<std::pair<uint64_t, garbage*> > heap;
+        std::vector<garbage> heap;
 
     private:
         thread_state_node(const thread_state_node&);
@@ -70,17 +64,39 @@ class garbage_collector::garbage
             : next(NULL), timestamp(0), ptr(NULL), func(NULL) {}
         garbage(uint64_t t, void* p, void (*f)(void*))
             : next(NULL), timestamp(t), ptr(p), func(f) {}
+        garbage(const garbage& other)
+            : next(other.next)
+            , timestamp(other.timestamp)
+            , ptr(other.ptr)
+            , func(other.func)
+        {
+        }
+
+        garbage& operator = (const garbage& rhs)
+        {
+            // self-assign-safe
+            next = rhs.next;
+            timestamp = rhs.timestamp;
+            ptr = rhs.ptr;
+            func = rhs.func;
+            return *this;
+        }
 
     public:
         garbage* next;
         uint64_t timestamp;
         void* ptr;
         void (*func)(void* ptr);
-
-    private:
-        garbage(const garbage&);
-        garbage& operator = (const garbage&);
 };
+
+bool
+garbage_collector :: thread_state_node :: heap_cmp(const garbage& lhs,
+                                                   const garbage& rhs)
+{
+    // not an accident; STL heap maximizes, so we need our "less than"
+    // operator to be inverted.
+    return lhs.timestamp > rhs.timestamp;
+}
 
 garbage_collector :: garbage_collector()
     : m_timestamp()
@@ -154,7 +170,8 @@ garbage_collector :: deregister_thread(thread_state* ts)
 
     for (size_t i = 0; i < node->heap.size(); ++i)
     {
-        enqueue(&m_garbage, node->heap[i].second);
+        garbage* g = new garbage(node->heap[i]);
+        enqueue(&m_garbage, g);
     }
 
     // now destroy the unlinked tsn
@@ -164,53 +181,56 @@ garbage_collector :: deregister_thread(thread_state* ts)
 void
 garbage_collector :: quiescent_state(thread_state* ts)
 {
-    // no need to memory barrier within this funciton when storking
-    // tsn->quiescent_timestamp because it's strictly increasing, and seeing a
-    // lower value only delays garbage collection, but cannot hurt safety.
     using namespace e::atomic;
     thread_state_node* const tsn = ts->m_tsn;
+    uint64_t timestamp = 0;
+    uint64_t min_timestamp = 0;
 
-    // read the timestamp here
-    uint64_t timestamp = read_timestamp();
-    assert(tsn->quiescent_timestamp < timestamp);
-
-    // Find the largest timestamp that is less than each thread state's
-    // quiescent_timestamp.  For every other thread, use the value that they
-    // advertise in their thread_state_node.  For this thread, use the value we
-    // just read above in the counter.
-    uint64_t transitions = load_64_acquire(&m_offline_transitions);
-    uint64_t min_timestamp = timestamp;
-    uint64_t min_offline = timestamp;
-    thread_state_node* node = load_ptr_acquire(&m_registered);
-
-    while (node)
+    while (true)
     {
-        if (node != tsn)
-        {
-            uint64_t qst = load_64_acquire(&node->quiescent_timestamp);
-            uint64_t oft = load_64_acquire(&node->offline_timestamp);
+        // This loop finds the largest timestamp that is less than each thread
+        // state's quiescent_timestamp.  For every other thread, use the value
+        // that they advertise in their thread_state_node.  For this thread, use
+        // the value we read from the counter.
 
-            if (qst > oft)
+        // read the timestamp here
+        timestamp = read_timestamp();
+        min_timestamp = timestamp;
+        assert(tsn->quiescent_timestamp < timestamp);
+
+        // Figure out the total number of offline->online transitions that have
+        // happened to date.
+        uint64_t transitions = load_64_acquire(&m_offline_transitions);
+
+        // Look through the list and find the timestamps
+        thread_state_node* node = load_ptr_acquire(&m_registered);
+
+        while (node)
+        {
+            if (node != tsn)
             {
-                min_timestamp = std::min(qst, min_timestamp);
+                // quiescent before offline, so the acquire has effect
+                uint64_t qst = load_64_acquire(&node->quiescent_timestamp);
+                uint64_t oft = load_64_acquire(&node->offline_timestamp);
+
+                // This node is online, so use its timestamp as the lower bound
+                if (qst > oft)
+                {
+                    min_timestamp = std::min(qst, min_timestamp);
+                }
             }
-            else
-            {
-                min_offline = std::min(oft, min_offline);
-            }
+
+            node = load_ptr_acquire(&node->next);
         }
 
-        node = load_ptr_acquire(&node->next);
-    }
-
-    if (min_offline < min_timestamp)
-    {
+        // This acts as a barrier between the read of transitions above, and the
+        // read below, so that anyone who read the counter to update their
+        // timestamps will show up.
         read_timestamp();
-        uint64_t second_transitions = load_64_acquire(&m_offline_transitions);
 
-        if (transitions < second_transitions)
+        if (transitions == load_64_acquire(&m_offline_transitions))
         {
-            min_timestamp = min_offline;
+            break;
         }
     }
 
@@ -244,14 +264,16 @@ garbage_collector :: quiescent_state(thread_state* ts)
     }
 
     // expose our timestamp to the world
+    // no need to force tsn->quiescent_timestamp to be visible with a call to
+    // read_timestamp() because it's strictly increasing, and seeing a lower
+    // value only delays garbage collection, but cannot hurt safety.
     store_64_release(&tsn->quiescent_timestamp, timestamp);
 
     // purge from the heap all items less than min_timestamp
-    while (!tsn->heap.empty() && tsn->heap[0].first < min_timestamp)
+    while (!tsn->heap.empty() && tsn->heap[0].timestamp < min_timestamp)
     {
-        garbage* g = tsn->heap[0].second;
-        g->func(g->ptr);
-        delete g;
+        const garbage& g(tsn->heap[0]);
+        g.func(g.ptr);
         std::pop_heap(tsn->heap.begin(), tsn->heap.end(), thread_state_node::heap_cmp);
         tsn->heap.pop_back();
     }
@@ -267,8 +289,10 @@ garbage_collector :: quiescent_state(thread_state* ts)
         }
         else
         {
-            tsn->heap.push_back(std::make_pair(gc->timestamp, gc));
-            std::push_heap(tsn->heap.begin(), tsn->heap.end());
+            tsn->heap.push_back(garbage(gc->timestamp, gc->ptr, gc->func));
+            std::push_heap(tsn->heap.begin(), tsn->heap.end(), thread_state_node::heap_cmp);
+            tsn->heap.push_back(garbage(gc->timestamp, gc, free_ptr<garbage>));
+            std::push_heap(tsn->heap.begin(), tsn->heap.end(), thread_state_node::heap_cmp);
         }
 
         gc = next;
@@ -283,6 +307,7 @@ garbage_collector :: offline(thread_state* ts)
     uint64_t timestamp = read_timestamp();
     assert(tsn->quiescent_timestamp < timestamp);
     assert(tsn->offline_timestamp < timestamp);
+    // offline before quiescent, so the release mates with the acquire above
     store_64_release(&tsn->offline_timestamp, timestamp);
     store_64_release(&tsn->quiescent_timestamp, timestamp);
     read_timestamp();
@@ -316,6 +341,8 @@ garbage_collector :: collect(void* ptr, void(*func)(void* ptr))
 uint64_t
 garbage_collector :: read_timestamp()
 {
+    // The rest of the code relies upon read_timestamp to be a fullbarrier, so
+    // keep it so.
     return e::atomic::increment_64_fullbarrier(&m_timestamp, 1);
 }
 
