@@ -74,7 +74,7 @@ class flagfd
 
             m_flagged = true;
         }
-        void unset()
+        void clear()
         {
             char buf[32];
 
