@@ -50,6 +50,12 @@ next_pow2(uint64_t in)
     return in;
 }
 
+inline bool
+is_pow2(uint64_t x)
+{
+    return ((x != 0) && !(x & (x - 1)));
+}
+
 } // namespace e
 
 #endif // e_pow2_h_
