@@ -29,7 +29,7 @@
 #define e_hazard_ptrs_h_
 
 // C
-#include <cassert>
+#include <assert.h>
 
 // STL
 #include <memory>

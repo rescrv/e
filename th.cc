@@ -26,7 +26,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // C
-#include <cstring>
+#include <string.h>
 
 // C++
 #include <iostream>

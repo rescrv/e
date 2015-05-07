@@ -29,7 +29,7 @@
 #define e_nonblocking_bounded_fifo_h_
 
 // C
-#include <cassert>
+#include <assert.h>
 
 // e
 #include <e/atomic.h>

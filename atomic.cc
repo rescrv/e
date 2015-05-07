@@ -38,7 +38,7 @@
  */
 
 // C
-#include <cstring>
+#include <string.h>
 
 // e
 #include "e/atomic.h"

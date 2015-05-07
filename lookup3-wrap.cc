@@ -26,7 +26,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 // e
 #include <e/lookup3.h>

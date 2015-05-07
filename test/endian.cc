@@ -28,7 +28,7 @@
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
 // C
-#include <cstring>
+#include <string.h>
 
 // e
 #include "th.h"

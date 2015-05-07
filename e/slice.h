@@ -29,8 +29,8 @@
 #define e_slice_h_
 
 // C
-#include <cassert>
-#include <cstring>
+#include <assert.h>
+#include <string.h>
 #include <stdint.h>
 
 // STL
@@ -59,11 +59,11 @@ class slice
         int compare(const slice& rhs) const;
         const uint8_t* data() const { return m_data; }
         const char* cdata() const { return reinterpret_cast<const char*>(m_data); }
-        const char* c_str() const { return reinterpret_cast<const char*>(m_data); }
         bool empty() const { return m_sz == 0; }
         std::string hex() const;
         size_t size() const { return m_sz; }
         bool starts_with(const e::slice& other) const;
+        std::string str() const { return std::string(cdata(), size()); }
 
     public:
         void advance(size_t sz);
@@ -113,9 +113,9 @@ slice :: slice(const uint8_t* d, const uint8_t* limit)
 }
 
 inline
-slice :: slice(const std::string& str)
-    : m_data(reinterpret_cast<const uint8_t*>(str.data()))
-    , m_sz(str.size())
+slice :: slice(const std::string& s)
+    : m_data(reinterpret_cast<const uint8_t*>(s.data()))
+    , m_sz(s.size())
 {
 }
 

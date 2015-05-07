@@ -29,7 +29,7 @@
 #define e_popt_h_
 
 // C
-#include <cassert>
+#include <assert.h>
 
 // Popt
 #include <popt.h>

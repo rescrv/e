@@ -29,7 +29,7 @@
 #define e_lockfree_fifo_h_
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 // STL
 #include <memory>

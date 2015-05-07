@@ -29,7 +29,7 @@
 #define e_ao_hash_map_h_
 
 // C
-#include <cassert>
+#include <assert.h>
 #include <stdint.h>
 
 // STL

@@ -29,7 +29,7 @@
 #define th_h_
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 // C++
 #include <iostream>

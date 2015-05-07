@@ -29,7 +29,7 @@
 #define e_envconfig_h_
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 // C++
 #include <sstream>

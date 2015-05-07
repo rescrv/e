@@ -29,8 +29,8 @@
 #define e_subcommand_h_
 
 // C
-#include <cstdlib>
-#include <cstring>
+#include <stdlib.h>
+#include <string.h>
 
 // POSIX
 #include <errno.h>

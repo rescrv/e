@@ -39,13 +39,13 @@ nobase_include_HEADERS += e/popt.h
 nobase_include_HEADERS += e/pow2.h
 nobase_include_HEADERS += e/safe_math.h
 nobase_include_HEADERS += e/seqno_collector.h
+nobase_include_HEADERS += e/serialization.h
 nobase_include_HEADERS += e/slice.h
 nobase_include_HEADERS += e/strescape.h
 nobase_include_HEADERS += e/striped_lock.h
 nobase_include_HEADERS += e/subcommand.h
 nobase_include_HEADERS += e/time.h
 nobase_include_HEADERS += e/tuple_compare.h
-nobase_include_HEADERS += e/unpacker.h
 nobase_include_HEADERS += e/varint.h
 
 #################################### Source ####################################
@@ -60,9 +60,9 @@ libe_la_SOURCES += garbage_collector.cc
 libe_la_SOURCES += lookup3.c
 libe_la_SOURCES += lookup3-wrap.cc
 libe_la_SOURCES += seqno_collector.cc
+libe_la_SOURCES += serialization.cc
 libe_la_SOURCES += slice.cc
 libe_la_SOURCES += time.cc
-libe_la_SOURCES += unpacker.cc
 libe_la_SOURCES += varint.cc
 libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 2:0:1
 

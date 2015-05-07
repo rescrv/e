@@ -7,7 +7,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 // e
 #include "e/varint.h"

@@ -29,7 +29,7 @@
 #define e_intrusive_ptr_h_
 
 // C
-#include <cstddef>
+#include <stddef.h>
 
 // C++
 #include <iostream>

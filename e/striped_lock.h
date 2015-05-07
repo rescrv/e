@@ -29,7 +29,7 @@
 #define e_striped_lock_h_
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 // STL
 #include <algorithm>

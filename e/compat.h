@@ -29,7 +29,7 @@
 #define e_compat_h_
 
 // C++
-#include <ciso646>
+#include <iso646.h>
 #ifdef _LIBCPP_VERSION
 #include <functional>
 #include <memory>

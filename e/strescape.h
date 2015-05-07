@@ -29,7 +29,7 @@
 #define e_strescape_h_
 
 // C
-#include <cstdio>
+#include <stdio.h>
 
 // STL
 #include <string>

@@ -29,7 +29,7 @@
 #define e_array_ptr_h_
 
 // C
-#include <cstdlib>
+#include <stdlib.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"

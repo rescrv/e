@@ -76,10 +76,13 @@ class flagfd
         }
         void clear()
         {
-            char buf[32];
+            if (m_flagged)
+            {
+                char buf[32];
 
-            while (m_read.read(buf, 32) == 32)
-                ;
+                while (m_read.read(buf, 32) == 32)
+                    ;
+            }
 
             m_flagged = false;
         }

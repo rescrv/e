@@ -29,7 +29,7 @@
 #define e_garbage_collector_h_
 
 // C
-#include <cassert>
+#include <assert.h>
 #include <stdint.h>
 
 // po6
