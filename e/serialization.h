@@ -42,6 +42,7 @@
 // e
 #include <e/compat.h>
 #include <e/slice.h>
+#include <e/varint.h>
 
 #define E_SERIALIZATION_TRIPLET(X) \
     e::packer operator << (e::packer pa, const X& x); \
@@ -228,7 +229,7 @@ template <typename T>
 size_t
 pack_size(const typename std::vector<T>& v)
 {
-    size_t sz = e::pack_size(uint32_t());
+    size_t sz = e::varint_length(v.size());
 
     for (size_t i = 0; i < v.size(); ++i)
     {
@@ -243,8 +244,8 @@ e::packer
 e :: packer :: operator << (const std::vector<T>& rhs)
 {
     e::packer pa(*this);
-    const uint32_t sz = rhs.size();
-    pa = pa << sz;
+    const uint64_t sz = rhs.size();
+    pa = pa << pack_varint(sz);
 
     for (uint32_t i = 0; i < sz; ++i)
     {
@@ -259,11 +260,11 @@ e::unpacker
 e :: unpacker :: operator >> (std::vector<T>& rhs)
 {
     e::unpacker up(*this);
-    uint32_t sz;
-    up = up >> sz;
+    uint64_t sz = 0;
+    up = up >> unpack_varint(sz);
     rhs.clear();
 
-    for (uint32_t i = 0; i < sz; ++i)
+    for (uint64_t i = 0; i < sz; ++i)
     {
         rhs.push_back(T());
         up = up >> rhs.back();

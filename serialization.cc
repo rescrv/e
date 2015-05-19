@@ -404,6 +404,27 @@ e :: operator >> (unpacker lhs, po6::net::location& rhs)
     return lhs >> rhs.address >> rhs.port;
 }
 
+packer
+e :: operator << (e::packer lhs, const po6::net::hostname& rhs)
+{
+    return lhs << e::slice(rhs.address.data(), rhs.address.size()) << rhs.port;
+}
+
+unpacker
+e :: operator >> (e::unpacker lhs, po6::net::hostname& rhs)
+{
+    e::slice address;
+    lhs = lhs >> address >> rhs.port;
+    rhs.address = std::string(address.cdata(), address.size());
+    return lhs;
+}
+
+size_t
+e :: pack_size(const po6::net::hostname& rhs)
+{
+    return pack_size(e::slice(rhs.address)) + sizeof(uint16_t);
+}
+
 pack_memmove :: pack_memmove(const void* d, size_t s)
     : m_data(static_cast<const uint8_t*>(d))
     , m_size(s)
