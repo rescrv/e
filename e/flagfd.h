@@ -64,6 +64,7 @@ class flagfd
         bool valid() const { return m_read.get() >= 0; }
         int error() const { return m_error; }
         int poll_fd() { return m_read.get(); }
+        bool isset() { return m_flagged; }
         void set()
         {
             if (!m_flagged)
