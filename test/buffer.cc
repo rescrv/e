@@ -152,16 +152,16 @@ TEST(BufferTest, VectorPack)
     vector.push_back(0xbabe);
     e::packer p = buf->pack_at(0);
     p = p << vector;
-    ASSERT_TRUE(buf->cmp("\x00\x00\x00\x04"
+    ASSERT_TRUE(buf->cmp("\x04"
                          "\xde\xad\xbe\xef"
-                         "\xca\xfe\xba\xbe", 12));
+                         "\xca\xfe\xba\xbe", 9));
 }
 
 TEST(BufferTest, VectorUnpack)
 {
-    std::auto_ptr<e::buffer> buf(e::buffer::create("\x00\x00\x00\x04"
+    std::auto_ptr<e::buffer> buf(e::buffer::create("\x04"
                                                    "\xde\xad\xbe\xef"
-                                                   "\xca\xfe\xba\xbe", 12));
+                                                   "\xca\xfe\xba\xbe", 9));
     std::vector<uint16_t> vector;
     buf->unpack() >> vector;
     ASSERT_EQ(4U, vector.size());
@@ -173,9 +173,9 @@ TEST(BufferTest, VectorUnpack)
 
 TEST(BufferTest, VectorUnpackFail)
 {
-    std::auto_ptr<e::buffer> buf(e::buffer::create("\x00\x00\x00\x04"
+    std::auto_ptr<e::buffer> buf(e::buffer::create("\x04"
                                                    "\xde\xad\xbe\xef"
-                                                   "\xca\xfe\xba\xbe", 12));
+                                                   "\xca\xfe\xba\xbe", 9));
     std::vector<uint32_t> vector_bad;
     std::vector<uint16_t> vector_good;
     e::unpacker bad = buf->unpack() >> vector_bad;
