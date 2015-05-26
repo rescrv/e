@@ -31,7 +31,7 @@ if test x"${needs_lrt}" = xyes; then
 else
     AC_SUBST([LRT_LDFLAGS], [""])
 fi
-PKG_CHECK_MODULES([PO6], [libpo6 >= 0.6])
+PKG_CHECK_MODULES([PO6], [libpo6 >= 0.7])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
