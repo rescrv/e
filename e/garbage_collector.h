@@ -69,6 +69,7 @@ class garbage_collector
     private:
         uint64_t m_timestamp;
         uint64_t m_offline_transitions;
+        uint64_t m_minimum;
         thread_state_node* m_registered;
         garbage* m_garbage;
         po6::threads::mutex m_protect_registration;

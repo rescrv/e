@@ -47,9 +47,13 @@ class garbage_collector::thread_state_node
         ~thread_state_node() throw () {}
 
     public:
+        void purge(uint64_t min_timestamp);
+
+    public:
         thread_state_node* next;
         uint64_t quiescent_timestamp;
         uint64_t offline_timestamp;
+        po6::threads::mutex heap_mtx;
         std::vector<garbage> heap;
 
     private:
@@ -98,9 +102,25 @@ garbage_collector :: thread_state_node :: heap_cmp(const garbage& lhs,
     return lhs.timestamp > rhs.timestamp;
 }
 
+void
+garbage_collector :: thread_state_node :: purge(uint64_t min_timestamp)
+{
+    po6::threads::mutex::hold hold(&heap_mtx);
+
+    // purge from the heap all items less than min_timestamp
+    while (!heap.empty() && heap[0].timestamp < min_timestamp)
+    {
+        const garbage& g(heap[0]);
+        g.func(g.ptr);
+        std::pop_heap(heap.begin(), heap.end(), thread_state_node::heap_cmp);
+        heap.pop_back();
+    }
+}
+
 garbage_collector :: garbage_collector()
-    : m_timestamp()
-    , m_offline_transitions()
+    : m_timestamp(0)
+    , m_offline_transitions(0)
+    , m_minimum(0)
     , m_registered(NULL)
     , m_garbage()
     , m_protect_registration()
@@ -167,6 +187,7 @@ garbage_collector :: deregister_thread(thread_state* ts)
 
     // unlink the node from the chain
     e::atomic::store_ptr_release(ptr, node->next);
+    po6::threads::mutex::hold holdheap(&node->heap_mtx);
 
     for (size_t i = 0; i < node->heap.size(); ++i)
     {
@@ -185,6 +206,7 @@ garbage_collector :: quiescent_state(thread_state* ts)
     thread_state_node* const tsn = ts->m_tsn;
     uint64_t timestamp = 0;
     uint64_t min_timestamp = 0;
+    const uint64_t prev_min_timestamp = e::atomic::load_64_nobarrier(&m_minimum);
 
     while (true)
     {
@@ -217,6 +239,10 @@ garbage_collector :: quiescent_state(thread_state* ts)
                 if (qst > oft)
                 {
                     min_timestamp = std::min(qst, min_timestamp);
+                }
+                else
+                {
+                    node->purge(prev_min_timestamp);
                 }
             }
 
@@ -256,6 +282,10 @@ garbage_collector :: quiescent_state(thread_state* ts)
     //
     // In all cases, the minimum timestamp is the smallest of every thread's
     // quiescent timestamp.
+
+    while (compare_and_swap_64_nobarrier(&m_minimum, e::atomic::load_64_nobarrier(&m_minimum), min_timestamp) < min_timestamp)
+        ;
+
     garbage* gc = load_ptr_nobarrier(&m_garbage);
 
     if (compare_and_swap_ptr_fullbarrier(&m_garbage, gc, static_cast<garbage*>(NULL)) != gc)
@@ -269,14 +299,7 @@ garbage_collector :: quiescent_state(thread_state* ts)
     // value only delays garbage collection, but cannot hurt safety.
     store_64_release(&tsn->quiescent_timestamp, timestamp);
 
-    // purge from the heap all items less than min_timestamp
-    while (!tsn->heap.empty() && tsn->heap[0].timestamp < min_timestamp)
-    {
-        const garbage& g(tsn->heap[0]);
-        g.func(g.ptr);
-        std::pop_heap(tsn->heap.begin(), tsn->heap.end(), thread_state_node::heap_cmp);
-        tsn->heap.pop_back();
-    }
+    tsn->purge(min_timestamp);
 
     while (gc)
     {
@@ -289,6 +312,7 @@ garbage_collector :: quiescent_state(thread_state* ts)
         }
         else
         {
+            po6::threads::mutex::hold holdheap(&tsn->heap_mtx);
             tsn->heap.push_back(garbage(gc->timestamp, gc->ptr, gc->func));
             std::push_heap(tsn->heap.begin(), tsn->heap.end(), thread_state_node::heap_cmp);
             tsn->heap.push_back(garbage(gc->timestamp, gc, free_ptr<garbage>));

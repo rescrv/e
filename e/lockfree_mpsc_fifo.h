@@ -91,12 +91,6 @@ lockfree_mpsc_fifo<T> :: ~lockfree_mpsc_fifo() throw ()
         node* tmp = atomic::load_ptr_acquire(&m_head);
         node* next = atomic::load_ptr_acquire(&tmp->next);
         atomic::store_ptr_nobarrier(&m_head, next);
-
-        if (tmp->data)
-        {
-            delete tmp->data;
-        }
-
         delete tmp;
     }
 }
