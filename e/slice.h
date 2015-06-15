@@ -42,6 +42,8 @@ namespace e
 
 // Refer to another piece of memory.  The memory is assumed to be managed
 // somewhere else, and must outlive the use of all slices using it.
+//
+// Comparisons are NOT lexicographic, just guaranteed to follow be consistent.
 class slice
 {
     public:
