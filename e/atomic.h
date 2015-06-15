@@ -69,6 +69,9 @@ namespace e
 namespace atomic
 {
 
+uint32_t
+exchange_32_fullbarrier(volatile uint32_t* ptr, uint32_t new_value);
+
 inline void
 memory_barrier()
 {
@@ -369,7 +372,7 @@ compare_and_swap_64_nobarrier(volatile uint64_t* ptr, uint64_t old_value, uint64
                          : "memory");
     return prev;
 #else
-    return __sync_val_compare_and_swap(ptr, old_val, new_val);
+    return __sync_val_compare_and_swap(ptr, old_value, new_value);
 #endif
 }
 
@@ -414,7 +417,7 @@ compare_and_swap_ptr_nobarrier(P* volatile* ptr, P* old_value, P* new_value)
                          : "memory");
     return prev;
 #else
-    uint32_t prev;
+    P* prev;
     __asm__ __volatile__("lock; cmpxchgl %1,%2"
                          : "=a" (prev)
                          : "q" (new_value), "m" (*ptr), "0" (old_value)
@@ -482,6 +485,16 @@ exchange_32_nobarrier(volatile uint32_t* ptr, uint32_t new_value)
     return new_value;  // Now it's the previous value.
 }
 
+inline uint32_t
+exchange_32_fullbarrier(volatile uint32_t* ptr, uint32_t new_value)
+{
+    __asm__ __volatile__("xchgl %1,%0"  // The lock prefix is implicit for xchg.
+                         : "=r" (new_value)
+                         : "m" (*ptr), "0" (new_value)
+                         : "memory");
+    return new_value;  // Now it's the previous value.
+}
+
 inline uint64_t
 exchange_64_nobarrier(volatile uint64_t* ptr, uint64_t new_value)
 {
@@ -499,7 +512,7 @@ exchange_64_nobarrier(volatile uint64_t* ptr, uint64_t new_value)
     do
     {
         old_val = load_64_nobarrier(ptr);
-    } while (__sync_val_compare_and_swap(ptr, old_val, new_val) != old_val);
+    } while (__sync_val_compare_and_swap(ptr, old_val, new_value) != old_val);
 
     return old_val;
 #endif

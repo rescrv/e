@@ -65,7 +65,7 @@ class error
         std::string m_msg_s;
         std::string m_loc_s;
         const char* m_file;
-        size_t m_line;
+        unsigned long m_line;
 };
 
 inline std::string
