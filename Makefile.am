@@ -64,7 +64,7 @@ libe_la_SOURCES += serialization.cc
 libe_la_SOURCES += slice.cc
 libe_la_SOURCES += time.cc
 libe_la_SOURCES += varint.cc
-libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 4:0:0
+libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 5:0:0
 
 ##################################### Tests ####################################
 
