@@ -24,13 +24,6 @@ AC_PROG_CC
 ANAL_WARNINGS
 
 # Checks for libraries.
-AC_CHECK_LIB([rt], [clock_gettime], [needs_lrt=yes], [needs_lrt=no])
-
-if test x"${needs_lrt}" = xyes; then
-    AC_SUBST([RT_LIBS], ["-lrt"])
-else
-    AC_SUBST([RT_LIBS], [""])
-fi
 PKG_CHECK_MODULES([PO6], [libpo6 >= 0.8])
 
 # Checks for header files.
@@ -49,7 +42,7 @@ AX_PTHREAD
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
-AC_CHECK_FUNCS([clock_gettime memchr memmove strtoul strtoull mach_absolute_time])
+AC_CHECK_FUNCS([memchr memmove strtoul strtoull])
 
 AC_CONFIG_FILES([Makefile
                  libe.pc])
