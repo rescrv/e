@@ -1,8 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 
 AM_CPPFLAGS = $(PO6_CFLAGS)
-AM_CFLAGS = $(WANAL_CFLAGS)
-AM_CXXFLAGS = $(PO6_CFLAGS) $(WANAL_CXXFLAGS)
+AM_CFLAGS = $(PTHREAD_CFLAGS) $(WANAL_CFLAGS)
+AM_CXXFLAGS = $(PO6_CFLAGS) $(PTHREAD_CFLAGS) $(WANAL_CXXFLAGS)
 AM_MAKEFLAGS = --no-print-directory
 
 EXTRA_DIST = LICENSE README THIRD-PARTY
@@ -63,7 +63,11 @@ libe_la_SOURCES += serialization.cc
 libe_la_SOURCES += slice.cc
 libe_la_SOURCES += time.cc
 libe_la_SOURCES += varint.cc
-libe_la_LDFLAGS = $(LRT_LDFLAGS) -version-info 4:0:0
+libe_la_LIBADD =
+libe_la_LIBADD += $(PO6_LIBS)
+libe_la_LIBADD += $(RT_LIBS)
+libe_la_LIBADD += $(PTHREAD_LIBS)
+libe_la_LDFLAGS = -version-info 5:0:0
 
 ##################################### Tests ####################################
 

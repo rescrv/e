@@ -27,9 +27,9 @@ ANAL_WARNINGS
 AC_CHECK_LIB([rt], [clock_gettime], [needs_lrt=yes], [needs_lrt=no])
 
 if test x"${needs_lrt}" = xyes; then
-    AC_SUBST([LRT_LDFLAGS], ["-lrt"])
+    AC_SUBST([RT_LIBS], ["-lrt"])
 else
-    AC_SUBST([LRT_LDFLAGS], [""])
+    AC_SUBST([RT_LIBS], [""])
 fi
 PKG_CHECK_MODULES([PO6], [libpo6 >= 0.8])
 
@@ -44,6 +44,8 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
+
+AX_PTHREAD
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
