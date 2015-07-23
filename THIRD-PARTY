@@ -2,7 +2,7 @@ e/atomic.h:
     Copyright:  2006, Google Inc.
     License:    3-clause BSD
 
-src/atomic.cc:
+atomic.cc:
     Copyright:  2007, Google Inc.
     License:    3-clause BSD
 
