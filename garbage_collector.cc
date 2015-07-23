@@ -43,7 +43,7 @@ class garbage_collector::thread_state_node
 
     public:
         thread_state_node()
-            : next(NULL), quiescent_timestamp(1), offline_timestamp(0), heap() {}
+            : next(NULL), quiescent_timestamp(1), offline_timestamp(0), heap_mtx(), heap() {}
         ~thread_state_node() throw () {}
 
     public:
