@@ -30,6 +30,7 @@
 
 // C
 #include <assert.h>
+#include <string.h>
 
 // Popt
 #include <popt.h>
@@ -183,9 +184,8 @@ inline bool
 argparser :: parse(int argc, const char* argv[])
 {
     assert(argc > 0);
-    po6::pathname pretty(argv[0]);
-    pretty = pretty.basename();
-    argv[0] = pretty.get();
+    std::string pretty = po6::path::basename(argv[0]);
+    argv[0] = pretty.c_str();
 
     if (strncmp(argv[0], "lt-", 3) == 0)
     {

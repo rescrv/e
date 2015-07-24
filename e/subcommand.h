@@ -181,7 +181,7 @@ dispatch_to_subcommands(int arg, const char* argv[],
     }
 
     // add the dir where "hyperdex" resides
-    path += ":" + std::string(po6::pathname(orig_argv0).dirname().get());
+    path += ":" + std::string(po6::path::dirname(orig_argv0));
 
     // add the existing PATH
     char* old_path = getenv("PATH");

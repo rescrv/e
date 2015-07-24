@@ -31,10 +31,12 @@
 // STL
 #include <algorithm>
 
+// po6
+#include <po6/time.h>
+
 // e
 #include <e/garbage_collector.h>
 #include <e/lookup3.h>
-#include <e/time.h>
 
 // This is a nearly-wait-free hash map.  Strictly-speaking, it's lock-free
 // because of resize operations, but operations that happen outside the resize
@@ -187,7 +189,7 @@ class nwf_hash_map
         bool key_compare(K k1, typename wrapper<K>::type k2);
         bool key_compare(typename wrapper<K>::type k1, typename wrapper<K>::type k2);
         bool get(table* t, typename wrapper<K>::type key, const uint64_t hash, V* val);
-        uint64_t millis_now() { return e::time() / 1000000ULL; }
+        uint64_t millis_now() { return po6::time() / 1000000ULL; }
         typename wrapper<V>::type put_if_match(typename wrapper<K>::type key,
                                                typename wrapper<V>::type exp_val,
                                                typename wrapper<V>::type put_val);
