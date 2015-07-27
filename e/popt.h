@@ -44,7 +44,7 @@
 #include <vector>
 
 // po6
-#include <po6/pathname.h>
+#include <po6/path.h>
 
 namespace e
 {
