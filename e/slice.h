@@ -48,6 +48,7 @@ class slice
 {
     public:
         slice();
+        slice(const char* data);
         slice(const char* data, size_t sz);
         slice(const uint8_t* data, size_t sz);
         slice(const std::string& str);

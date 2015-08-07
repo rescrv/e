@@ -40,6 +40,12 @@ slice :: slice()
 {
 }
 
+slice :: slice(const char* data)
+    : m_data(reinterpret_cast<const uint8_t*>(data))
+    , m_sz(strlen(data))
+{
+}
+
 slice :: slice(const char* d, size_t sz)
     : m_data(reinterpret_cast<const uint8_t*>(d))
     , m_sz(sz)
