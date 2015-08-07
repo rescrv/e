@@ -50,8 +50,8 @@ class slice
         slice();
         slice(const char* data, size_t sz);
         slice(const uint8_t* data, size_t sz);
-        explicit slice(const std::string& str);
-        explicit slice(const std::vector<uint8_t>& buf);
+        slice(const std::string& str);
+        slice(const std::vector<uint8_t>& buf);
         slice(const slice& other);
         ~slice() throw ();
 
