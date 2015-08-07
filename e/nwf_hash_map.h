@@ -364,55 +364,6 @@ nwf_hash_map<K, V, H> :: end()
     return iterator();
 }
 
-#if 0
-template <typename K, typename V, uint64_t (*H)(const K&)>
-void
-nwf_hash_map<K, V, H> :: dump()
-{
-    table* t = e::atomic::load_ptr_acquire(&m_table);
-    std::cout << "[";
-    bool prev_elem = false;
-
-    for (size_t i = 0; i < t->capacity; ++i)
-    {
-        if (prev_elem)
-        {
-            std::cout << ", ";
-        }
-
-        prev_elem = true;
-        typename wrapper<K>::type k = t->nodes[i].key;
-        typename wrapper<V>::type v = t->nodes[i].val;
-
-        if (wrapper<K>::is_null(k) && wrapper<K>::is_null(v))
-        {
-            prev_elem = false;
-        }
-        else if (wrapper<K>::is_special(k) && wrapper<K>::is_special(v))
-        {
-            std::cout << "(" << k << ", " << v << ")";
-        }
-        else if (wrapper<K>::is_special(k))
-        {
-            std::cout << "(" << k
-                      << ", " << v << "->" << wrapper<V>::unwrap(v) << ")";
-        }
-        else if (wrapper<V>::is_special(v))
-        {
-            std::cout << "(" << k << "->" << wrapper<K>::unwrap(k)
-                      << ", " << v << ")";
-        }
-        else
-        {
-            std::cout << "(" << k << "->" << wrapper<K>::unwrap(k)
-                      << ", " << v << "->" << wrapper<V>::unwrap(v) << ")";
-        }
-    }
-
-    std::cout << "]" << std::endl;
-}
-#endif
-
 template <typename K, typename V, uint64_t (*H)(const K&)>
 uint64_t
 nwf_hash_map<K, V, H> :: hash_key(typename wrapper<K>::type k)

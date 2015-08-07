@@ -32,8 +32,67 @@
 // e
 #include "e/slice.h"
 
+using e::slice;
+
+slice :: slice()
+    : m_data(NULL)
+    , m_sz(0)
+{
+}
+
+slice :: slice(const char* d, size_t sz)
+    : m_data(reinterpret_cast<const uint8_t*>(d))
+    , m_sz(sz)
+{
+}
+
+slice :: slice(const uint8_t* d, size_t sz)
+    : m_data(d)
+    , m_sz(sz)
+{
+}
+
+slice :: slice(const std::string& s)
+    : m_data(reinterpret_cast<const uint8_t*>(s.data()))
+    , m_sz(s.size())
+{
+}
+
+slice :: slice(const std::vector<uint8_t>& buf)
+    : m_data(&buf.front())
+    , m_sz(buf.size())
+{
+}
+
+slice :: slice(const slice& other)
+    : m_data(other.m_data)
+    , m_sz(other.m_sz)
+{
+}
+
+slice :: ~slice() throw ()
+{
+}
+
+int
+slice :: compare(const slice& rhs) const
+{
+    if (m_sz < rhs.m_sz)
+    {
+        return -1;
+    }
+    else if (m_sz > rhs.m_sz)
+    {
+        return 1;
+    }
+    else
+    {
+        return memcmp(m_data, rhs.m_data, m_sz);
+    }
+}
+
 std::string
-e:: slice :: hex() const
+slice :: hex() const
 {
     std::ostringstream ostr;
     ostr << std::hex;
@@ -48,8 +107,39 @@ e:: slice :: hex() const
 }
 
 bool
-e :: slice :: starts_with(const e::slice& prefix) const
+slice :: starts_with(const e::slice& prefix) const
 {
     return size() >= prefix.size() &&
            memcmp(data(), prefix.data(), prefix.size()) == 0;
+}
+
+void
+slice :: advance(size_t sz)
+{
+    assert(sz <= m_sz);
+    m_data += sz;
+    m_sz -= sz;
+}
+
+void
+slice :: reset()
+{
+    m_data = NULL;
+    m_sz = 0;
+}
+
+void
+slice :: reset(const uint8_t* d, size_t sz)
+{
+    m_data = d;
+    m_sz = sz;
+}
+
+slice&
+slice :: operator = (const slice& rhs)
+{
+    // We do not need to check for self-assignment.
+    m_data = rhs.m_data;
+    m_sz = rhs.m_sz;
+    return *this;
 }

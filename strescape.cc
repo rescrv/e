@@ -1,4 +1,4 @@
-// Copyright (c) 2015, Robert Escriva
+// Copyright (c) 2013,2015, Robert Escriva
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,78 +25,71 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// C
+#include <stdio.h>
+
+// STL
+#include <vector>
+
 // e
-#include "e/error.h"
+#include "e/strescape.h"
 
-using e::error;
-
-error :: error()
-    : m_msg()
-    , m_msg_s()
-    , m_loc_s()
-    , m_file("")
-    , m_line(0)
+std::string
+e :: strescape(const std::string& input)
 {
-}
+    const char* data = input.c_str();
+    size_t data_sz = input.size();
+    std::vector<char> tmp(data_sz * 4 + 1);
+    char* ptr = &tmp.front();
 
-error :: error(const error& other)
-    : m_msg(other.m_msg.str())
-    , m_msg_s(other.m_msg_s)
-    , m_loc_s(other.m_loc_s)
-    , m_file(other.m_file)
-    , m_line(other.m_line)
-{
-}
-
-error :: ~error() throw ()
-{
-}
-
-const char*
-error :: loc()
-{
-    char buf[21];
-    snprintf(buf, 21, "%lu", m_line);
-    m_loc_s  = m_file;
-    m_loc_s += ":";
-    m_loc_s += buf;
-    return m_loc_s.c_str();
-}
-
-const char*
-error :: msg()
-{
-    m_msg_s = m_msg.str();
-    return m_msg_s.c_str();
-}
-
-void
-error :: set_loc(const char* file, size_t line)
-{
-    m_file = file;
-    m_line = line;
-}
-
-std::ostream&
-error :: set_msg()
-{
-    m_msg.str("");
-    m_msg.clear();
-    return m_msg;
-}
-
-error&
-error :: operator = (const error& rhs)
-{
-    if (this != &rhs)
+    for (size_t i = 0; i < data_sz; ++i)
     {
-        m_msg.str(rhs.m_msg.str());
-        m_msg.clear();
-        m_msg_s = rhs.m_msg_s;
-        m_loc_s = rhs.m_loc_s;
-        m_file = rhs.m_file;
-        m_line = rhs.m_line;
+        if (isalnum(data[i]) ||
+            (ispunct(data[i]) && data[i] != '\'') ||
+            data[i] == ' ')
+        {
+            *ptr = data[i];
+            ++ptr;
+        }
+        else if (data[i] == '\n')
+        {
+            *ptr = '\\';
+            ++ptr;
+            *ptr = 'n';
+            ++ptr;
+        }
+        else if (data[i] == '\r')
+        {
+            *ptr = '\\';
+            ++ptr;
+            *ptr = 'r';
+            ++ptr;
+        }
+        else if (data[i] == '\t')
+        {
+            *ptr = '\\';
+            ++ptr;
+            *ptr = 't';
+            ++ptr;
+        }
+        else if (data[i] == '\'')
+        {
+            *ptr = '\\';
+            ++ptr;
+            *ptr = '\'';
+            ++ptr;
+        }
+        else
+        {
+            *ptr = '\\';
+            ++ptr;
+            *ptr = 'x';
+            ++ptr;
+            sprintf(ptr, "%02x", data[i] & 0xff);
+            ptr += 2;
+        }
     }
 
-    return *this;
+    *ptr = '\0';
+    return std::string(&tmp.front(), ptr);
 }

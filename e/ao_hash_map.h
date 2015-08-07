@@ -313,58 +313,6 @@ ao_hash_map<K, V, H, E> :: copy_from(const ao_hash_map& aohm)
     m_elements = aohm.m_elements;
 }
 
-#if 0
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
-void
-ao_hash_map<K, V, H, EMPTY> :: dump()
-{
-    std::cerr << "begin dump" << "==============================" << std::endl;
-    std::cout << "table_size=" << m_table_size << std::endl;
-    std::cout << "array_size=" << m_array_size << std::endl;
-
-    for (size_t i = 0; i < m_table_size; ++i)
-    {
-        for (size_t j = 0; j < BUCKET_SIZE; ++j)
-        {
-            node* n = &m_table1[i].nodes[j];
-
-            if (n->key == EMPTY && n->val == EMPTY)
-            {
-                continue;
-            }
-
-            std::cout << "table1[" << i << "].nodes[" << j << "].key=" << n->key << std::endl;
-            std::cout << "table1[" << i << "].nodes[" << j << "].val=" << n->val << std::endl;
-        }
-    }
-
-    for (size_t i = 0; i < m_table_size; ++i)
-    {
-        for (size_t j = 0; j < BUCKET_SIZE; ++j)
-        {
-            node* n = &m_table2[i].nodes[j];
-
-            if (n->key == EMPTY && n->val == EMPTY)
-            {
-                continue;
-            }
-
-            std::cout << "table2[" << i << "].nodes[" << j << "].key=" << n->key << std::endl;
-            std::cout << "table2[" << i << "].nodes[" << j << "].val=" << n->val << std::endl;
-        }
-    }
-
-    for (size_t i = 0; i < m_array_size; ++i)
-    {
-        node* n = m_array + i;
-        std::cout << "array[" << i << "].key=" << n->key << std::endl;
-        std::cout << "array[" << i << "].val=" << n->val << std::endl;
-    }
-
-    std::cerr << "end dump" << "================================" << std::endl;
-}
-#endif
-
 template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
 double
 ao_hash_map<K, V, H, EMPTY> :: load_factor()

@@ -32,7 +32,7 @@ namespace e
 {
 
 template <typename T1>
-inline int
+int
 tuple_compare(const T1& lhs1, const T1& rhs1)
 {
     if (lhs1 < rhs1)
@@ -50,7 +50,7 @@ tuple_compare(const T1& lhs1, const T1& rhs1)
 }
 
 template <typename T1, typename T2>
-inline int
+int
 tuple_compare(const T1& lhs1, const T2& lhs2,
               const T1& rhs1, const T2& rhs2)
 {
@@ -67,7 +67,7 @@ tuple_compare(const T1& lhs1, const T2& lhs2,
 }
 
 template <typename T1, typename T2, typename T3>
-inline int
+int
 tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3,
               const T1& rhs1, const T2& rhs2, const T3& rhs3)
 {
@@ -84,7 +84,7 @@ tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3,
 }
 
 template <typename T1, typename T2, typename T3, typename T4>
-inline int
+int
 tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3, const T4& lhs4,
               const T1& rhs1, const T2& rhs2, const T3& rhs3, const T4& rhs4)
 {
@@ -101,7 +101,7 @@ tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3, const T4& lhs4,
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5>
-inline int
+int
 tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3, const T4& lhs4, const T5& lhs5,
               const T1& rhs1, const T2& rhs2, const T3& rhs3, const T4& rhs4, const T5& rhs5)
 {
@@ -118,7 +118,7 @@ tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3, const T4& lhs4, co
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-inline int
+int
 tuple_compare(const T1& lhs1, const T2& lhs2, const T3& lhs3, const T4& lhs4, const T5& lhs5, const T6& lhs6,
               const T1& rhs1, const T2& rhs2, const T3& rhs3, const T4& rhs4, const T5& rhs5, const T6& rhs6)
 {

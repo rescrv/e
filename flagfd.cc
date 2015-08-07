@@ -25,78 +25,83 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// POSIX
+#include <limits.h>
+#include <unistd.h>
+
 // e
-#include "e/error.h"
+#include "e/flagfd.h"
 
-using e::error;
+using e::flagfd;
 
-error :: error()
-    : m_msg()
-    , m_msg_s()
-    , m_loc_s()
-    , m_file("")
-    , m_line(0)
+flagfd :: flagfd()
+    : m_read()
+    , m_write()
+    , m_flagged(false)
+    , m_error(0)
+{
+    int fds[2];
+
+    if (pipe(fds) < 0)
+    {
+        m_error = errno;
+        return;
+    }
+
+    m_read = fds[0];
+    m_write = fds[1];
+}
+
+flagfd :: ~flagfd() throw ()
 {
 }
 
-error :: error(const error& other)
-    : m_msg(other.m_msg.str())
-    , m_msg_s(other.m_msg_s)
-    , m_loc_s(other.m_loc_s)
-    , m_file(other.m_file)
-    , m_line(other.m_line)
+bool
+flagfd :: valid() const
 {
+    return m_read.get() >= 0;
 }
 
-error :: ~error() throw ()
+int
+flagfd :: error() const
 {
+    return m_error;
 }
 
-const char*
-error :: loc()
+int
+flagfd :: poll_fd()
 {
-    char buf[21];
-    snprintf(buf, 21, "%lu", m_line);
-    m_loc_s  = m_file;
-    m_loc_s += ":";
-    m_loc_s += buf;
-    return m_loc_s.c_str();
+    return m_read.get();
 }
 
-const char*
-error :: msg()
+bool
+flagfd :: isset()
 {
-    m_msg_s = m_msg.str();
-    return m_msg_s.c_str();
+    return m_flagged;
 }
 
 void
-error :: set_loc(const char* file, size_t line)
+flagfd :: set()
 {
-    m_file = file;
-    m_line = line;
-}
-
-std::ostream&
-error :: set_msg()
-{
-    m_msg.str("");
-    m_msg.clear();
-    return m_msg;
-}
-
-error&
-error :: operator = (const error& rhs)
-{
-    if (this != &rhs)
+    if (!m_flagged)
     {
-        m_msg.str(rhs.m_msg.str());
-        m_msg.clear();
-        m_msg_s = rhs.m_msg_s;
-        m_loc_s = rhs.m_loc_s;
-        m_file = rhs.m_file;
-        m_line = rhs.m_line;
+        char c;
+        PO6_EXPLICITLY_IGNORE(m_write.xwrite(&c, 1));
     }
 
-    return *this;
+    m_flagged = true;
+}
+
+void
+flagfd :: clear()
+{
+    if (m_flagged)
+    {
+        char buf[32];
+
+        while (m_read.read(buf, 32) == 32)
+            ;
+    }
+
+    m_flagged = false;
 }

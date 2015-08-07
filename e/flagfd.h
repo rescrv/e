@@ -28,10 +28,6 @@
 #ifndef e_flagfd_h_
 #define e_flagfd_h_
 
-// POSIX
-#include <limits.h>
-#include <unistd.h>
-
 // po6
 #include <po6/io/fd.h>
 
@@ -41,52 +37,16 @@ namespace e
 class flagfd
 {
     public:
-        flagfd()
-            : m_read()
-            , m_write()
-            , m_flagged(false)
-            , m_error(0)
-        {
-            int fds[2];
-
-            if (pipe(fds) < 0)
-            {
-                m_error = errno;
-                return;
-            }
-
-            m_read = fds[0];
-            m_write = fds[1];
-        }
-        ~flagfd() throw () {}
+        flagfd();
+        ~flagfd() throw ();
 
     public:
-        bool valid() const { return m_read.get() >= 0; }
-        int error() const { return m_error; }
-        int poll_fd() { return m_read.get(); }
-        bool isset() { return m_flagged; }
-        void set()
-        {
-            if (!m_flagged)
-            {
-                char c;
-                m_write.xwrite(&c, 1);
-            }
-
-            m_flagged = true;
-        }
-        void clear()
-        {
-            if (m_flagged)
-            {
-                char buf[32];
-
-                while (m_read.read(buf, 32) == 32)
-                    ;
-            }
-
-            m_flagged = false;
-        }
+        bool valid() const;
+        int error() const;
+        int poll_fd();
+        bool isset();
+        void set();
+        void clear();
 
     private:
         po6::io::fd m_read;
