@@ -52,6 +52,7 @@ class arena
         void takeover(unsigned char* ptr);
         void takeover(void* ptr);
         void takeover(e::buffer* buf);
+        void clear();
 
     private:
         arena(const arena&);

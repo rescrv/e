@@ -109,6 +109,20 @@ arena :: takeover(e::buffer* buf)
 }
 
 void
+arena :: clear()
+{
+    for (size_t i = 0; i < m_to_free.size(); ++i)
+    {
+        free(m_to_free[i]);
+    }
+
+    for (size_t i = 0; i < m_buffers.size(); ++i)
+    {
+        delete m_buffers[i];
+    }
+}
+
+void
 arena :: raw_allocate(size_t sz, unsigned char** ptr)
 {
     unsigned char* tmp = reinterpret_cast<unsigned char*>(malloc(sz));
