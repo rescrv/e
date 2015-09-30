@@ -118,6 +118,7 @@ seqno_collector :: lower_bound(uint64_t* seqno)
 
         if (i >= 8)
         {
+            compress(lb, r);
             continue;
         }
 
