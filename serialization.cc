@@ -481,30 +481,12 @@ e :: operator >> (e::unpacker up, const unpack_memmove& x)
     return up.advance(x.size());
 }
 
-pack_varint :: pack_varint(uint64_t _x)
-    : x(_x)
-{
-}
-
-pack_varint :: ~pack_varint() throw ()
-{
-}
-
 e::packer
 e :: operator << (e::packer pa, const pack_varint& x)
 {
     char buf[VARINT_64_MAX_SIZE];
     char* ptr = varint64_encode(buf, x.x);
     return pa << pack_memmove(buf, ptr - buf);
-}
-
-unpack_varint :: unpack_varint(uint64_t& _x)
-    : x(_x)
-{
-}
-
-unpack_varint :: ~unpack_varint() throw ()
-{
 }
 
 e::unpacker

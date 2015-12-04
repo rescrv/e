@@ -199,8 +199,8 @@ operator >> (e::unpacker up, const unpack_memmove& x);
 class pack_varint
 {
     public:
-        pack_varint(uint64_t x);
-        ~pack_varint() throw ();
+        pack_varint(uint64_t _x) : x(_x) {}
+        ~pack_varint() throw () {}
 
     public:
         uint64_t x;
@@ -212,8 +212,8 @@ operator << (e::packer pa, const pack_varint& x);
 class unpack_varint
 {
     public:
-        unpack_varint(uint64_t& x);
-        ~unpack_varint() throw ();
+        unpack_varint(uint64_t& _x) : x(_x) {}
+        ~unpack_varint() throw () {}
 
     public:
         uint64_t& x;
@@ -221,6 +221,86 @@ class unpack_varint
 
 e::unpacker
 operator >> (e::unpacker up, const unpack_varint& x);
+
+template <typename T>
+class pack_uint8
+{
+    public:
+        pack_uint8(const T& _t) : t(_t) {}
+        ~pack_uint8() throw () {}
+
+    public:
+        const T& t;
+};
+
+template <typename T>
+e::packer
+operator << (e::packer pa, const pack_uint8<T>& x)
+{
+    uint8_t mt = static_cast<uint8_t>(x.t);
+    return pa << mt;
+}
+
+template <typename T>
+class unpack_uint8
+{
+    public:
+        unpack_uint8(T& _t) : t(_t) {}
+        ~unpack_uint8() throw () {}
+
+    public:
+        T& t;
+};
+
+template <typename T>
+e::unpacker
+operator >> (e::unpacker up, const unpack_uint8<T>& x)
+{
+    uint8_t mt;
+    up = up >> mt;
+    x.t = static_cast<T>(mt);
+    return up;
+}
+
+template <typename T>
+class pack_uint16
+{
+    public:
+        pack_uint16(const T& _t) : t(_t) {}
+        ~pack_uint16() throw () {}
+
+    public:
+        const T& t;
+};
+
+template <typename T>
+e::packer
+operator << (e::packer pa, const pack_uint16<T>& x)
+{
+    uint16_t mt = static_cast<uint16_t>(x.t);
+    return pa << mt;
+}
+
+template <typename T>
+class unpack_uint16
+{
+    public:
+        unpack_uint16(T& _t) : t(_t) {}
+        ~unpack_uint16() throw () {}
+
+    public:
+        T& t;
+};
+
+template <typename T>
+e::unpacker
+operator >> (e::unpacker up, const unpack_uint16<T>& x)
+{
+    uint16_t mt;
+    up = up >> mt;
+    x.t = static_cast<T>(mt);
+    return up;
+}
 
 } // namespace e
 
