@@ -28,6 +28,7 @@ nobase_include_HEADERS += e/guard.h
 nobase_include_HEADERS += e/hazard_ptrs.h
 nobase_include_HEADERS += e/identity.h
 nobase_include_HEADERS += e/intrusive_ptr.h
+nobase_include_HEADERS += e/lockfile.h
 nobase_include_HEADERS += e/lockfree_fifo.h
 nobase_include_HEADERS += e/lockfree_hash_map.h
 nobase_include_HEADERS += e/lockfree_mpsc_fifo.h
@@ -45,6 +46,9 @@ nobase_include_HEADERS += e/subcommand.h
 nobase_include_HEADERS += e/tuple_compare.h
 nobase_include_HEADERS += e/varint.h
 
+noinst_HEADERS =
+noinst_HEADERS += file_lock_table.h
+
 #################################### Source ####################################
 
 lib_LTLIBRARIES = libe.la
@@ -54,9 +58,11 @@ libe_la_SOURCES += atomic.cc
 libe_la_SOURCES += buffer.cc
 libe_la_SOURCES += endian.cc
 libe_la_SOURCES += error.cc
+libe_la_SOURCES += file_lock_table.cc
 libe_la_SOURCES += flagfd.cc
 libe_la_SOURCES += garbage_collector.cc
 libe_la_SOURCES += identity.cc
+libe_la_SOURCES += lockfile.cc
 libe_la_SOURCES += lookup3.c
 libe_la_SOURCES += lookup3-wrap.cc
 libe_la_SOURCES += seqno_collector.cc
