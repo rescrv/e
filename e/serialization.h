@@ -32,6 +32,7 @@
 #include <stdint.h>
 
 // STL
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -78,6 +79,7 @@ class packer
 
     public:
         template <typename T> packer operator << (const std::vector<T>& rhs);
+        template <typename T> packer operator << (const std::list<T>& rhs);
         template <typename A, typename B> packer operator << (const std::pair<A, B>& rhs);
         struct bytes_manager
         {
@@ -124,6 +126,7 @@ class unpacker
     public:
         unpacker& operator = (const unpacker& rhs);
         template <typename T> unpacker operator >> (std::vector<T>& rhs);
+        template <typename T> unpacker operator >> (std::list<T>& rhs);
         template <typename A, typename B> unpacker operator >> (std::pair<A, B>& rhs);
 
     private:
@@ -221,6 +224,71 @@ class unpack_varint
 
 e::unpacker
 operator >> (e::unpacker up, const unpack_varint& x);
+
+/////////////////////////////////////////////////////////
+template <typename T>
+class pack_array
+{
+    public:
+        pack_array(const T* _t, size_t _sz) : t(_t), sz(_sz) {}
+        ~pack_array() throw () {}
+
+    public:
+        const T* t;
+        size_t sz;
+};
+
+template <typename T>
+e::packer
+operator << (e::packer pa, const pack_array<T>& x)
+{
+    for (size_t i = 0; i < x.sz; ++i)
+    {
+        pa = pa << x.t[i];
+    }
+
+    return pa;
+}
+
+template <typename T>
+class unpack_array
+{
+    public:
+        unpack_array(T* _t, size_t _sz) : t(_t), sz(_sz) {}
+        ~unpack_array() throw () {}
+
+    public:
+        T* t;
+        size_t sz;
+};
+
+template <typename T>
+e::unpacker
+operator >> (e::unpacker up, const unpack_array<T>& x)
+{
+    for (size_t i = 0; i < x.sz; ++i)
+    {
+        up = up >> x.t[i];
+    }
+
+    return up;
+}
+
+template <typename T>
+size_t
+pack_size_array(const T* t, size_t sz)
+{
+    size_t total = 0;
+
+    for (size_t i = 0; i < sz; ++i)
+    {
+        total += pack_size(t[i]);
+    }
+
+    return total;
+}
+
+/////////////////////////////////////////////////////////
 
 template <typename T>
 class pack_uint8
@@ -327,7 +395,7 @@ e :: packer :: operator << (const std::vector<T>& rhs)
     const uint64_t sz = rhs.size();
     pa = pa << pack_varint(sz);
 
-    for (uint32_t i = 0; i < sz; ++i)
+    for (uint64_t i = 0; i < sz; ++i)
     {
         pa = pa << rhs[i];
     }
@@ -338,6 +406,55 @@ e :: packer :: operator << (const std::vector<T>& rhs)
 template <typename T>
 e::unpacker
 e :: unpacker :: operator >> (std::vector<T>& rhs)
+{
+    e::unpacker up(*this);
+    uint64_t sz = 0;
+    up = up >> unpack_varint(sz);
+    rhs.clear();
+
+    for (uint64_t i = 0; i < sz; ++i)
+    {
+        rhs.push_back(T());
+        up = up >> rhs.back();
+    }
+
+    return up;
+}
+
+// list<T>
+template <typename T>
+size_t
+pack_size(const typename std::list<T>& L)
+{
+    size_t sz = e::varint_length(L.size());
+
+    for (typename std::list<T>::const_iterator it = L.begin(); it != L.end(); ++it)
+    {
+        sz += pack_size(*it);
+    }
+
+    return sz;
+}
+
+template <typename T>
+e::packer
+e :: packer :: operator << (const std::list<T>& rhs)
+{
+    e::packer pa(*this);
+    const uint64_t sz = rhs.size();
+    pa = pa << pack_varint(sz);
+
+    for (typename std::list<T>::const_iterator it = rhs.begin(); it != rhs.end(); ++it)
+    {
+        pa = pa << *it;
+    }
+
+    return pa;
+}
+
+template <typename T>
+e::unpacker
+e :: unpacker :: operator >> (std::list<T>& rhs)
 {
     e::unpacker up(*this);
     uint64_t sz = 0;
