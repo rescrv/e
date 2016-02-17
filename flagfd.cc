@@ -85,7 +85,7 @@ flagfd :: set()
 {
     if (!m_flagged)
     {
-        char c;
+        char c = 'A';
         PO6_EXPLICITLY_IGNORE(m_write.xwrite(&c, 1));
     }
 
