@@ -31,6 +31,7 @@
 
 // e
 #include "e/slice.h"
+#include "e/base64.h"
 
 using e::slice;
 
@@ -110,6 +111,15 @@ slice :: hex() const
     }
 
     return ostr.str();
+}
+
+std::string
+slice :: b64() const
+{
+    std::vector<char> buf(m_sz * 2);
+    ssize_t sz = b64_ntop(m_data, m_sz, &buf[0], buf.size());
+    assert(sz >= 0 && sz <= buf.size());
+    return std::string(&buf[0], sz);
 }
 
 bool

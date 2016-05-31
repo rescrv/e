@@ -65,6 +65,7 @@ class buffer
         bool cmp(const char* buf, size_t sz) const;
         e::slice as_slice() const { return e::slice(m_data, m_size); }
         std::string hex() const { return as_slice().hex(); }
+        std::string b64() const { return as_slice().b64(); }
         e::buffer* copy() const;
 
     public:

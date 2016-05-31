@@ -62,6 +62,7 @@ class slice
         const char* cdata() const { return reinterpret_cast<const char*>(m_data); }
         bool empty() const { return m_sz == 0; }
         std::string hex() const;
+        std::string b64() const;
         size_t size() const { return m_sz; }
         bool starts_with(const e::slice& other) const;
         std::string str() const { return std::string(cdata(), size()); }
