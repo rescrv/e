@@ -30,6 +30,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// POSIX
+#include <sys/stat.h>
+
 // STL
 #include <iostream>
 #include <sstream>
