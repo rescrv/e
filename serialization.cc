@@ -270,7 +270,7 @@ PACKER(double, e::packdoublebe)
     { \
         const uint8_t* start = up.start(); \
         const uint8_t* limit = up.limit(); \
-        const size_t sz = pack_size(rhs); \
+        const size_t sz = sizeof(rhs); \
         if (!up.error() && start + sz <= limit) \
         { \
             UNPACKF(start, &rhs); \

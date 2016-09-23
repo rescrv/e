@@ -374,8 +374,8 @@ void
 garbage_collector :: enqueue(garbage* volatile* list, garbage* g)
 {
     garbage* expect = e::atomic::load_ptr_acquire(list);
-    garbage* witness = expect;
     e::atomic::store_ptr_release(&g->next, expect);
+    garbage* witness = NULL;
 
     while ((witness = e::atomic::compare_and_swap_ptr_fullbarrier(list, expect, g)) != expect)
     {
