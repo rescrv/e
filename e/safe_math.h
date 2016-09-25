@@ -116,7 +116,7 @@ safe_div(int64_t lhs, int64_t rhs, int64_t* result)
     if (mod && ((rhs ^ mod) < 0))
     {
         --div;
-        mod += rhs;
+        // mod += rhs;
     }
 
     *result = div;
