@@ -358,7 +358,7 @@ e :: operator << (packer pa, const po6::net::ipaddr& rhs)
 unpacker
 e :: operator >> (unpacker up, po6::net::ipaddr& rhs)
 {
-    uint8_t type;
+    uint8_t type = 0;
     up = up >> type;
 
     if (up.error())

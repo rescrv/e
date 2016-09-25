@@ -371,7 +371,7 @@ garbage_collector :: read_timestamp()
 }
 
 void
-garbage_collector :: enqueue(garbage* volatile* list, garbage* g)
+garbage_collector :: enqueue(garbage** list, garbage* g)
 {
     garbage* expect = e::atomic::load_ptr_acquire(list);
     e::atomic::store_ptr_release(&g->next, expect);
