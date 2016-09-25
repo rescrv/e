@@ -64,7 +64,7 @@ class garbage_collector
         class garbage;
         // read_timestamp is a full-barrier operation
         uint64_t read_timestamp();
-        void enqueue(garbage* volatile* list, garbage* g);
+        void enqueue(garbage** list, garbage* g);
 
     private:
         uint64_t m_timestamp;
