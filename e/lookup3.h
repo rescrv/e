@@ -14,6 +14,7 @@ namespace e
 // library exposes those functions directly, but I prefer using this wrapper
 // instead:
 uint64_t lookup3_64(uint64_t in);
+inline uint64_t lookup3_64_ref(const uint64_t& in) { return lookup3_64(in); }
 
 } // namespace e
 
