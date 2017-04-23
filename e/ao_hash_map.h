@@ -64,7 +64,7 @@ namespace e
 // quite slow.  Still better than scanning the entire table, and it's unlikely
 // to happen except for the densest of cases.
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 class ao_hash_map
 {
 
@@ -129,7 +129,7 @@ class ao_hash_map
         ao_hash_map& operator = (const ao_hash_map&);
 };
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 ao_hash_map<K, V, H, E> :: ao_hash_map()
     : m_table_size(0)
     , m_table1(NULL)
@@ -140,13 +140,13 @@ ao_hash_map<K, V, H, E> :: ao_hash_map()
 {
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 ao_hash_map<K, V, H, E> :: ~ao_hash_map() throw ()
 {
     reset();
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 bool
 ao_hash_map<K, V, H, EMPTY> :: put(K k, V v)
 {
@@ -194,7 +194,7 @@ ao_hash_map<K, V, H, EMPTY> :: put(K k, V v)
     return true;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 bool
 ao_hash_map<K, V, H, E> :: get(K k, V* v) const
 {
@@ -221,7 +221,7 @@ ao_hash_map<K, V, H, E> :: get(K k, V* v) const
     return false;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 bool
 ao_hash_map<K, V, H, EMPTY> :: mod(K k, V** v)
 {
@@ -246,7 +246,7 @@ ao_hash_map<K, V, H, EMPTY> :: mod(K k, V** v)
     return false;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 void
 ao_hash_map<K, V, H, E> :: reset()
 {
@@ -269,7 +269,7 @@ ao_hash_map<K, V, H, E> :: reset()
     m_array_size = 0;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 void
 ao_hash_map<K, V, H, E> :: swap(ao_hash_map* aohm)
 {
@@ -281,7 +281,7 @@ ao_hash_map<K, V, H, E> :: swap(ao_hash_map* aohm)
     std::swap(m_elements, aohm->m_elements);
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 void
 ao_hash_map<K, V, H, E> :: copy_from(const ao_hash_map& aohm)
 {
@@ -313,7 +313,7 @@ ao_hash_map<K, V, H, E> :: copy_from(const ao_hash_map& aohm)
     m_elements = aohm.m_elements;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 double
 ao_hash_map<K, V, H, EMPTY> :: load_factor()
 {
@@ -326,7 +326,7 @@ ao_hash_map<K, V, H, EMPTY> :: load_factor()
     return double(m_elements) / total;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 uint64_t
 ao_hash_map<K, V, H, E> :: get_index1(K k, uint64_t table_size) const
 {
@@ -335,7 +335,7 @@ ao_hash_map<K, V, H, E> :: get_index1(K k, uint64_t table_size) const
     return idx;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 uint64_t
 ao_hash_map<K, V, H, E> :: get_index2(K k, uint64_t table_size) const
 {
@@ -345,7 +345,7 @@ ao_hash_map<K, V, H, E> :: get_index2(K k, uint64_t table_size) const
     return idx;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& E>
+template <typename K, typename V, uint64_t (*H)(K), K E>
 typename ao_hash_map<K, V, H, E>::bucket*
 ao_hash_map<K, V, H, E> :: get_bucket(bucket* table, uint64_t table_size, K k, index_func f) const
 {
@@ -357,7 +357,7 @@ ao_hash_map<K, V, H, E> :: get_bucket(bucket* table, uint64_t table_size, K k, i
     return table + (this->*f)(k, table_size);
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 bool
 ao_hash_map<K, V, H, EMPTY> :: put(bucket* b, K k, V v)
 {
@@ -382,7 +382,7 @@ ao_hash_map<K, V, H, EMPTY> :: put(bucket* b, K k, V v)
     return false;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 bool
 ao_hash_map<K, V, H, EMPTY> :: mod(bucket* b, K k, V** v) const
 {
@@ -400,7 +400,7 @@ ao_hash_map<K, V, H, EMPTY> :: mod(bucket* b, K k, V** v) const
     return false;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 void
 ao_hash_map<K, V, H, EMPTY> :: cuckoo(bucket* b, K* k, V* v)
 {
@@ -422,7 +422,7 @@ ao_hash_map<K, V, H, EMPTY> :: cuckoo(bucket* b, K* k, V* v)
     *v = popped_v;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 void
 ao_hash_map<K, V, H, EMPTY> :: resize_table()
 {
@@ -432,7 +432,7 @@ ao_hash_map<K, V, H, EMPTY> :: resize_table()
     m_table_size = new_table_size;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 void
 ao_hash_map<K, V, H, EMPTY> :: resize_table(bucket** table,
                                             uint64_t old_table_size,
@@ -470,7 +470,7 @@ ao_hash_map<K, V, H, EMPTY> :: resize_table(bucket** table,
     *table = new_table;
 }
 
-template <typename K, typename V, uint64_t (*H)(K), const K& EMPTY>
+template <typename K, typename V, uint64_t (*H)(K), K EMPTY>
 void
 ao_hash_map<K, V, H, EMPTY> :: make_room_at_array_head()
 {
