@@ -539,7 +539,11 @@ nwf_hash_map<K, V, H> :: put_if_match(table* t,
         idx = (idx + 1) & mask;
     }
 
-    if (wrapper<V>::equal(put_val, v))
+    // if v is_primed, then we are copying, have copied this value, and cannot
+    // check that it's equal within this table as the next table could have
+    // overwritten it
+    if (!wrapper<V>::is_primed(v) &&
+        wrapper<V>::equal(put_val, v))
     {
         return v;
     }
